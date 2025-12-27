@@ -8,7 +8,7 @@ export class HealthController {
   getHealth() {
     return {
       status: 'healthy',
-      service: process.env.SERVICE_NAME || 'supplier-microservice',
+      service: process.env.SERVICE_NAME || 'suppliers-microservice',
       uptime: Math.floor((Date.now() - this.startTime) / 1000),
       timestamp: new Date().toISOString(),
     };

@@ -3,14 +3,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: supplier-microservice-blue
+    container_name: suppliers-microservice-blue
     ports:
       - "${PORT:-3202}:${PORT:-3202}"
     env_file:
       - .env
     environment:
       - NODE_ENV=${NODE_ENV:-production}
-      - SERVICE_NAME=${SERVICE_NAME:-supplier-microservice}
+      - SERVICE_NAME=${SERVICE_NAME:-suppliers-microservice}
       - PORT=${PORT:-3202}
       - DB_HOST=${DB_HOST:-db-server-postgres}
       - DB_PORT=${DB_PORT:-5432}
@@ -21,6 +21,13 @@ services:
       - WAREHOUSE_SERVICE_URL=${WAREHOUSE_SERVICE_URL:-http://warehouse-microservice:3201}
     networks:
       - nginx-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:${PORT:-3202}/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
