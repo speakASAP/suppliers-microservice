@@ -1,5 +1,5 @@
 {
-  "name": "supplier-microservice",
+  "name": "suppliers-microservice",
   "version": "1.0.0",
   "description": "Supplier API integration service - connects to supplier APIs to import products and stock",
   "main": "dist/main.js",
