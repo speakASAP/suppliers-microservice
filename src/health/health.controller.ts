@@ -1,9 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
+import { Public } from '../auth/roles.decorator';
 
 @Controller()
 export class HealthController {
   private readonly startTime = Date.now();
 
+  @Public()
   @Get('health')
   getHealth() {
     return {
