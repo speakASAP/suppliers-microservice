@@ -2,7 +2,7 @@
 
 Connects to supplier APIs to import products and stock into the central catalog.
 
-## Port: 3202 (supplier.statex.cz)
+## Port: 3202 (supplier.alfares.cz)
 
 ## API Endpoints
 

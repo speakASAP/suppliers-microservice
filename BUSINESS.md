@@ -19,4 +19,4 @@ flipflop-service, allegro-service.
 ## SLA
 
 - Port: 3202 (<http://suppliers-microservice:3202>)
-- Production: <https://supplier.statex.cz>
+- Production: <https://supplier.alfares.cz>
