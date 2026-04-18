@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: suppliers-microservice
+  namespace: statex-apps
+  labels:
+    app: suppliers-microservice
+    managed-by: k8s-migration
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - supplier.alfares.cz
+      secretName: suppliers-microservice-tls
+  rules:
+    - host: supplier.alfares.cz
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: suppliers-microservice
+                port:
+                  number: 3202

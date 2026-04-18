@@ -45,3 +45,4 @@ tmp/
 temp/
 *.tmp
 
+k8s/secret.yaml

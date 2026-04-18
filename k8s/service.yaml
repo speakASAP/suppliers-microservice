@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: suppliers-microservice
+  namespace: statex-apps
+  labels:
+    app: suppliers-microservice
+    managed-by: k8s-migration
+spec:
+  type: ClusterIP
+  selector:
+    app: suppliers-microservice
+  ports:
+    - protocol: TCP
+      port: 3202
+      targetPort: 3202
+      name: http
