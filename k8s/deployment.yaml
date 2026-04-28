@@ -24,10 +24,16 @@ spec:
       containers:
         - name: app
           image: localhost:5000/suppliers-microservice:latest
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 3202
               name: http
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: database-credentials
+                  key: DB_PASSWORD
           envFrom:
             - configMapRef:
                 name: suppliers-microservice-config
@@ -35,7 +41,7 @@ spec:
                 name: suppliers-microservice-secret
           livenessProbe:
             httpGet:
-              path: /health
+              path: /api/health
               port: 3202
             initialDelaySeconds: 15
             periodSeconds: 30
@@ -43,7 +49,7 @@ spec:
             timeoutSeconds: 5
           readinessProbe:
             httpGet:
-              path: /health
+              path: /api/health
               port: 3202
             initialDelaySeconds: 10
             periodSeconds: 10

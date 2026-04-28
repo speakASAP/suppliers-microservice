@@ -17,7 +17,7 @@ data:
   # LOG_LEVEL: "info"
   AUTH_SERVICE_URL: "http://auth-microservice.statex-apps.svc.cluster.local:3370"
   LOGGING_SERVICE_URL: "http://logging-microservice.statex-apps.svc.cluster.local:3367"
-  DB_HOST: "192.168.88.53"
+  DB_HOST: "db-server-postgres"
   DB_PORT: "5432"
   DB_USER: "dbadmin"
   DB_NAME: "suppliers"
