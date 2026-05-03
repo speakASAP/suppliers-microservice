@@ -1,8 +1,6 @@
 # CLAUDE.md (suppliers-microservice)
 
-Ecosystem defaults: sibling [`../CLAUDE.md`](../CLAUDE.md) and [`../shared/docs/PROJECT_AGENT_DOCS_STANDARD.md`](../shared/docs/PROJECT_AGENT_DOCS_STANDARD.md).
-
-Read this repo's `BUSINESS.md` → `SYSTEM.md` → `AGENTS.md` → `TASKS.md` → `STATE.json` first.
+→ Ecosystem: [../shared/CLAUDE.md](../shared/CLAUDE.md) | Reading order: `BUSINESS.md` → `SYSTEM.md` → `AGENTS.md` → `TASKS.md` → `STATE.json`
 
 ---
 
@@ -22,9 +20,4 @@ Read this repo's `BUSINESS.md` → `SYSTEM.md` → `AGENTS.md` → `TASKS.md` �
 ### Consumers
 flipflop-service, allegro-service.
 
-### Quick ops
-```bash
-curl http://suppliers-microservice:3202/health
-docker compose logs -f
-./scripts/deploy.sh
-```
+**Ops**: `curl http://suppliers-microservice:3202/health` · `kubectl logs -n statex-apps -l app=suppliers-microservice -f` · `./scripts/deploy.sh`
