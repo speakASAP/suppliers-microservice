@@ -27,7 +27,18 @@ kubectl set image deployment/${SERVICE_NAME} app="${IMAGE}" -n "${NAMESPACE}" ||
 echo -e "\033[0;32m✅ Deployment updated\033[0m"
 
 echo -e "\033[1;33m[4/5] Waiting for rollout...\033[0m"
-kubectl rollout status deployment/${SERVICE_NAME} -n "${NAMESPACE}" --timeout=120s || true
+if ! kubectl rollout status deployment/${SERVICE_NAME} -n "${NAMESPACE}" --timeout=120s; then
+  echo -e "\033[1;33mRollout did not complete in time. Diagnosing terminating pods...\033[0m"
+  kubectl get pods -n "${NAMESPACE}" -l app=${SERVICE_NAME} -o wide || true
+  TERMINATING_PODS=$(kubectl get pods -n "${NAMESPACE}" -l app=${SERVICE_NAME} --no-headers 2>/dev/null | awk '$3=="Terminating"{print $1}')
+  if [ -n "$TERMINATING_PODS" ]; then
+    echo -e "\033[1;33mForce deleting stuck terminating pods...\033[0m"
+    for pod in $TERMINATING_PODS; do
+      kubectl delete pod -n "${NAMESPACE}" "$pod" --grace-period=0 --force || true
+    done
+  fi
+  kubectl rollout status deployment/${SERVICE_NAME} -n "${NAMESPACE}" --timeout=120s
+fi
 echo -e "\033[0;32m✅ Rollout status checked\033[0m"
 
 echo -e "\033[0;32m╔════════════════════════════════════════════════════════╗\033[0m"
