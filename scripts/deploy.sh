@@ -26,7 +26,7 @@ docker push "$IMAGE_LATEST" || exit 1
 echo -e "\033[0;32m✅ Image pushed\033[0m"
 
 echo -e "\033[1;33m[3/5] Updating K8s deployment...\033[0m"
-kubectl set image deployment/${SERVICE_NAME} app="${IMAGE}" -n "${NAMESPACE}" || true
+kubectl set image deployment/${SERVICE_NAME} app="${IMAGE_LATEST}" -n "${NAMESPACE}" || true
 echo -e "\033[0;32m✅ Deployment updated\033[0m"
 
 echo -e "\033[1;33m[4/5] Waiting for rollout...\033[0m"
