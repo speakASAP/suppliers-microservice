@@ -39,11 +39,17 @@ spec:
                 name: suppliers-microservice-config
             - secretRef:
                 name: suppliers-microservice-secret
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 3202
+            failureThreshold: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
           livenessProbe:
             httpGet:
               path: /api/health
               port: 3202
-            initialDelaySeconds: 15
             periodSeconds: 30
             failureThreshold: 3
             timeoutSeconds: 5
