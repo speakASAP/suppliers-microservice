@@ -8,7 +8,7 @@
 
 **Purpose**: Automated product imports from supplier REST/XML/CSV APIs with category mapping and scheduled sync into catalog-microservice.  
 **Port**: 3202  
-**Domain**: https://supplier.alfares.cz  
+**Domain**: https://suppliers.alfares.cz  
 **Stack**: NestJS · PostgreSQL · scheduled jobs
 
 ### Key constraints

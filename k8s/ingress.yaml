@@ -12,10 +12,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - supplier.alfares.cz
+        - suppliers.alfares.cz
       secretName: suppliers-microservice-tls
   rules:
-    - host: supplier.alfares.cz
+    - host: suppliers.alfares.cz
       http:
         paths:
           - path: /

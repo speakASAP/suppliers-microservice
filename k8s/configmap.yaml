@@ -9,7 +9,7 @@ metadata:
 data:
   NODE_ENV: "production"
   SERVICE_NAME: "suppliers-microservice"
-  DOMAIN: "supplier.alfares.cz"
+  DOMAIN: "suppliers.alfares.cz"
   PORT: "3202"
   # Add environment variables from .env that are non-sensitive (no secrets, API keys, passwords)
   # Examples:
