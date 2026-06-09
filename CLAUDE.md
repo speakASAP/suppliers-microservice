@@ -1,6 +1,15 @@
 # CLAUDE.md (suppliers-microservice)
 
-→ Ecosystem: [../shared/CLAUDE.md](../shared/CLAUDE.md) | Reading order: `BUSINESS.md` → `SYSTEM.md` → `AGENTS.md` → `TASKS.md` → `STATE.json`
+## Knowledge Retrieval — docs-rag-microservice (MANDATORY, query before reading files)
+
+**Query the RAG before reading source files**
+
+```bash
+kubectl -n statex-apps exec deployment/business-orchestrator -- curl -s -X POST http://docs-rag-microservice:3397/retrieval/agent-context \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $(cat ~/.claude/rag-token)" \
+  -d '{"query": "YOUR QUESTION HERE", "maxTokens": 3000}'
+```
 
 ---
 
