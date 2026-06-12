@@ -1,6 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
+import { ImportTriggerType } from './dto/import-run.dto';
+import { ImportValidationError } from './import-validation';
 
 @Entity('import_jobs')
+@Index(['supplierId', 'idempotencyKey'], { unique: true })
 export class ImportJob {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -8,9 +11,24 @@ export class ImportJob {
   @Column()
   supplierId: string;
 
+  @Column({ length: 128 })
+  idempotencyKey: string;
+
+  @Column({ length: 50, default: 'manual' })
+  triggerType: ImportTriggerType;
+
+  @Column({ length: 128, nullable: true })
+  sourceFingerprint: string;
+
   // Status: pending, running, completed, failed
   @Column({ length: 50, default: 'pending' })
   status: string;
+
+  @Column({ length: 50, default: 'pending' })
+  payloadValidationStatus: string;
+
+  @Column({ type: 'jsonb', nullable: true })
+  payloadValidationErrors: ImportValidationError[];
 
   @Column({ type: 'int', default: 0 })
   totalProducts: number;
@@ -39,4 +57,3 @@ export class ImportJob {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-

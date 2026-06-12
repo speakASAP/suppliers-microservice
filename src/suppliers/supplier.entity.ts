@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { SupplierApiType, SupplierCredentialRefsDto } from './dto/supplier.dto';
 
 @Entity('suppliers')
 export class Supplier {
@@ -13,18 +14,14 @@ export class Supplier {
 
   // API connection type: rest, xml, csv, ftp
   @Column({ length: 50 })
-  apiType: string;
+  apiType: SupplierApiType;
 
   @Column({ length: 500, nullable: true })
   apiUrl: string;
 
+  // Runtime secret references only. Never return or document decoded supplier credentials.
   @Column({ type: 'jsonb', nullable: true })
-  apiCredentials: {
-    apiKey?: string;
-    username?: string;
-    password?: string;
-    token?: string;
-  };
+  apiCredentials: SupplierCredentialRefsDto;
 
   // Sync schedule (cron expression)
   @Column({ length: 100, nullable: true })
@@ -45,4 +42,3 @@ export class Supplier {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-

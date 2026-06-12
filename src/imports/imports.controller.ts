@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Param, Query, ParseUUIDPipe } from '@nestjs/common';
+import { Body, Controller, Get, Post, Param, Query, ParseUUIDPipe } from '@nestjs/common';
 import { ImportsService } from './imports.service';
+import { RunImportDto } from './dto/import-run.dto';
 
 @Controller('imports')
 export class ImportsController {
@@ -12,11 +13,22 @@ export class ImportsController {
   }
 
   @Post('run/:supplierId')
-  async runImport(@Param('supplierId', ParseUUIDPipe) supplierId: string) {
-    const job = await this.importsService.createJob(supplierId);
-    // Run import in background
-    this.importsService.runImport(job.id, supplierId);
-    return { success: true, data: job };
+  async runImport(
+    @Param('supplierId', ParseUUIDPipe) supplierId: string,
+    @Body() options: RunImportDto = {},
+  ) {
+    const start = await this.importsService.createOrReuseJob(supplierId, options);
+    if (start.shouldRun) {
+      void this.importsService.runImport(start.job.id, supplierId);
+    }
+
+    return {
+      success: true,
+      data: start.job,
+      meta: {
+        created: start.created,
+        idempotentReplay: !start.created,
+      },
+    };
   }
 }
-

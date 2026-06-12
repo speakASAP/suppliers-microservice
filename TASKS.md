@@ -8,3 +8,7 @@
 ## Completed
 <!-- AI appends here. Never modifies previous entries. -->
 - [x] 2026-04-05 Documentation standard applied
+- [x] 2026-06-12 Intent Preservation System applied
+- [x] 2026-06-12 Add curl to production Docker image
+- [x] 2026-06-12 Supplier contract and credential safety
+- [x] 2026-06-12 Import validation and idempotency

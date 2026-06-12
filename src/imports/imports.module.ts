@@ -5,12 +5,12 @@ import { ImportJob } from './import-job.entity';
 import { ImportsService } from './imports.service';
 import { ImportsController } from './imports.controller';
 import { LoggerModule } from '../logger/logger.module';
+import { Supplier } from '../suppliers/supplier.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ImportJob]), HttpModule, LoggerModule],
+  imports: [TypeOrmModule.forFeature([ImportJob, Supplier]), HttpModule, LoggerModule],
   controllers: [ImportsController],
   providers: [ImportsService],
   exports: [ImportsService],
 })
 export class ImportsModule {}
-
