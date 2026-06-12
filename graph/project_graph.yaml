@@ -1,0 +1,133 @@
+project: suppliers-microservice
+created: 2026-06-12
+nodes:
+  - id: GOAL-AUTOMATED-SUPPLIER-IMPORTS
+    path: 02_business_case/BUSINESS_CASE.md
+    type: Goal
+  - id: VISION
+    path: 01_vision/VISION.md
+    type: Vision
+  - id: BUSINESS-CASE
+    path: 02_business_case/BUSINESS_CASE.md
+    type: BusinessCase
+  - id: SYS-001
+    path: 04_systems/SYS-001-supplier-import-service.md
+    type: System
+  - id: ADR-001
+    path: 07_decisions/ADR-001-adopt-intent-preservation-system.md
+    type: ADR
+  - id: MS-001
+    path: 09_milestones/MS-001-ips-foundation.md
+    type: Milestone
+  - id: FEAT-001
+    path: 10_features/FEAT-001-supplier-api-integration.md
+    type: Feature
+  - id: FEAT-002
+    path: 10_features/FEAT-002-category-mapping.md
+    type: Feature
+  - id: FEAT-003
+    path: 10_features/FEAT-003-import-job-tracking.md
+    type: Feature
+  - id: TASK-001
+    path: 11_tasks/TASK-001-ips-documentation-bootstrap.md
+    type: Task
+  - id: TASK-002
+    path: 11_tasks/TASK-002-add-new-supplier-api-integration.md
+    type: Task
+  - id: TASK-003
+    path: 11_tasks/TASK-003-review-category-mapping-completeness.md
+    type: Task
+  - id: EP-TASK-001
+    path: 21_execution_plans/EP-TASK-001-ips-documentation-bootstrap.md
+    type: ExecutionPlan
+  - id: EP-TASK-002
+    path: 21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md
+    type: ExecutionPlan
+  - id: EP-TASK-003
+    path: 21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md
+    type: ExecutionPlan
+  - id: PROMPT-TASK-001-ips-documentation-bootstrap
+    path: 14_prompts/PROMPT-TASK-001-ips-documentation-bootstrap.md
+    type: CodingPrompt
+  - id: CP-TASK-002
+    path: 13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md
+    type: ContextPackage
+  - id: VAL-TASK-001-ips-documentation-bootstrap
+    path: 12_validation/VAL-TASK-001-ips-documentation-bootstrap.md
+    type: ValidationReport
+  - id: VAL-TASK-002-add-new-supplier-api-integration
+    path: 12_validation/VAL-TASK-002-add-new-supplier-api-integration.md
+    type: ValidationReport
+  - id: VAL-TASK-003-review-category-mapping-completeness
+    path: 12_validation/VAL-TASK-003-review-category-mapping-completeness.md
+    type: ValidationReport
+edges:
+  - from: BUSINESS-CASE
+    type: derives_from
+    to: VISION
+  - from: SYS-001
+    type: derives_from
+    to: BUSINESS-CASE
+  - from: TASK-001
+    type: implements
+    to: MS-001
+  - from: TASK-001
+    type: impacts_goal
+    to: GOAL-AUTOMATED-SUPPLIER-IMPORTS
+  - from: TASK-001
+    type: decomposes_into
+    to: EP-TASK-001
+  - from: TASK-002
+    type: implements
+    to: FEAT-001
+  - from: TASK-002
+    type: impacts_goal
+    to: GOAL-AUTOMATED-SUPPLIER-IMPORTS
+  - from: TASK-002
+    type: decomposes_into
+    to: EP-TASK-002
+  - from: TASK-003
+    type: implements
+    to: FEAT-002
+  - from: TASK-003
+    type: impacts_goal
+    to: GOAL-AUTOMATED-SUPPLIER-IMPORTS
+  - from: TASK-003
+    type: decomposes_into
+    to: EP-TASK-003
+  - from: EP-TASK-001
+    type: derives_from
+    to: TASK-001
+  - from: EP-TASK-001
+    type: generates
+    to: PROMPT-TASK-001-ips-documentation-bootstrap
+  - from: EP-TASK-001
+    type: constrained_by
+    to: ADR-001
+  - from: EP-TASK-002
+    type: derives_from
+    to: TASK-002
+  - from: EP-TASK-002
+    type: constrained_by
+    to: ADR-001
+  - from: EP-TASK-003
+    type: derives_from
+    to: TASK-003
+  - from: EP-TASK-003
+    type: constrained_by
+    to: ADR-001
+  - from: PROMPT-TASK-001-ips-documentation-bootstrap
+    type: derives_from
+    to: EP-TASK-001
+  - from: PROMPT-TASK-001-ips-documentation-bootstrap
+    type: included_in_context
+    to: CP-TASK-002
+  - from: VAL-TASK-001-ips-documentation-bootstrap
+    type: validates
+    to: TASK-001
+  - from: VAL-TASK-002-add-new-supplier-api-integration
+    type: validates
+    to: TASK-002
+  - from: VAL-TASK-003-review-category-mapping-completeness
+    type: validates
+    to: TASK-003

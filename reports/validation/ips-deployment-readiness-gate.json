@@ -1,0 +1,109 @@
+{
+  "created_at": "2026-06-12T14:45:28Z",
+  "gate": "deployment_readiness",
+  "next_step": "ready_for_deployment_review",
+  "pre_coding_gate": {
+    "report_path": "reports/validation/ips-pre-coding-gate.json",
+    "status": "pass"
+  },
+  "protected_files": {
+    "changed_files": [],
+    "status": "pass",
+    "stderr": ""
+  },
+  "root": "/home/ssf/Documents/Github/suppliers-microservice",
+  "schema_version": "1.0.0",
+  "status": "pass",
+  "strict_doc_audit": {
+    "findings_count": 0,
+    "score": 100,
+    "status": "PASS"
+  },
+  "target": null,
+  "unresolved_markers": [
+    {
+      "line": 88,
+      "marker": "[UNKNOWN: exact supplier-specific validation rules must be defined per supplier integration before implementation]",
+      "path": "04_systems/SYS-001-supplier-import-service.md"
+    },
+    {
+      "line": 89,
+      "marker": "[UNKNOWN: complete production auth and role matrix must be confirmed by the service owner]",
+      "path": "04_systems/SYS-001-supplier-import-service.md"
+    },
+    {
+      "line": 24,
+      "marker": "[MISSING: ...]",
+      "path": "17_governance/AI_AGENT_RULES.md"
+    },
+    {
+      "line": 24,
+      "marker": "[UNKNOWN: ...]",
+      "path": "17_governance/AI_AGENT_RULES.md"
+    },
+    {
+      "line": 16,
+      "marker": "[MISSING: ...]",
+      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+    },
+    {
+      "line": 17,
+      "marker": "[UNKNOWN: ...]",
+      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+    },
+    {
+      "line": 41,
+      "marker": "[MISSING: ...]",
+      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+    },
+    {
+      "line": 71,
+      "marker": "[MISSING: define what this feature explicitly does not include]",
+      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+    },
+    {
+      "line": 74,
+      "marker": "[MISSING: define measurable acceptance criteria]",
+      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+    },
+    {
+      "line": 47,
+      "marker": "[MISSING: describe what is missing and who should provide it]",
+      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+    },
+    {
+      "line": 53,
+      "marker": "[MISSING: define measurable acceptance criteria for this feature]",
+      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+    },
+    {
+      "line": 54,
+      "marker": "[MISSING: identify upstream business goal]",
+      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+    },
+    {
+      "line": 55,
+      "marker": "[MISSING: list files that must not be modified]",
+      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+    },
+    {
+      "line": 63,
+      "marker": "[UNKNOWN: describe what is unknown and how to discover it]",
+      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+    },
+    {
+      "line": 75,
+      "marker": "[MISSING: ...]",
+      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+    }
+  ],
+  "validation_reports": {
+    "reports": [
+      "12_validation/VAL-TASK-001-ips-documentation-bootstrap.md",
+      "12_validation/VAL-TASK-002-add-new-supplier-api-integration.md",
+      "12_validation/VAL-TASK-003-review-category-mapping-completeness.md"
+    ],
+    "status": "pass",
+    "target": null
+  }
+}
