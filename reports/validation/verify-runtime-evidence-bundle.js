@@ -105,6 +105,10 @@ function assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId) {
   assert(Number(job.updatedProducts || 0) > 0, 'smoke artifact supplier job must record updated products');
 }
 
+function isCompletedEvidenceText(value) {
+  return typeof value === 'string' && value.trim().length > 0 && !/TODO/i.test(value);
+}
+
 function assertStockAuthorityMatchesTrace(smoke) {
   const authority = smoke.stockAuthority;
   assert(authority?.source === 'warehouse', 'smoke artifact stock authority must prove Warehouse source');
@@ -152,7 +156,7 @@ function verifyTraceArtifactConsistency(manifest) {
   assert(hasRouteForWarehouse(smoke.projection?.routeLegs, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route in FlipFlop projection for TRACE_SUPPLIER_ID');
   assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId);
   assertStockAuthorityMatchesTrace(smoke);
-  assert(smoke.cleanupEvidence, 'smoke artifact must include cleanup or archival evidence');
+  assert(isCompletedEvidenceText(smoke.cleanupEvidence), 'smoke artifact must include completed cleanup or archival evidence and must not contain TODO');
 }
 
 function verifyBundle({ manifestFile, reportFile }) {
@@ -492,6 +496,20 @@ function runSelfTest() {
   }
   assert(mismatchedStockAuthorityRejected, 'bundle verifier must reject raw smoke stock authority totals that do not match Warehouse totals');
 
+  const cleanupPlaceholderSmokeFile = path.join(dir, 'smoke-cleanup-placeholder.json');
+  const cleanupPlaceholderSmoke = sampleSmoke();
+  cleanupPlaceholderSmoke.cleanupEvidence = 'TODO: record cleanup evidence after run';
+  writeJson(cleanupPlaceholderSmokeFile, cleanupPlaceholderSmoke);
+  const cleanupPlaceholderManifestFile = path.join(dir, 'manifest-cleanup-placeholder.json');
+  writeManifest(cleanupPlaceholderManifestFile, { fixture: fixtureFile, smoke: cleanupPlaceholderSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let cleanupPlaceholderRejected = false;
+  try {
+    verifyBundle({ manifestFile: cleanupPlaceholderManifestFile, reportFile });
+  } catch (error) {
+    cleanupPlaceholderRejected = /cleanup or archival evidence/.test(error.message);
+  }
+  assert(cleanupPlaceholderRejected, 'bundle verifier must reject placeholder cleanup evidence');
+
   const missingProjectionOwnRouteSmokeFile = path.join(dir, 'smoke-missing-projection-own-route.json');
   const missingProjectionOwnRouteSmoke = sampleSmoke();
   missingProjectionOwnRouteSmoke.projection.routeLegs = missingProjectionOwnRouteSmoke.projection.routeLegs.filter((route) => route.warehouseId !== 'warehouse-own');
@@ -542,7 +560,7 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
 }
 
 try {

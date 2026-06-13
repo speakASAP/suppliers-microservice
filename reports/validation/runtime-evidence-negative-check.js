@@ -298,6 +298,9 @@ const cases = [
   runCase('mismatched-stock-authority-total', (smoke) => {
     smoke.stockAuthority.catalogCoverageTotal = 10;
   }),
+  runCase('cleanup-evidence-placeholder', (smoke) => {
+    smoke.cleanupEvidence = 'TODO: record cleanup evidence after run';
+  }),
   runDeploymentCase('invalid-deployment-commit-sha', (deployment) => {
     deployment.services.warehouse.commitSha = 'sha-warehouse';
   }),

@@ -261,7 +261,7 @@ function buildAssertions(smoke, fixture) {
     {
       assertion: 'Cleanup or archival evidence is recorded.',
       evidence: `cleanupEvidence=${valueOrDash(smoke.cleanupEvidence)}`,
-      passed: Boolean(smoke.cleanupEvidence),
+      passed: isCompletedEvidenceText(smoke.cleanupEvidence),
     },
   ];
 }
