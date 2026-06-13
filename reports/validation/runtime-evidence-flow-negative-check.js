@@ -190,6 +190,7 @@ const cases = [
   runPassCase('deployment-evidence-generator-self-test-rejects-missing-or-weak-evidence', ['reports/validation/create-deployment-evidence.js', '--self-test'], 'weakProtectedEvidenceRejected'),
   runPassCase('deployment-evidence-verifier-self-test-rejects-stale-or-placeholder-evidence', ['reports/validation/verify-deployment-evidence.js', '--self-test'], 'placeholderEvidenceRejected'),
   runPassCase('runtime-readiness-bundle-self-test-rejects-dirty-or-stale-artifacts', ['reports/validation/create-runtime-readiness-bundle.js', '--self-test'], 'missingHeadRejected'),
+  runPassCase('runtime-readiness-verifier-self-test-rejects-tampering-or-stale-heads', ['reports/validation/verify-runtime-readiness-bundle.js', '--self-test'], 'staleHeadRejected'),
   runPassCase('manifest-self-test-writes-hashed-evidence', ['--manifest-self-test'], 'manifest-self-test-passed'),
   runPassCase('manifest-verifier-self-test-rejects-tampering', ['reports/validation/verify-runtime-evidence-manifest.js', '--self-test'], 'tamperedHashRejected'),
   runPassCase('manifest-bundle-self-test-cross-checks-deployment', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'deploymentManifestMismatchRejected'),

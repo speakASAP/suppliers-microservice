@@ -102,7 +102,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 ## Command Order
 
 1. Run \`node reports/validation/cross-service-preflight-check.js\` and confirm source checks pass and completionGate is incomplete before deployment.
-2. Generate aligned readiness bundle with \`RUNTIME_READINESS_BUNDLE_DIR=/tmp/stock-traceability-runtime-readiness node reports/validation/create-runtime-readiness-bundle.js\` and preserve \`stock-traceability-runtime-readiness-manifest.json\`.
+2. Generate aligned readiness bundle with \`RUNTIME_READINESS_BUNDLE_DIR=/tmp/stock-traceability-runtime-readiness node reports/validation/create-runtime-readiness-bundle.js\`, verify it with \`node reports/validation/verify-runtime-readiness-bundle.js /tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json\`, and preserve \`stock-traceability-runtime-readiness-manifest.json\`.
 3. Generate deployment evidence skeleton with \`DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js\`.
 4. Generate the approval prompt with \`RUNTIME_APPROVAL_REQUEST_OUTPUT=/tmp/stock-traceability-runtime-approval-request.md node reports/validation/create-runtime-approval-request.js\`.
 5. After owner approval, generate the matching approval artifact with \`OWNER_APPROVAL=explicit RUNTIME_APPROVED_BY=<owner-id> RUNTIME_APPROVAL_REQUEST_FILE=/tmp/stock-traceability-runtime-approval-request.md RUNTIME_APPROVAL_ARTIFACT_OUTPUT=/tmp/stock-traceability-runtime-approval.json node reports/validation/create-runtime-approval-artifact.js\`.
@@ -144,6 +144,7 @@ function assertSelfTestContent(markdown) {
     'create-runtime-approval-artifact.js',
     'verify-runtime-approval-artifact.js /tmp/stock-traceability-runtime-approval.json',
     'create-runtime-readiness-bundle.js',
+    'verify-runtime-readiness-bundle.js',
     'stock-traceability-runtime-readiness-manifest.json',
     'Deploy Warehouse first',
     'RUN_APPROVED_RUNTIME_SMOKE=true',
