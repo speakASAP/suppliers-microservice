@@ -52,7 +52,7 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 ## Smoke Command Evidence
 
 \`\`\`bash
-WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js
+WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js
 \`\`\`
 
 ## Deployment Evidence
@@ -192,6 +192,8 @@ function verify(report) {
   const traceProductId = commandEnvValue(smokeCommandEvidence, 'TRACE_PRODUCT_ID');
   const supplierWarehouseId = commandEnvValue(smokeCommandEvidence, 'TRACE_SUPPLIER_WAREHOUSE_ID');
   const dropshipWarehouseId = commandEnvValue(smokeCommandEvidence, 'TRACE_DROPSHIP_WAREHOUSE_ID');
+  const supplierStockQty = commandEnvValue(smokeCommandEvidence, 'TRACE_SUPPLIER_STOCK_QTY');
+  const supplierSku = commandEnvValue(smokeCommandEvidence, 'TRACE_SUPPLIER_SKU');
 
   for (const token of ['CATALOG_TOKEN=[REDACTED]', 'WAREHOUSE_TOKEN=[REDACTED]', 'SUPPLIERS_TOKEN=[REDACTED]']) {
     assert(smokeCommandEvidence.includes(token), `redacted smoke command must include ${token}`);
@@ -205,6 +207,8 @@ function verify(report) {
     'TRACE_CLEANUP_EVIDENCE=',
     'RUNTIME_APPROVAL_ARTIFACT_FILE=',
     'TRACE_IMPORT_IDEMPOTENCY_KEY=',
+    'TRACE_SUPPLIER_STOCK_QTY=',
+    'TRACE_SUPPLIER_SKU=',
     'TRACE_DROPSHIP_WAREHOUSE_ID=',
     'TRACE_OWN_WAREHOUSE_ID=',
     'TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE-',
@@ -266,7 +270,8 @@ function verify(report) {
   assert(suppliersImportRow.includes('checkedProducts='), 'Suppliers import assertion must include checked Catalog product IDs');
   assert(traceProductId && suppliersImportRow.includes('checkedProducts=' + traceProductId), 'Suppliers import assertion must include TRACE_PRODUCT_ID in checked Catalog product IDs');
   assert(suppliersImportRow.includes('sourceFingerprint=trace:'), 'Suppliers import assertion must include approved import source fingerprint');
-  assert(supplierWarehouseId && dropshipWarehouseId && suppliersImportRow.includes('sourceFingerprint=trace:' + traceProductId + ':' + supplierWarehouseId + ':' + dropshipWarehouseId), 'Suppliers import source fingerprint must match TRACE_PRODUCT_ID and supplier warehouse IDs from redacted smoke command');
+  const expectedSourceFingerprint = ['sourceFingerprint=trace', traceProductId, supplierWarehouseId, dropshipWarehouseId, supplierStockQty, supplierSku].join(':');
+  assert(traceProductId && supplierWarehouseId && dropshipWarehouseId && supplierStockQty && supplierSku && suppliersImportRow.includes(expectedSourceFingerprint), 'Suppliers import source fingerprint must match TRACE_PRODUCT_ID, supplier warehouse IDs, TRACE_SUPPLIER_STOCK_QTY, and TRACE_SUPPLIER_SKU from redacted smoke command');
   assert(suppliersImportRow.includes('authority=warehouse-microservice'), 'Suppliers import assertion must prove Warehouse authority');
 
   const stockAuthorityRow = rows.find((line) => line.startsWith('| Warehouse remains stock authority across totals. |'));
