@@ -34,6 +34,24 @@ function summarizeRouteLegs(options) {
   }));
 }
 
+function hasRequiredSupplierOwnership(option) {
+  if (!["supplier_replenishment", "supplier_dropship"].includes(option.routeType)) return true;
+  return typeof option.supplierId === "string" && option.supplierId.trim().length > 0;
+}
+
+function sumTraceableReservableAvailability(options) {
+  return (options || []).reduce((total, option) => {
+    if (Number(option.available ?? 0) <= 0
+      || option.canReserveFromWarehouse !== true
+      || !hasRequiredSupplierOwnership(option)
+      || !Array.isArray(option.legs)
+      || option.legs.length === 0) {
+      return total;
+    }
+    return total + Number(option.available ?? 0);
+  }, 0);
+}
+
 function deriveCoverageItem(item) {
   const localAvailable = item.warehouses
     .filter((warehouse) => warehouse.warehouseType === "own")
@@ -141,9 +159,9 @@ assert(warehouseReconciliationRequest.externalReference.startsWith("supplier-imp
 
 const warehouseAvailability = {
   productId: catalogProduct.id,
-  totalQuantity: 15,
+  totalQuantity: 17,
   totalReserved: 1,
-  totalAvailable: 14,
+  totalAvailable: 16,
   warehouses: [
     {
       warehouseId: "warehouse-own",
@@ -175,6 +193,16 @@ const warehouseAvailability = {
       reserved: 0,
       available: 7,
     },
+    {
+      warehouseId: "warehouse-supplier-diagnostic",
+      warehouseCode: "SUP-DIAG",
+      warehouseName: "Supplier Diagnostic Stock Without Ownership",
+      warehouseType: "supplier",
+      supplierId: null,
+      quantity: 2,
+      reserved: 0,
+      available: 2,
+    },
   ],
 };
 
@@ -187,12 +215,12 @@ const warehouseLogistics = {
   productId: catalogProduct.id,
   preferredRoute: "local_fulfillment",
   totals: {
-    totalQuantity: 15,
+    totalQuantity: 17,
     totalReserved: 1,
-    totalAvailable: 14,
-    routeCount: 3,
+    totalAvailable: 16,
+    routeCount: 4,
     ownAvailable: 4,
-    supplierAvailable: 3,
+    supplierAvailable: 5,
     dropshipAvailable: 7,
   },
   options: [
@@ -253,6 +281,24 @@ const warehouseLogistics = {
       requiresSupplierCoordination: true,
       legs: [{ sequence: 1, from: "DROP-SYN", to: "customer", responsibility: "supplier" }],
     },
+    {
+      productId: catalogProduct.id,
+      warehouseId: "warehouse-supplier-diagnostic",
+      warehouseCode: "SUP-DIAG",
+      warehouseName: "Supplier Diagnostic Stock Without Ownership",
+      warehouseType: "supplier",
+      originType: "supplier",
+      supplierId: null,
+      priority: 1,
+      quantity: 2,
+      reserved: 0,
+      available: 2,
+      routeType: "supplier_replenishment",
+      routeLabel: "Diagnostic supplier stock without Warehouse-owned supplier linkage",
+      canReserveFromWarehouse: false,
+      requiresSupplierCoordination: true,
+      legs: [{ sequence: 1, from: "SUP-DIAG", to: "alfares_receiving_or_handoff", responsibility: "supplier" }],
+    },
   ],
 };
 
@@ -283,12 +329,13 @@ const flipflopProjection = {
     warehouses: catalogAvailabilityItem.warehouses,
     logistics: catalogAvailabilityItem.logistics,
   },
-  stockQuantity: catalogAvailabilityItem.totalAvailable,
+  stockQuantity: sumTraceableReservableAvailability(catalogAvailabilityItem.logistics.options),
 };
 
 assert(flipflopProjection.availability.source === "warehouse", "Catalog projection must identify Warehouse as availability source");
-assert(flipflopProjection.stockQuantity === 14, "stockQuantity must remain totalAvailable compatibility alias");
-assert(flipflopProjection.availability.warehouses.length === 3, "projection must preserve own, supplier, and dropship origin rows");
+assert(flipflopProjection.availability.totalAvailable === 16, "raw Warehouse availability must remain visible for diagnostics");
+assert(flipflopProjection.stockQuantity === 14, "stockQuantity must equal traceable reservable route availability, not raw totalAvailable");
+assert(flipflopProjection.availability.warehouses.length === 4, "projection must preserve own, supplier, dropship, and diagnostic origin rows");
 assert(flipflopProjection.availability.warehouses.filter((row) => row.supplierId === supplierId).length === 2, "supplier origin rows must preserve supplierId");
 assert(flipflopProjection.availability.logistics.preferredRoute === "local_fulfillment", "projection must preserve Warehouse preferred logistics route");
 assert(flipflopProjection.availability.logistics.options.some((option) => option.routeType === "supplier_replenishment"), "projection must preserve supplier replenishment logistics route");
@@ -300,7 +347,8 @@ assert(hasSupplierCustomerPath(flipflopProjection.availability.logistics.options
 assert(catalogCoverageItem.coverageStatus === "covered", "Catalog coverage must mark Warehouse-backed stock as covered");
 assert(catalogCoverageItem.stockOrigin === "mixed_stock", "Catalog coverage must identify mixed local and supplier replenishment and dropship origins");
 assert(catalogCoverageItem.sellableWithWarehouse === true, "Catalog coverage must allow sellable Warehouse-backed stock with a reservable route");
-assert(catalogCoverageItem.localAvailable === 4 && catalogCoverageItem.supplierAvailable === 3 && catalogCoverageItem.dropshipAvailable === 7, "Catalog coverage must preserve origin availability totals");
+assert(catalogCoverageItem.localAvailable === 4 && catalogCoverageItem.supplierAvailable === 5 && catalogCoverageItem.dropshipAvailable === 7, "Catalog coverage must preserve raw origin availability totals including diagnostics");
+assert(flipflopProjection.stockQuantity < flipflopProjection.availability.totalAvailable, "projection sellable stock must be allowed to be lower than raw diagnostic Warehouse totals");
 
 console.log(JSON.stringify({
   status: "passed",
@@ -309,6 +357,8 @@ console.log(JSON.stringify({
   externalReference,
   coverageStatus: catalogCoverageItem.coverageStatus,
   stockOrigin: catalogCoverageItem.stockOrigin,
+  rawWarehouseTotalAvailable: flipflopProjection.availability.totalAvailable,
+  projectionStockQuantity: flipflopProjection.stockQuantity,
   preferredRoute: flipflopProjection.availability.logistics.preferredRoute,
   routes: flipflopProjection.availability.logistics.options.map((option) => option.routeType),
   routeLegs: summarizeRouteLegs(flipflopProjection.availability.logistics.options),

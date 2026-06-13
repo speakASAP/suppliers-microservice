@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Synthetic Trace Sellable Quantity Proof
+
+Change: updated the source-only synthetic stock traceability proof so FlipFlop stockQuantity is derived from traceable reservable logistics route availability instead of raw Warehouse totalAvailable. The synthetic fixture now includes a non-reservable supplier diagnostic row, proving raw Warehouse totals can stay visible under availability while channel sellable quantity remains lower.
+
+Validation evidence: npm run build passed, node reports/validation/synthetic-stock-traceability-check.js passed with rawWarehouseTotalAvailable 16 and projectionStockQuantity 14, node reports/validation/cross-service-preflight-check.js passed, python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues passed, and git diff --check passed.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse mutation, or cleanup mutation was performed.
+
+Next unfinished chunk: owner-approved current-head deployment and guarded runtime evidence regeneration remains required before stock traceability can be marked complete.
+
 ## 2026-06-13 - FlipFlop Sellable Runtime Negative Proof
 
 Change: added a dedicated runtime bundle self-test for FlipFlop sellable stock evidence. The bundle verifier now rejects smoke artifacts whose `projectionSellableRouteAvailable` does not match the traceable reservable route evidence forwarded by FlipFlop, and operator-facing runtime plan/template text no longer says FlipFlop stock must equal raw Warehouse totals.

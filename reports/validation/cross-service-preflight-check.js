@@ -135,7 +135,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/synthetic-stock-traceability-check.js',
-    patterns: ['hasLocalCustomerLeg', 'hasSupplierCustomerPath', 'routeLegs', 'supplier_dropship', 'responsibility: "supplier"', 'responsibility: "warehouse"'],
+    patterns: ['hasLocalCustomerLeg', 'hasSupplierCustomerPath', 'routeLegs', 'supplier_dropship', 'responsibility: "supplier"', 'responsibility: "warehouse"', 'sumTraceableReservableAvailability', 'warehouse-supplier-diagnostic', 'stockQuantity must equal traceable reservable route availability, not raw totalAvailable'],
   },
   {
     service: 'suppliers',
