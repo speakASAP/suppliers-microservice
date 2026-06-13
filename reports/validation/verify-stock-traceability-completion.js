@@ -212,6 +212,13 @@ function runSelfTest() {
     artifacts: readinessArtifacts,
     nextRequiredAction: 'Owner approval, deployment, completed deployment evidence, and guarded runtime smoke are still required before completion.',
   });
+  const readinessManifestBinding = { file: readinessManifestFile, ...artifact(readinessManifestFile), status: 'verified', serviceHeads };
+  writeJson(deploymentFile, {
+    generatedFromCurrentHeads: true,
+    readinessManifest: readinessManifestBinding,
+    completionReminder: "Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.",
+    services,
+  });
   writeJson(approvalFile, {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
@@ -221,7 +228,7 @@ function runSelfTest() {
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
     serviceHeads,
-    readinessManifest: { file: readinessManifestFile, ...artifact(readinessManifestFile), status: 'verified', serviceHeads },
+    readinessManifest: readinessManifestBinding,
     approvedTraceInputs: {
       TRACE_PRODUCT_ID: 'product-synthetic',
       TRACE_PRODUCT_SKU_PREFIX: 'CODEX-STOCK-TRACE-',

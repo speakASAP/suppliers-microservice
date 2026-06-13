@@ -150,12 +150,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-deployment-evidence.js',
-    patterns: ['DEPLOYMENT_EVIDENCE_OUTPUT', 'WAREHOUSE_HEALTH_EVIDENCE', 'WAREHOUSE_PROTECTED_ENDPOINT_EVIDENCE', 'CATALOG_HEALTH_EVIDENCE', 'CATALOG_PROTECTED_ENDPOINT_EVIDENCE', 'SUPPLIERS_HEALTH_EVIDENCE', 'SUPPLIERS_PROTECTED_ENDPOINT_EVIDENCE', 'completed deployment evidence', 'must include anonymous 401 or 403', 'verify-deployment-evidence.js', 'missingHealthRejected', 'weakProtectedEvidenceRejected'],
+    patterns: ['DEPLOYMENT_EVIDENCE_OUTPUT', 'WAREHOUSE_HEALTH_EVIDENCE', 'WAREHOUSE_PROTECTED_ENDPOINT_EVIDENCE', 'CATALOG_HEALTH_EVIDENCE', 'CATALOG_PROTECTED_ENDPOINT_EVIDENCE', 'SUPPLIERS_HEALTH_EVIDENCE', 'SUPPLIERS_PROTECTED_ENDPOINT_EVIDENCE', 'completed deployment evidence', 'RUNTIME_READINESS_MANIFEST_FILE', 'readinessManifest', 'must include anonymous 401 or 403', 'verify-deployment-evidence.js', 'missingHealthRejected', 'weakProtectedEvidenceRejected'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/verify-deployment-evidence.js',
-    patterns: ['DEPLOYMENT_EVIDENCE_FILE', 'generated from current service heads', 'completion verifier reminder', 'protectedEndpointEvidence must include 401 or 403', 'worktree must be clean before deployment evidence can authorize runtime proof', 'staleDeploymentHeadRejected', 'missingProtectedEndpointRejected', 'placeholderEvidenceRejected', 'dirtyDeploymentRootRejected'],
+    patterns: ['DEPLOYMENT_EVIDENCE_FILE', 'generated from current service heads', 'completion verifier reminder', 'readinessManifest binding is required', 'readinessManifest.sha256', 'protectedEndpointEvidence must include 401 or 403', 'worktree must be clean before deployment evidence can authorize runtime proof', 'staleDeploymentHeadRejected', 'missingProtectedEndpointRejected', 'placeholderEvidenceRejected', 'dirtyDeploymentRootRejected'],
   },
   {
     service: 'suppliers',

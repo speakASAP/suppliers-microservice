@@ -2,7 +2,8 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const crypto = require('crypto');
+const { execFileSync, spawnSync } = require('child_process');
 
 const args = process.argv.slice(2);
 const selfTest = args.includes('--self-test');
@@ -62,11 +63,41 @@ function assertNoSecrets(deploymentText) {
   assert(!/Bearer\s+|CATALOG_TOKEN|WAREHOUSE_TOKEN|SUPPLIERS_TOKEN|SERVICE_TOKEN|api[_-]?key|secret|password/i.test(deploymentText), 'deployment evidence must not contain token or credential values');
 }
 
+function sha256File(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function assertReadinessManifestBinding(deployment, artifactDir) {
+  const readiness = deployment.readinessManifest;
+  assert(readiness && typeof readiness === 'object', 'deployment evidence readinessManifest binding is required');
+  assert(readiness.status === 'verified', 'deployment evidence readinessManifest.status must be verified');
+  assert(hasText(readiness.file), 'deployment evidence readinessManifest.file is required');
+  assert(/^[0-9a-f]{64}$/i.test(readiness.sha256 || ''), 'deployment evidence readinessManifest.sha256 must be a 64-character hex digest');
+  const readinessFile = path.isAbsolute(readiness.file) ? readiness.file : path.join(artifactDir, readiness.file);
+  assert(fs.existsSync(readinessFile), 'deployment evidence readinessManifest.file does not exist: ' + readiness.file);
+  assert(sha256File(readinessFile) === readiness.sha256, 'deployment evidence readinessManifest.sha256 must match readiness manifest file');
+  if (!selfTest) {
+    const result = spawnSync(process.execPath, ['reports/validation/verify-runtime-readiness-bundle.js', readinessFile], {
+      cwd: process.cwd(),
+      env: { ...process.env, CROSS_SERVICE_ROOT: crossServiceRoot },
+      encoding: 'utf8',
+    });
+    assert(result.status === 0, 'deployment evidence readiness manifest must pass verify-runtime-readiness-bundle.js: ' + (result.stdout + result.stderr).trim());
+  }
+  const readinessJson = JSON.parse(fs.readFileSync(readinessFile, 'utf8'));
+  assert(readinessJson.status === 'ready-for-owner-approval', 'deployment evidence readiness manifest must be ready-for-owner-approval');
+  for (const service of ['warehouse', 'catalog', 'suppliers']) {
+    assert(readiness.serviceHeads && readiness.serviceHeads[service] === deployment.services?.[service]?.commitSha, `deployment evidence readinessManifest ${service} head must match deployment commitSha`);
+    assert(readinessJson.serviceHeads && readinessJson.serviceHeads[service] === deployment.services?.[service]?.commitSha, `deployment evidence readiness manifest file ${service} head must match deployment commitSha`);
+  }
+}
+
 function validateDeploymentEvidence(filePath) {
   const deploymentText = fs.readFileSync(filePath, 'utf8');
   assertNoSecrets(deploymentText);
   const deployment = readJsonFile(filePath);
   assert(deployment.generatedFromCurrentHeads === true, 'deployment evidence must be generated from current service heads');
+  assertReadinessManifestBinding(deployment, path.dirname(filePath));
   assert(String(deployment.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'deployment evidence must include completion verifier reminder');
   const services = deployment.services || {};
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
@@ -97,28 +128,41 @@ function initSelfTestRepo(root, repo) {
   return repoPath;
 }
 
-function validDeploymentForRoot(root) {
+function writeReadinessManifest(dir, serviceHeads) {
+  fs.mkdirSync(dir, { recursive: true });
+  const filePath = path.join(dir, 'readiness-manifest.json');
+  fs.writeFileSync(filePath, JSON.stringify({ status: 'ready-for-owner-approval', serviceHeads, artifacts: {} }, null, 2) + '\n');
+  return { file: filePath, sha256: sha256File(filePath), status: 'verified', serviceHeads: { ...serviceHeads } };
+}
+
+function validDeploymentForRoot(root, dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-deployment-readiness-'))) {
   const previousRoot = crossServiceRoot;
   crossServiceRoot = root;
+  const serviceHeads = {
+    warehouse: currentHeadForService('warehouse'),
+    catalog: currentHeadForService('catalog'),
+    suppliers: currentHeadForService('suppliers'),
+  };
   const deployment = {
     generatedAt: new Date().toISOString(),
     generatedFromCurrentHeads: true,
+    readinessManifest: writeReadinessManifest(dir, serviceHeads),
     completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: {
       warehouse: {
-        commitSha: currentHeadForService('warehouse'),
+        commitSha: serviceHeads.warehouse,
         deployCommand: './scripts/deploy.sh',
         healthEvidence: 'Warehouse /api/health returned 200 after deployment',
         protectedEndpointEvidence: 'Anonymous Warehouse topology returned 401',
       },
       catalog: {
-        commitSha: currentHeadForService('catalog'),
+        commitSha: serviceHeads.catalog,
         deployCommand: './scripts/deploy.sh',
         healthEvidence: 'Catalog /health returned 200 after deployment',
         protectedEndpointEvidence: 'Anonymous Catalog coverage returned 403',
       },
       suppliers: {
-        commitSha: currentHeadForService('suppliers'),
+        commitSha: serviceHeads.suppliers,
         deployCommand: './scripts/deploy.sh',
         healthEvidence: 'Suppliers /api/health returned 200 after deployment',
         protectedEndpointEvidence: 'Anonymous Suppliers imports returned 401',
@@ -154,9 +198,20 @@ function runSelfTest() {
   try {
     validateDeploymentEvidence(staleFile);
   } catch (error) {
-    staleDeploymentHeadRejected = /catalog commitSha must match current/.test(error.message);
+    staleDeploymentHeadRejected = /catalog .*(?:commitSha|head) must match/.test(error.message);
   }
   assert(staleDeploymentHeadRejected, 'self-test must reject stale deployment service heads');
+
+  const missingReadiness = validDeploymentForRoot(root, path.join(dir, 'missing-readiness-source'));
+  delete missingReadiness.readinessManifest;
+  const missingReadinessFile = writeDeployment(path.join(dir, 'missing-readiness'), missingReadiness);
+  let missingReadinessRejected = false;
+  try {
+    validateDeploymentEvidence(missingReadinessFile);
+  } catch (error) {
+    missingReadinessRejected = /readinessManifest binding is required/.test(error.message);
+  }
+  assert(missingReadinessRejected, 'self-test must reject deployment evidence without readiness manifest binding');
 
   const weakAuth = validDeploymentForRoot(root);
   weakAuth.services.warehouse.protectedEndpointEvidence = 'Anonymous Warehouse topology returned 200';
@@ -193,6 +248,7 @@ function runSelfTest() {
   console.log(JSON.stringify({
     status: 'passed',
     staleDeploymentHeadRejected,
+    missingReadinessRejected,
     missingProtectedEndpointRejected,
     placeholderEvidenceRejected,
     dirtyDeploymentRootRejected,

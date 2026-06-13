@@ -63,24 +63,31 @@ const baseEnv = {
 
 function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root = crossServiceRoot) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-flow-deployment-'));
+  const serviceHeads = {
+    warehouse: currentHeadForService('warehouse', root),
+    catalog: currentHeadForService('catalog', root),
+    suppliers: currentHeadForService('suppliers', root),
+  };
+  const readinessManifest = writeReadinessManifestForApproval(dir, serviceHeads, root);
   const deployment = {
     generatedFromCurrentHeads: true,
+    readinessManifest,
     completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: {
       warehouse: {
-        commitSha: currentHeadForService('warehouse', root),
+        commitSha: serviceHeads.warehouse,
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/api/health passed',
         protectedEndpointEvidence: 'anonymous topology returned 401',
       },
       catalog: {
-        commitSha: currentHeadForService('catalog', root),
+        commitSha: serviceHeads.catalog,
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/health passed',
         protectedEndpointEvidence: 'anonymous coverage returned 401',
       },
       suppliers: {
-        commitSha: currentHeadForService('suppliers', root),
+        commitSha: serviceHeads.suppliers,
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/api/health passed',
         protectedEndpointEvidence: 'anonymous imports returned 401',
@@ -360,16 +367,31 @@ const cases = [
     DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ warehouse: { commitSha: 'not-a-sha' } }),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
-  }, 'warehouse commitSha'),
+  }, 'warehouse head must match deployment commitSha'),
   runCase('approved-smoke-deployment-sha-not-current-head', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
     TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
     TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
-    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ catalog: { commitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' } }),
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ catalog: { commitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' } }, (deployment) => {
+      const staleCatalogHead = deployment.services.catalog.commitSha;
+      const currentCatalogHead = currentHeadForService('catalog', crossServiceRoot);
+      deployment.readinessManifest.serviceHeads.catalog = staleCatalogHead;
+      const readiness = JSON.parse(fs.readFileSync(deployment.readinessManifest.file, 'utf8'));
+      readiness.serviceHeads.catalog = staleCatalogHead;
+      const request = readiness.artifacts && readiness.artifacts.approvalRequest;
+      if (request && request.file) {
+        const requestText = fs.readFileSync(request.file, 'utf8').replace(currentCatalogHead, staleCatalogHead);
+        fs.writeFileSync(request.file, requestText);
+        request.bytes = fs.statSync(request.file).size;
+        request.sha256 = fileSha256(request.file);
+      }
+      fs.writeFileSync(deployment.readinessManifest.file, JSON.stringify(readiness, null, 2));
+      deployment.readinessManifest.sha256 = fileSha256(deployment.readinessManifest.file);
+    }),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
-  }, 'catalog commitSha must match current'),
+  }, 'deployment evidence verifier failed'),
   runCase('approved-smoke-missing-current-head-deployment-marker', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
@@ -427,7 +449,7 @@ const cases = [
       DEPLOYMENT_EVIDENCE_FILE: createDeploymentEvidenceTemplate(cleanRoot),
       OWNER_APPROVAL: 'explicit',
       SMOKE_ALLOW_MUTATION: 'true',
-    }, 'warehouse healthEvidence');
+    }, 'deployment evidence verifier failed');
   })(),
   runCase("approved-smoke-execution-validates-approval-before-fixture", {
     RUN_APPROVED_RUNTIME_SMOKE: "true",
@@ -449,7 +471,7 @@ const cases = [
     DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ warehouse: { commitSha: "not-a-sha" } }),
     OWNER_APPROVAL: "explicit",
     SMOKE_ALLOW_MUTATION: "true",
-  }, "warehouse commitSha", []),
+  }, "deployment evidence verifier failed", []),
 ];
 
 console.log(JSON.stringify({ status: 'passed', cases }, null, 2));

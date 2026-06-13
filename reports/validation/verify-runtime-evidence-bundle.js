@@ -262,6 +262,7 @@ function verifyBundle({ manifestFile, reportFile }) {
   const { fixture, smoke } = verifyTraceArtifactConsistency(manifest);
   const deployment = readJson(manifest.artifacts.deployment.file, 'deployment evidence artifact');
   assert(deployment?.generatedFromCurrentHeads === true, 'deployment evidence artifact must be generated from current service heads');
+  assert(deployment.readinessManifest && deployment.readinessManifest.sha256 === approvalJson.readinessManifest?.sha256, 'deployment evidence readiness manifest must match approval artifact readiness manifest');
   assert(String(deployment?.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'deployment evidence artifact must include completion verifier reminder');
   const report = fs.readFileSync(reportPath, 'utf8');
   assertReportUsesManifestApprovalArtifact(report, approvalFile);
@@ -384,9 +385,10 @@ function sampleSmoke() {
   };
 }
 
-function sampleDeployment() {
+function sampleDeployment(readinessManifest) {
   return {
     generatedFromCurrentHeads: true,
+    readinessManifest,
     completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: Object.fromEntries(['warehouse', 'catalog', 'suppliers'].map((service) => [service, {
       commitSha: currentHeadForService(service),
@@ -483,9 +485,10 @@ function runSelfTest() {
   const reportFile = path.join(dir, 'report.md');
   const manifestFile = path.join(dir, 'manifest.json');
   const approvalFile = path.join(dir, 'approval.json');
-  const deployment = sampleDeployment();
-  const serviceHeads = Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha]));
+  const initialDeployment = sampleDeployment();
+  const serviceHeads = Object.fromEntries(Object.entries(initialDeployment.services).map(([service, item]) => [service, item.commitSha]));
   const readinessManifest = writeReadinessBundle(path.join(dir, 'readiness'), serviceHeads);
+  const deployment = sampleDeployment(readinessManifest);
   writeApprovalArtifact(approvalFile, readinessManifest, serviceHeads);
   writeJson(fixtureFile, sampleFixture());
   writeJson(smokeFile, sampleSmoke());
@@ -698,7 +701,7 @@ function runSelfTest() {
   assert(missingProjectionOwnRouteRejected, 'bundle verifier must reject FlipFlop projection that omits the fixture own warehouse route');
 
   const missingCurrentHeadMarkerFile = path.join(dir, 'deployment-missing-current-head-marker.json');
-  const missingCurrentHeadMarkerDeployment = sampleDeployment();
+  const missingCurrentHeadMarkerDeployment = sampleDeployment(readinessManifest);
   delete missingCurrentHeadMarkerDeployment.generatedFromCurrentHeads;
   writeJson(missingCurrentHeadMarkerFile, missingCurrentHeadMarkerDeployment);
   const missingCurrentHeadMarkerManifestFile = path.join(dir, 'manifest-missing-current-head-marker.json');
@@ -712,7 +715,7 @@ function runSelfTest() {
   assert(missingCurrentHeadDeploymentMarkerRejected, 'bundle verifier must reject deployment evidence without current-head marker');
 
   const mismatchedDeploymentFile = path.join(dir, 'deployment-mismatched.json');
-  const mismatchedDeployment = sampleDeployment();
+  const mismatchedDeployment = sampleDeployment(readinessManifest);
   mismatchedDeployment.services.catalog.commitSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   writeJson(mismatchedDeploymentFile, mismatchedDeployment);
   const mismatchedDeploymentEvidenceReportFile = path.join(dir, 'report-mismatched-deployment-head.md');
@@ -736,7 +739,7 @@ function runSelfTest() {
 
   const mismatchedDeploymentReportFile = path.join(dir, 'report-mismatched-deployment-evidence.md');
   const mismatchedDeploymentReportEvidenceFile = path.join(dir, 'deployment-report-mismatched.json');
-  const mismatchedDeploymentReportEvidence = sampleDeployment();
+  const mismatchedDeploymentReportEvidence = sampleDeployment(readinessManifest);
   mismatchedDeploymentReportEvidence.services.warehouse.healthEvidence = '/api/health unrelated deployment returned 200';
   writeJson(mismatchedDeploymentReportEvidenceFile, mismatchedDeploymentReportEvidence);
   runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
