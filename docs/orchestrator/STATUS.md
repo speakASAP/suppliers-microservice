@@ -303,3 +303,13 @@ Validation evidence: before commit, `node --check reports/validation/create-runt
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Deployment Evidence Dirty Worktree Self-Test Coverage
+
+Change: extended `create-deployment-evidence-template.js --self-test` so it now creates temporary clean Warehouse, Catalog, and Suppliers git repositories, generates deployment evidence from real commit SHAs, then dirties one service repo and proves template generation is rejected. Cross-service preflight now checks for this dirty-worktree rejection marker.
+
+Validation evidence before commit: `node --check reports/validation/create-deployment-evidence-template.js`, `node reports/validation/create-deployment-evidence-template.js --self-test`, `node reports/validation/cross-service-preflight-check.js`, and `git diff --check` passed. The deployment evidence template self-test reported `dirtyWorktreeRejected: true`. Full clean-worktree validation and handoff regeneration must run after this source/doc change is committed.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
+
+Next unfinished chunk: commit this deployment-evidence self-test fix, run full clean-worktree validation, regenerate handoff and deployment evidence for the resulting clean Suppliers head, then request owner-approved deployment and guarded runtime evidence regeneration.

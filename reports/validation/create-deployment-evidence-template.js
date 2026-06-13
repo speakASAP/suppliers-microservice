@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
 const args = new Set(process.argv.slice(2));
 const selfTest = args.has('--self-test');
 const outputFile = process.env.DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT || '/tmp/stock-traceability-deployment-evidence.template.json';
-const root = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
+let root = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
 
 const serviceConfig = {
   warehouse: {
@@ -40,15 +41,23 @@ function repoPathFor(repo) {
 }
 
 function assertCleanWorktree(repo) {
-  if (selfTest) return;
   const status = execFileSync('git', ['status', '--short'], { cwd: repoPathFor(repo), encoding: 'utf8' }).trim();
   assert(!status, `${repo} worktree must be clean before generating deployment evidence`);
 }
 
 function commitShaFor(repo) {
-  if (selfTest) return '0'.repeat(40);
   assertCleanWorktree(repo);
   return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoPathFor(repo), encoding: 'utf8' }).trim();
+}
+
+function initSelfTestRepo(repo) {
+  const repoPath = path.join(root, repo);
+  fs.mkdirSync(repoPath, { recursive: true });
+  fs.writeFileSync(path.join(repoPath, 'README.md'), '# ' + repo + '\n');
+  execFileSync('git', ['init'], { cwd: repoPath, stdio: 'pipe' });
+  execFileSync('git', ['add', 'README.md'], { cwd: repoPath, stdio: 'pipe' });
+  execFileSync('git', ['-c', 'user.email=codex@example.invalid', '-c', 'user.name=Codex', 'commit', '-m', 'self-test repo'], { cwd: repoPath, stdio: 'pipe' });
+  return repoPath;
 }
 
 function buildTemplate() {
@@ -71,16 +80,30 @@ function buildTemplate() {
 }
 
 try {
+  if (selfTest) {
+    root = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'stock-traceability-deploy-template-')), 'repos');
+    for (const config of Object.values(serviceConfig)) {
+      initSelfTestRepo(config.repo);
+    }
+  }
   const template = buildTemplate();
   const output = JSON.stringify(template, null, 2) + '\n';
   if (selfTest) {
     assert(template.generatedFromCurrentHeads === true, "self-test current-head marker missing");
     assert(template.instructions.includes("Regenerate this template after any Warehouse, Catalog, or Suppliers commit"), "self-test regeneration instruction missing");
     assert(template.completionReminder.includes("verify-stock-traceability-completion.js"), "self-test completion reminder missing");
-    assert(template.services.warehouse.commitSha.length === 40, 'self-test warehouse SHA missing');
+    assert(/^[0-9a-f]{40}$/.test(template.services.warehouse.commitSha), 'self-test warehouse SHA missing');
     assert(template.services.catalog.deployCommand === './scripts/deploy.sh', 'self-test deploy command missing');
     assert(template.services.suppliers.protectedEndpointEvidence.includes('TODO'), 'self-test should keep protected endpoint TODO');
-    console.log(JSON.stringify({ status: 'passed', services: Object.keys(template.services) }, null, 2));
+    fs.writeFileSync(path.join(repoPathFor(serviceConfig.suppliers.repo), 'dirty.txt'), 'dirty\n');
+    let dirtyWorktreeRejected = false;
+    try {
+      buildTemplate();
+    } catch (error) {
+      dirtyWorktreeRejected = /worktree must be clean/.test(error.message);
+    }
+    assert(dirtyWorktreeRejected, 'deployment evidence template self-test must reject dirty service worktrees');
+    console.log(JSON.stringify({ status: 'passed', services: Object.keys(template.services), dirtyWorktreeRejected }, null, 2));
   } else {
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
     fs.writeFileSync(outputFile, output);
