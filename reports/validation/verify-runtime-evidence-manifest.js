@@ -7,7 +7,7 @@ const { execFileSync } = require('child_process');
 
 const args = new Set(process.argv.slice(2));
 const selfTest = args.has('--self-test');
-const crossServiceRoot = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
+let crossServiceRoot = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
 const deploymentRepos = {
   warehouse: 'warehouse-microservice',
   catalog: 'catalog-microservice',
@@ -27,12 +27,21 @@ function readJson(filePath, label) {
   }
 }
 
-function currentHeadForService(service) {
+function repoPathForService(service) {
   const repo = deploymentRepos[service];
   assert(repo, `Unknown service in manifest: ${service}`);
   const repoPath = path.join(crossServiceRoot, repo);
   assert(fs.existsSync(repoPath), `Repository not found for ${service}: ${repoPath}`);
-  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoPath, encoding: 'utf8' }).trim();
+  return repoPath;
+}
+
+function currentHeadForService(service) {
+  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoPathForService(service), encoding: 'utf8' }).trim();
+}
+
+function assertCleanWorktreeForService(service) {
+  const status = execFileSync('git', ['status', '--short'], { cwd: repoPathForService(service), encoding: 'utf8' }).trim();
+  assert(!status, `${deploymentRepos[service]} worktree must be clean before runtime evidence manifest can prove completion`);
 }
 
 function fileEvidence(filePath) {
@@ -64,6 +73,7 @@ function verifyManifest(manifestFile) {
     const head = manifest.serviceHeads?.[service];
     assert(/^[0-9a-f]{7,40}$/i.test(head || ''), `manifest ${service} head must be a commit SHA`);
     assert(head === currentHeadForService(service), `manifest ${service} head must match current ${deploymentRepos[service]} HEAD`);
+    assertCleanWorktreeForService(service);
   }
   for (const artifact of ['fixture', 'smoke', 'deployment', 'report']) {
     validateArtifact(manifest, artifact);
@@ -71,47 +81,72 @@ function verifyManifest(manifestFile) {
   return { status: 'passed', manifestFile, artifacts: Object.keys(manifest.artifacts || {}).length };
 }
 
+function initSelfTestRepo(root, repo) {
+  const repoPath = path.join(root, repo);
+  fs.mkdirSync(repoPath, { recursive: true });
+  fs.writeFileSync(path.join(repoPath, "README.md"), `# ${repo}\n`);
+  execFileSync("git", ["init"], { cwd: repoPath, stdio: "pipe" });
+  execFileSync("git", ["add", "README.md"], { cwd: repoPath, stdio: "pipe" });
+  execFileSync("git", ["-c", "user.email=codex@example.invalid", "-c", "user.name=Codex", "commit", "-m", "self-test repo"], { cwd: repoPath, stdio: "pipe" });
+  return repoPath;
+}
+
 function runSelfTest() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-traceability-manifest-verify-'));
-  const files = {
-    fixture: path.join(dir, 'fixture.json'),
-    smoke: path.join(dir, 'smoke.json'),
-    deployment: path.join(dir, 'deployment.json'),
-    report: path.join(dir, 'report.md'),
-  };
-  fs.writeFileSync(files.fixture, JSON.stringify({ status: 'fixture-ready' }));
-  fs.writeFileSync(files.smoke, JSON.stringify({ status: 'passed-runtime' }));
-  fs.writeFileSync(files.deployment, JSON.stringify({ services: deploymentRepos }));
-  fs.writeFileSync(files.report, '# Runtime report\n- status: passed-runtime\n');
-  const artifacts = {};
-  for (const [key, file] of Object.entries(files)) {
-    artifacts[key] = { file, ...fileEvidence(file) };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "stock-traceability-manifest-verify-"));
+  const previousRoot = crossServiceRoot;
+  crossServiceRoot = path.join(dir, "repos");
+  for (const repo of Object.values(deploymentRepos)) {
+    initSelfTestRepo(crossServiceRoot, repo);
   }
-  const manifestFile = path.join(dir, 'manifest.json');
+  const files = {
+    fixture: path.join(dir, "fixture.json"),
+    smoke: path.join(dir, "smoke.json"),
+    deployment: path.join(dir, "deployment.json"),
+    report: path.join(dir, "report.md"),
+  };
+  fs.writeFileSync(files.fixture, JSON.stringify({ status: "fixture-ready" }));
+  fs.writeFileSync(files.smoke, JSON.stringify({ status: "passed-runtime" }));
+  fs.writeFileSync(files.deployment, JSON.stringify({ services: deploymentRepos }));
+  fs.writeFileSync(files.report, "# Runtime report\n- status: passed-runtime\n");
+  const artifacts = {};
+  for (const [key, artifactFile] of Object.entries(files)) {
+    artifacts[key] = { file: artifactFile, ...fileEvidence(artifactFile) };
+  }
+  const manifestFile = path.join(dir, "manifest.json");
   fs.writeFileSync(manifestFile, JSON.stringify({
-    status: 'runtime-complete-evidence-bundle',
+    status: "runtime-complete-evidence-bundle",
     generatedAt: new Date().toISOString(),
     serviceHeads: {
-      warehouse: currentHeadForService('warehouse'),
-      catalog: currentHeadForService('catalog'),
-      suppliers: currentHeadForService('suppliers'),
+      warehouse: currentHeadForService("warehouse"),
+      catalog: currentHeadForService("catalog"),
+      suppliers: currentHeadForService("suppliers"),
     },
     artifacts,
   }, null, 2));
   const passed = verifyManifest(manifestFile);
 
-  const tamperedFile = path.join(dir, 'tampered-manifest.json');
-  const tampered = readJson(manifestFile, 'self-test manifest');
-  tampered.artifacts.report.sha256 = '0'.repeat(64);
+  const tamperedFile = path.join(dir, "tampered-manifest.json");
+  const tampered = readJson(manifestFile, "self-test manifest");
+  tampered.artifacts.report.sha256 = "0".repeat(64);
   fs.writeFileSync(tamperedFile, JSON.stringify(tampered, null, 2));
-  let rejected = false;
+  let tamperedHashRejected = false;
   try {
     verifyManifest(tamperedFile);
   } catch (error) {
-    rejected = /sha256 mismatch/.test(error.message);
+    tamperedHashRejected = /sha256 mismatch/.test(error.message);
   }
-  assert(rejected, 'manifest verifier self-test must reject tampered artifact hash');
-  return { ...passed, tamperedHashRejected: true };
+  assert(tamperedHashRejected, "manifest verifier self-test must reject tampered artifact hash");
+
+  fs.writeFileSync(path.join(repoPathForService("suppliers"), "dirty.txt"), "dirty\n");
+  let dirtyWorktreeRejected = false;
+  try {
+    verifyManifest(manifestFile);
+  } catch (error) {
+    dirtyWorktreeRejected = /worktree must be clean/.test(error.message);
+  }
+  assert(dirtyWorktreeRejected, "manifest verifier self-test must reject dirty service worktrees");
+  crossServiceRoot = previousRoot;
+  return { ...passed, cleanWorktreeRequired: true, tamperedHashRejected: true, dirtyWorktreeRejected: true };
 }
 
 try {

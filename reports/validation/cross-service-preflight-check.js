@@ -160,7 +160,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-manifest.js',
-    patterns: ['runtime-complete-evidence-bundle', 'sha256 mismatch', 'tamperedHashRejected', 'currentHeadForService', 'fixture', 'smoke', 'deployment', 'report'],
+    patterns: ['runtime-complete-evidence-bundle', 'sha256 mismatch', 'tamperedHashRejected', 'currentHeadForService', 'assertCleanWorktreeForService', 'runtime evidence manifest can prove completion', 'fixture', 'smoke', 'deployment', 'report'],
   },
   {
     service: 'suppliers',

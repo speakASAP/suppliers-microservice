@@ -263,3 +263,13 @@ Validation evidence: `node --check reports/validation/create-runtime-handoff-che
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
 
 Next unfinished chunk: owner-approved deployment and guarded runtime evidence regeneration for Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and Suppliers `81857bc54469e5f82e6feaa4d94a8ce43b11df19`.
+
+## 2026-06-13 - Manifest Verifier Clean Source Gate
+
+Change: extended `verify-runtime-evidence-manifest.js` so a runtime evidence manifest can prove completion only when Warehouse, Catalog, and Suppliers heads match the current repositories and all three service worktrees are clean. This closes the remaining lower-level manifest-verifier gap beneath the bundle verifier clean-source gate.
+
+Validation evidence before commit: `node --check reports/validation/verify-runtime-evidence-manifest.js`, `node reports/validation/verify-runtime-evidence-manifest.js --self-test`, `node reports/validation/cross-service-preflight-check.js`, `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues`, and `git diff --check` passed. The manifest self-test now proves tampered artifact rejection and dirty service worktree rejection from temporary git repositories. Full clean-worktree bundle validation and handoff regeneration must run after this source gate is committed.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
+
+Next unfinished chunk: validate and commit this manifest-verifier clean-source gate, regenerate handoff and deployment evidence for the resulting clean Suppliers head, then request owner-approved deployment and guarded runtime evidence regeneration.
