@@ -84,11 +84,27 @@ Only after owner approval and deployment evidence are ready, continue with `RUN_
 
 ## Read-Only Fixture Check
 
-Before mutation approval, run the live fixture readiness check. It reads the three services and verifies the product already exposes own, supplier replenishment, and dropship stock rows plus route legs; it refuses mutation flags.
+Before mutation approval, run the guarded runner without `RUN_APPROVED_RUNTIME_SMOKE`. It reads the three services, saves `stock-traceability-fixture-check-result.json`, verifies the product already exposes own, supplier replenishment, and dropship stock rows plus route legs, and refuses mutation flags.
 
-\`\`\`bash
-ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=<approved-synthetic-product-id> TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=<own-warehouse-id> TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id> TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id> node reports/validation/runtime-stock-traceability-smoke.js --fixture-check'
-\`\`\`
+```bash
+ssh alfares '
+cd /home/ssf/Documents/Github/suppliers-microservice &&
+WAREHOUSE_URL=https://warehouse.alfares.cz \
+CATALOG_URL=https://catalog.alfares.cz \
+SUPPLIERS_URL=https://suppliers.alfares.cz \
+CATALOG_TOKEN="<approved-catalog-token>" \
+WAREHOUSE_TOKEN="<approved-warehouse-token>" \
+SUPPLIERS_TOKEN="<approved-suppliers-token>" \
+TRACE_PRODUCT_ID="<approved-synthetic-product-id>" \
+TRACE_PRODUCT_SKU_PREFIX="CODEX-STOCK-TRACE-" \
+TRACE_OWN_WAREHOUSE_ID="<own-warehouse-id>" \
+TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-replenishment-warehouse-id>" \
+TRACE_DROPSHIP_WAREHOUSE_ID="<supplier-dropship-warehouse-id>" \
+node reports/validation/run-runtime-evidence-flow.js
+'
+```
+
+The expected result is `status: "fixture-ready"` and a `next` message requiring `RUN_APPROVED_RUNTIME_SMOKE=true` with owner approval and deployment evidence.
 
 ## Deploy In Order
 
@@ -120,7 +136,7 @@ Protected endpoint checks should return `401` or `403` without credentials.
 
 ## Approved Runtime Smoke
 
-Pass tokens into the remote shell only for the smoke command. Do not print them. The values below must be filled by the approved operator immediately before execution.
+Pass tokens into the remote shell only for the guarded runner. Do not print them. The values below must be filled by the approved operator immediately before execution. First validate the approved-smoke configuration without issuing live requests:
 
 ```bash
 ssh alfares '
@@ -134,19 +150,49 @@ SUPPLIERS_TOKEN="<approved-suppliers-token>" \
 TRACE_PRODUCT_ID="<approved-synthetic-product-id>" \
 TRACE_PRODUCT_SKU_PREFIX="CODEX-STOCK-TRACE-" \
 TRACE_SUPPLIER_ID="<active-synthetic-trace-supplier-id>" \
+TRACE_OWN_WAREHOUSE_ID="<own-warehouse-id>" \
 TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-replenishment-warehouse-id>" \
 TRACE_DROPSHIP_WAREHOUSE_ID="<supplier-dropship-warehouse-id>" \
 TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
 TRACE_CLEANUP_EVIDENCE="deferred:stock-traceability-runbook-20260613" \
-TRACE_RUN_SUPPLIERS_IMPORT=true \
-TRACE_EXPECT_SUPPLIERS_JOB=true \
+DEPLOYMENT_EVIDENCE_FILE="/tmp/stock-traceability-deployment-evidence.json" \
+RUN_APPROVED_RUNTIME_SMOKE=true \
 OWNER_APPROVAL=explicit \
 SMOKE_ALLOW_MUTATION=true \
-node reports/validation/runtime-stock-traceability-smoke.js
+node reports/validation/run-runtime-evidence-flow.js --config-only
 '
 ```
 
-The smoke must return `status: "passed"` and include:
+Then run the same guarded command without `--config-only` to capture the fixture JSON, approved smoke JSON, final report, manifest, bundle verification, and completion verification:
+
+```bash
+ssh alfares '
+cd /home/ssf/Documents/Github/suppliers-microservice &&
+WAREHOUSE_URL=https://warehouse.alfares.cz \
+CATALOG_URL=https://catalog.alfares.cz \
+SUPPLIERS_URL=https://suppliers.alfares.cz \
+CATALOG_TOKEN="<approved-catalog-token>" \
+WAREHOUSE_TOKEN="<approved-warehouse-token>" \
+SUPPLIERS_TOKEN="<approved-suppliers-token>" \
+TRACE_PRODUCT_ID="<approved-synthetic-product-id>" \
+TRACE_PRODUCT_SKU_PREFIX="CODEX-STOCK-TRACE-" \
+TRACE_SUPPLIER_ID="<active-synthetic-trace-supplier-id>" \
+TRACE_OWN_WAREHOUSE_ID="<own-warehouse-id>" \
+TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-replenishment-warehouse-id>" \
+TRACE_DROPSHIP_WAREHOUSE_ID="<supplier-dropship-warehouse-id>" \
+TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
+TRACE_CLEANUP_EVIDENCE="deferred:stock-traceability-runbook-20260613" \
+DEPLOYMENT_EVIDENCE_FILE="/tmp/stock-traceability-deployment-evidence.json" \
+RUN_APPROVED_RUNTIME_SMOKE=true \
+OWNER_APPROVAL=explicit \
+SMOKE_ALLOW_MUTATION=true \
+node reports/validation/run-runtime-evidence-flow.js
+'
+```
+
+The guarded runner must finish with `status: "runtime-complete"` and produce these artifacts under `RUNTIME_EVIDENCE_DIR` or `/tmp/stock-traceability-runtime` by default: fixture JSON, smoke JSON, runtime report, and `stock-traceability-runtime-evidence-manifest.json`.
+
+The captured smoke artifact must include:
 
 - health for Warehouse, Catalog, and Suppliers;
 - Catalog product ID and SKU;
@@ -158,32 +204,6 @@ The smoke must return `status: "passed"` and include:
 - Suppliers import job with Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
 - cleanup or cleanup-deferral evidence.
 
-Save the smoke JSON to a file for report generation:
-
-```bash
-ssh alfares '
-cd /home/ssf/Documents/Github/suppliers-microservice &&
-WAREHOUSE_URL=https://warehouse.alfares.cz \
-CATALOG_URL=https://catalog.alfares.cz \
-SUPPLIERS_URL=https://suppliers.alfares.cz \
-CATALOG_TOKEN="<approved-catalog-token>" \
-WAREHOUSE_TOKEN="<approved-warehouse-token>" \
-SUPPLIERS_TOKEN="<approved-suppliers-token>" \
-TRACE_PRODUCT_ID="<approved-synthetic-product-id>" \
-TRACE_PRODUCT_SKU_PREFIX="CODEX-STOCK-TRACE-" \
-TRACE_SUPPLIER_ID="<active-synthetic-trace-supplier-id>" \
-TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-replenishment-warehouse-id>" \
-TRACE_DROPSHIP_WAREHOUSE_ID="<supplier-dropship-warehouse-id>" \
-TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
-TRACE_CLEANUP_EVIDENCE="deferred:stock-traceability-runbook-20260613" \
-TRACE_RUN_SUPPLIERS_IMPORT=true \
-TRACE_EXPECT_SUPPLIERS_JOB=true \
-OWNER_APPROVAL=explicit \
-SMOKE_ALLOW_MUTATION=true \
-node reports/validation/runtime-stock-traceability-smoke.js
-' > /tmp/stock-traceability-smoke-result.json
-```
-
 ## Failure Handling
 
 - If Warehouse deploy or health fails, stop before Catalog and Suppliers.
@@ -194,14 +214,7 @@ node reports/validation/runtime-stock-traceability-smoke.js
 
 ## Completion Evidence
 
-The guarded runner can generate and verify the final runtime report. If running the steps manually after a passing read-only fixture check and live smoke, create the final runtime validation report from `docs/cross-service/stock-traceability-runtime-evidence-template.md`. Save the filled report as `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md` and record:
-
-- deployed commit SHA for all three services;
-- deployment result and health result for all three services;
-- redacted smoke command;
-- summarized smoke output;
-- cleanup result or deferral reference;
-- final completion audit status.
+The guarded runner generates and verifies the final runtime report. After preparing a completed deployment evidence JSON file, run `run-runtime-evidence-flow.js` with `RUN_APPROVED_RUNTIME_SMOKE=true`; do not hand-run the low-level smoke script as the operator completion path.
 
 Create the deployment evidence skeleton from clean current service commit SHAs, then replace the TODO health/protected-endpoint fields after deployment. Record service-specific anonymous 401/403 evidence for Warehouse topology/logistics, Catalog availability/coverage, and Suppliers imports. The generator refuses dirty Warehouse, Catalog, or Suppliers worktrees. Regenerate this file after any Warehouse, Catalog, or Suppliers commit; stale or dirty-source deployment evidence is rejected by the guarded runner and bundle verifier:
 
@@ -209,26 +222,23 @@ Create the deployment evidence skeleton from clean current service commit SHAs, 
 ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js'
 ```
 
-Use the report generator after preparing a completed deployment evidence JSON file:
+The completed guarded run must preserve these artifacts:
+
+- `/tmp/stock-traceability-runtime/stock-traceability-fixture-check-result.json`
+- `/tmp/stock-traceability-runtime/stock-traceability-smoke-result.json`
+- `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md`
+- `/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json`
+
+Then verify the generated report and bundle before treating the goal as complete:
 
 ```bash
-scp /tmp/stock-traceability-smoke-result.json alfares:/tmp/stock-traceability-smoke-result.json
-scp /tmp/stock-traceability-deployment-evidence.json alfares:/tmp/stock-traceability-deployment-evidence.json
 ssh alfares '
 cd /home/ssf/Documents/Github/suppliers-microservice &&
-SMOKE_RESULT_FILE=/tmp/stock-traceability-smoke-result.json \
-FIXTURE_CHECK_RESULT_FILE=/tmp/stock-traceability-fixture-check-result.json \
-DEPLOYMENT_EVIDENCE_FILE=/tmp/stock-traceability-deployment-evidence.json \
-REDACTED_FIXTURE_COMMAND="WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=<approved-synthetic-product-id> TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=<own-warehouse-id> TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id> TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id> node reports/validation/runtime-stock-traceability-smoke.js --fixture-check" \
-REDACTED_SMOKE_COMMAND="WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=<approved-synthetic-product-id> TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=<active-synthetic-trace-supplier-id> TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id> TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id> TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-20260613-001 TRACE_CLEANUP_EVIDENCE=deferred:stock-traceability-runbook-20260613 TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js" \
-node reports/validation/generate-runtime-evidence-report.js
+node reports/validation/verify-runtime-evidence-report.js &&
+node reports/validation/verify-runtime-evidence-manifest.js /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json &&
+node reports/validation/verify-runtime-evidence-bundle.js /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md &&
+node reports/validation/verify-stock-traceability-completion.js docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json
 '
-```
-
-Then verify the generated report before treating the goal as complete:
-
-```bash
-ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && node reports/validation/verify-runtime-evidence-report.js'
 ```
 
 The guarded runner also writes `stock-traceability-runtime-evidence-manifest.json` in `RUNTIME_EVIDENCE_DIR` unless `RUNTIME_EVIDENCE_MANIFEST` overrides the path. Preserve it with the fixture JSON, smoke JSON, deployment evidence JSON, and final report; it records byte counts and SHA-256 hashes for the complete runtime evidence bundle. The runner verifies the manifest, verifies the bundle, and then executes `verify-stock-traceability-completion.js <report-file> <manifest-file>` before it can print `runtime-complete`. Operators can rerun `node reports/validation/verify-runtime-evidence-manifest.js <manifest-file>`, `node reports/validation/verify-runtime-evidence-bundle.js <manifest-file> <report-file>`, and the completion verifier to recheck immutable evidence. The bundle verifier also proves the fixture and smoke artifacts use the same trace product, supplier/dropship warehouse IDs, and `TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes, so operators cannot accidentally combine evidence from different runs or suppliers.
