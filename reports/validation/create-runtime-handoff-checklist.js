@@ -151,7 +151,15 @@ try {
   const markdown = render(rows, preflight);
   assertSelfTestContent(markdown);
   if (selfTest) {
-    console.log(JSON.stringify({ status: 'passed', services: rows.length, completionGate: preflight.completionGate?.status }, null, 2));
+    const dirtyRows = rows.map((row, index) => index === 0 ? { ...row, dirtyLines: 1 } : row);
+    let dirtyRowsRejected = false;
+    try {
+      assertCleanRows(dirtyRows);
+    } catch (error) {
+      dirtyRowsRejected = /runtime handoff requires clean/.test(error.message);
+    }
+    assert(dirtyRowsRejected, 'handoff self-test must reject dirty source snapshots');
+    console.log(JSON.stringify({ status: 'passed', services: rows.length, completionGate: preflight.completionGate?.status, dirtyRowsRejected }, null, 2));
   } else {
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
     fs.writeFileSync(outputFile, markdown);
