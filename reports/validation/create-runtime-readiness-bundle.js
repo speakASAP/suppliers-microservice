@@ -10,6 +10,19 @@ const selfTest = args.has('--self-test');
 const root = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
 const outputDir = process.env.RUNTIME_READINESS_BUNDLE_DIR || '/tmp/stock-traceability-runtime-readiness';
 
+const requiredApprovedSmokeEnv = [
+  'TRACE_SUPPLIER_ID',
+  'TRACE_OWN_WAREHOUSE_ID',
+  'TRACE_SUPPLIER_WAREHOUSE_ID',
+  'TRACE_DROPSHIP_WAREHOUSE_ID',
+  'TRACE_IMPORT_IDEMPOTENCY_KEY',
+  'TRACE_SUPPLIER_STOCK_QTY',
+  'TRACE_SUPPLIER_SKU',
+  'TRACE_CLEANUP_EVIDENCE',
+  'DEPLOYMENT_EVIDENCE_FILE',
+  'RUNTIME_APPROVAL_ARTIFACT_FILE',
+];
+
 const services = {
   warehouse: 'warehouse-microservice',
   catalog: 'catalog-microservice',
@@ -109,6 +122,13 @@ function assertArtifactContainsHeads(filePath, rows) {
   }
 }
 
+function assertPlanRequiresApprovedSmokeEnv(plan) {
+  assert(plan.status === 'plan-only', 'runtime plan artifact must be plan-only');
+  assert(Array.isArray(plan.requiredApprovedSmokeEnv), 'runtime plan artifact must list required approved-smoke env vars');
+  const missingPlanEnv = requiredApprovedSmokeEnv.filter((name) => !plan.requiredApprovedSmokeEnv.includes(name));
+  assert(missingPlanEnv.length === 0, 'runtime plan artifact must require approved-smoke env vars: ' + missingPlanEnv.join(', '));
+}
+
 function writeBundle(rows) {
   fs.mkdirSync(outputDir, { recursive: true });
   const approvalRequestFile = path.join(outputDir, 'stock-traceability-runtime-approval-request.md');
@@ -126,9 +146,7 @@ function writeBundle(rows) {
   assertArtifactContainsHeads(deploymentTemplateFile, rows);
   assertArtifactContainsHeads(handoffFile, rows);
   const plan = readJson(planFile);
-  assert(plan.status === 'plan-only', 'runtime plan artifact must be plan-only');
-  assert(Array.isArray(plan.requiredApprovedSmokeEnv) && plan.requiredApprovedSmokeEnv.includes('RUNTIME_APPROVAL_ARTIFACT_FILE'), 'runtime plan artifact must require RUNTIME_APPROVAL_ARTIFACT_FILE');
-  assert(plan.requiredApprovedSmokeEnv.includes('DEPLOYMENT_EVIDENCE_FILE'), 'runtime plan artifact must require DEPLOYMENT_EVIDENCE_FILE');
+  assertPlanRequiresApprovedSmokeEnv(plan);
 
   const manifest = {
     status: 'ready-for-owner-approval',
@@ -171,6 +189,14 @@ function assertSelfTestContent() {
     missingHeadRejected = /does not include current/.test(error.message);
   }
   assert(missingHeadRejected, 'readiness bundle self-test must reject artifacts missing service heads');
+  assertPlanRequiresApprovedSmokeEnv({ status: 'plan-only', requiredApprovedSmokeEnv });
+  let missingPlanEnvRejected = false;
+  try {
+    assertPlanRequiresApprovedSmokeEnv({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE'] });
+  } catch (error) {
+    missingPlanEnvRejected = /approved-smoke env vars/.test(error.message) && /TRACE_SUPPLIER_ID/.test(error.message);
+  }
+  assert(missingPlanEnvRejected, 'readiness bundle self-test must reject plan artifacts missing approved-smoke trace inputs');
   let missingManifestVerificationRejected = false;
   try {
     verifyBundle(path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'readiness-missing-manifest-')), 'missing-manifest.json'));
@@ -178,7 +204,7 @@ function assertSelfTestContent() {
     missingManifestVerificationRejected = /readiness bundle verifier failed/.test(error.message) && /readiness manifest is missing/.test(error.message);
   }
   assert(missingManifestVerificationRejected, 'readiness bundle self-test must fail closed when verifier rejects the generated manifest');
-  console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingHeadRejected, missingManifestVerificationRejected }, null, 2));
+  console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingHeadRejected, missingPlanEnvRejected, missingManifestVerificationRejected }, null, 2));
 }
 
 try {
