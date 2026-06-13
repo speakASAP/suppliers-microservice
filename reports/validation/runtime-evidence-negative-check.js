@@ -239,7 +239,20 @@ function runCommandEvidenceCase(name, command) {
   return name;
 }
 
+
+function runReportTextCase(name, mutateReport) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `stock-trace-negative-${name}-`));
+  const report = mutateReport(generateReport(dir, baseSmoke()));
+  assert(report.includes(`- status: passed-runtime`), `${name} should keep passed-runtime metadata before verifier text checks`);
+  assert(runVerifierExpectFailure(dir, report), `${name} report should fail runtime verifier`);
+  return name;
+}
+
 const cases = [
+  runReportTextCase("missing-origin-supplier-id-report-evidence", (report) => report.replace(
+    "own:warehouse-own:available=4:supplier=-; supplier:warehouse-supplier:available=3:supplier=supplier-synthetic; dropship:warehouse-dropship:available=7:supplier=supplier-synthetic",
+    "own, supplier, and dropship rows"
+  )),
   runCase('bad-sku-prefix', (smoke) => {
     smoke.catalogProduct.sku = 'REAL-SKU-001';
   }),

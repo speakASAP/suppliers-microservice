@@ -71,7 +71,7 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 | Warehouse, Catalog, and Suppliers health endpoints passed. | warehouse: ok; catalog: ok; suppliers: ok | passed-runtime |
 | Catalog product identity exists. | productId=product-synthetic, sku=CODEX-STOCK-TRACE-001, expectedSkuPrefix=CODEX-STOCK-TRACE- | passed-runtime |
 | Warehouse topology distinguishes own and supplier-managed warehouses. | own=1, supplierManaged=1 | passed-runtime |
-| Warehouse availability returns own plus supplier and dropship stock. | own, supplier, and dropship rows | passed-runtime |
+| Warehouse availability returns own plus supplier and dropship stock. | own:warehouse-own:available=4:supplier=-; supplier:warehouse-supplier:available=3:supplier=supplier-synthetic; dropship:warehouse-dropship:available=7:supplier=supplier-synthetic | passed-runtime |
 | Warehouse logistics returns local, supplier replenishment, and dropship route options. | routes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:OWN>customer:warehouse],supplier_replenishment[1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:DROP>customer:supplier] | passed-runtime |
 | Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:OWN>customer:warehouse],supplier_replenishment[1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:DROP>customer:supplier] | passed-runtime |
 | Catalog coverage and audit classify covered mixed stock. | covered/mixed_stock | passed-runtime |
@@ -118,6 +118,13 @@ function hasRouteLegEvidence(row) {
     && row.includes('customer:supplier');
 }
 
+
+function hasSupplierOriginEvidence(row) {
+  return /own:[^|;]+:available=[1-9]\d*:supplier=-/.test(row)
+    && /supplier:[^|;]+:available=[1-9]\d*:supplier=(?!-)([^;|]+)/.test(row)
+    && /dropship:[^|;]+:available=[1-9]\d*:supplier=(?!-)([^;|]+)/.test(row);
+}
+
 function verify(report) {
   assert(report.includes('- id: VAL-CROSS-STOCK-RUNTIME-LIVE'), 'runtime report id is missing');
   assert(report.includes('- status: passed-runtime'), 'runtime report status must be passed-runtime');
@@ -160,6 +167,9 @@ function verify(report) {
     assert(!row.includes('Evidence missing'), `required runtime assertion has missing evidence: ${assertion}`);
     assert(!row.includes('| - |'), `required runtime assertion has placeholder evidence: ${assertion}`);
   }
+
+  const warehouseAvailabilityRow = rows.find((line) => line.startsWith(`| Warehouse availability returns own plus supplier and dropship stock. |`));
+  assert(hasSupplierOriginEvidence(warehouseAvailabilityRow), `Warehouse availability assertion must prove own, supplier, and dropship origin rows with positive availability and supplier IDs`);
 
   const warehouseLogisticsRow = rows.find((line) => line.startsWith('| Warehouse logistics returns local, supplier replenishment, and dropship route options. |'));
   assert(hasRouteLegEvidence(warehouseLogisticsRow), 'Warehouse logistics assertion must prove local and supplier route legs');
