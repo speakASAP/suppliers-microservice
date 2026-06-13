@@ -202,4 +202,4 @@ Validation evidence: `RUNTIME_HANDOFF_OUTPUT=/tmp/stock-traceability-runtime-han
 
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. The prior passed runtime report remains valid only for its recorded deployed commits; it is not current-head completion evidence.
 
-Next unfinished chunk: owner-approved deployment of Suppliers `a6c68fa` followed by guarded runtime evidence regeneration for Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and Suppliers `a6c68fab94e54fffca98a52cb260cf20dfda458a`.
+Next unfinished chunk: regenerate the runtime handoff checklist, then perform owner-approved deployment of the latest clean Suppliers main HEAD followed by guarded runtime evidence regeneration for Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and that regenerated Suppliers HEAD.
