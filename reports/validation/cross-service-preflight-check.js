@@ -115,7 +115,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-runtime-handoff-checklist.js',
-    patterns: ['STOCK-TRACEABILITY-RUNTIME-HANDOFF', 'completionGate', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'verify-stock-traceability-completion.js', 'run-runtime-evidence-flow.js'],
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-HANDOFF', 'RUNTIME_HANDOFF_OUTPUT', 'completionGate', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'Deploy Warehouse first', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'verify-runtime-evidence-manifest.js <manifest-file>', 'verify-runtime-evidence-bundle.js <manifest-file> <report-file>', 'verify-stock-traceability-completion.js <report-file> <manifest-file>', 'run-runtime-evidence-flow.js'],
   },
   {
     service: 'suppliers',

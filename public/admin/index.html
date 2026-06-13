@@ -10,15 +10,15 @@
   <aside class="admin-sidebar">
     <a class="brand inverse" href="/"><span class="brand-mark">AS</span><span>Alfares Suppliers</span></a>
     <nav class="admin-nav" aria-label="Admin navigation">
-      <a class="active" href="#dashboard">Dashboard</a>
-      <a href="#suppliers">Suppliers</a>
-      <a href="#imports">Imports</a>
-      <a href="#mappings">Mappings</a>
-      <a href="#catalog">Catalog</a>
-      <a href="#warehouse">Warehouse</a>
-      <a href="#consumers">Consumers</a>
-      <a href="#alerts">Alerts</a>
-      <a href="#settings">Settings</a>
+      <a class="active" href="/admin/" data-route="dashboard">Dashboard</a>
+      <a href="/admin/suppliers/" data-route="suppliers">Suppliers</a>
+      <a href="/admin/imports/" data-route="imports">Imports</a>
+      <a href="/admin/mappings/" data-route="mappings">Mappings</a>
+      <a href="/admin/catalog/" data-route="catalog">Catalog</a>
+      <a href="/admin/warehouse/" data-route="warehouse">Warehouse</a>
+      <a href="/admin/consumers/" data-route="consumers">Consumers</a>
+      <a href="/admin/alerts/" data-route="alerts">Alerts</a>
+      <a href="/admin/settings/" data-route="settings">Settings</a>
     </nav>
   </aside>
 
@@ -42,14 +42,14 @@
     </section>
 
     <section id="dashboardContent" class="dashboard-grid">
-      <section class="kpi-strip" aria-label="Supplier metrics">
+      <section class="kpi-strip" data-route-view="dashboard" aria-label="Supplier metrics">
         <article><span id="kpiSuppliers">0</span><small>Suppliers</small></article>
         <article><span id="kpiActive">0</span><small>Active</small></article>
         <article><span id="kpiImports">0</span><small>Recent imports</small></article>
         <article><span id="kpiBlocked">0</span><small>Blocked checks</small></article>
       </section>
 
-      <section class="service-map" id="dashboard">
+      <section class="service-map" id="dashboard" data-route-view="dashboard">
         <div class="panel-heading">
           <h2>Service interconnection map</h2>
           <button id="refreshButton" class="button secondary" type="button">Refresh</button>
@@ -64,7 +64,7 @@
         </div>
       </section>
 
-      <section class="supplier-panel" id="suppliers">
+      <section class="supplier-panel" id="suppliers" data-route-view="suppliers">
         <div class="panel-heading">
           <h2>Suppliers</h2>
           <button id="toggleCreateSupplier" class="button secondary" type="button">New supplier</button>
@@ -100,7 +100,7 @@
         </div>
       </section>
 
-      <aside class="detail-panel">
+      <aside class="detail-panel" data-route-view="suppliers imports mappings catalog warehouse consumers">
         <h2 id="detailName">Select supplier</h2>
         <p id="detailCode" class="muted">Supplier details and safe credential reference status.</p>
         <dl class="detail-list">
@@ -113,14 +113,51 @@
         <p id="actionResult" class="form-note"></p>
       </aside>
 
-      <section class="imports-panel" id="imports">
+      <section class="imports-panel" id="imports" data-route-view="imports">
         <div class="panel-heading">
           <h2>Recent import evidence</h2>
         </div>
         <div id="importTimeline" class="timeline"></div>
       </section>
+
+      <section class="route-page" id="mappings" data-route-view="mappings" hidden>
+        <div class="panel-heading">
+          <h2>Category mappings</h2>
+          <button class="button secondary" type="button" data-route-button="suppliers">Open suppliers</button>
+        </div>
+        <div id="mappingMatrix" class="route-page-grid"></div>
+      </section>
+
+      <section class="route-page" id="catalog" data-route-view="catalog" hidden>
+        <div class="panel-heading"><h2>Catalog route</h2></div>
+        <div id="catalogRoute" class="route-page-grid"></div>
+      </section>
+
+      <section class="route-page" id="warehouse" data-route-view="warehouse" hidden>
+        <div class="panel-heading"><h2>Warehouse route</h2></div>
+        <div id="warehouseRoute" class="route-page-grid"></div>
+      </section>
+
+      <section class="route-page" id="consumers" data-route-view="consumers" hidden>
+        <div class="panel-heading"><h2>Consumer routes</h2></div>
+        <div id="consumerRoutes" class="route-page-grid"></div>
+      </section>
+
+      <section class="route-page" id="alerts" data-route-view="alerts" hidden>
+        <div class="panel-heading"><h2>Alerts</h2></div>
+        <div id="alertList" class="timeline"></div>
+      </section>
+
+      <section class="route-page" id="settings" data-route-view="settings" hidden>
+        <div class="panel-heading"><h2>Settings</h2></div>
+        <div class="settings-grid">
+          <article><strong>Authentication</strong><span>JWT roles: global:superadmin or internal:suppliers-microservice:admin</span></article>
+          <article><strong>Credentials</strong><span>Credential values stay as runtime references and are never rendered in the admin.</span></article>
+          <article><strong>Boundaries</strong><span>Catalog owns taxonomy. Warehouse owns stock mutation and reconciliation.</span></article>
+        </div>
+      </section>
     </section>
   </main>
-  <script src="/assets/app.js?v=auth-login-fix-20260613"></script>
+  <script src="/assets/app.js?v=admin-routes-20260613"></script>
 </body>
 </html>

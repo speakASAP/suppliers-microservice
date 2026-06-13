@@ -17,14 +17,21 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function git(repo, args) {
-  if (selfTest && args[0] === 'rev-parse') return '0'.repeat(40);
-  if (selfTest && args[0] === 'status') return '';
-  return execFileSync('git', args, { cwd: path.join(root, repo), encoding: 'utf8' }).trim();
+function git(repo, gitArgs) {
+  if (selfTest && gitArgs[0] === 'rev-parse' && gitArgs[1] === 'HEAD') return `${repo.slice(0, 3)}`.padEnd(40, '0');
+  if (selfTest && gitArgs[0] === 'rev-parse' && gitArgs[1] === '--abbrev-ref') return 'self-test-branch';
+  if (selfTest && gitArgs[0] === 'status') return '';
+  return execFileSync('git', gitArgs, { cwd: path.join(root, repo), encoding: 'utf8' }).trim();
 }
 
 function runJson(commandArgs) {
-  if (selfTest) return { status: 'passed', completionGate: { status: 'incomplete', result: { reason: 'self-test incomplete' } } };
+  if (selfTest) {
+    return {
+      status: 'passed',
+      liveRuntimeReport: { status: 'not-passed-runtime' },
+      completionGate: { status: 'incomplete', result: { reason: 'self-test incomplete' } },
+    };
+  }
   const result = spawnSync(process.execPath, commandArgs, { cwd: process.cwd(), encoding: 'utf8' });
   if (result.status !== 0) throw new Error(`${commandArgs.join(' ')} failed: ${result.stdout}${result.stderr}`.trim());
   return JSON.parse(result.stdout);
@@ -36,6 +43,7 @@ function serviceRows() {
     return {
       name,
       repo,
+      branch: git(repo, ['rev-parse', '--abbrev-ref', 'HEAD']),
       head: git(repo, ['rev-parse', 'HEAD']),
       dirtyLines: status ? status.split('\n').length : 0,
     };
@@ -43,20 +51,22 @@ function serviceRows() {
 }
 
 function render(rows, preflight) {
-  const table = rows.map((row) => `| ${row.name} | ${row.repo} | ${row.head} | ${row.dirtyLines} |`).join('\n');
+  const table = rows.map((row) => `| ${row.name} | ${row.repo} | ${row.branch} | ${row.head} | ${row.dirtyLines} |`).join('\n');
   return `# Stock Traceability Runtime Handoff
 
 Metadata:
 - id: STOCK-TRACEABILITY-RUNTIME-HANDOFF
 - status: ready-for-owner-approval
 - generatedAt: ${new Date().toISOString()}
+- preflightStatus: ${preflight.status || 'unknown'}
+- liveRuntimeReport: ${preflight.liveRuntimeReport?.status || 'unknown'}
 - completionGate: ${preflight.completionGate?.status || 'unknown'}
 - completionReason: ${preflight.completionGate?.result?.reason || '-'}
 
 ## Source Snapshot
 
-| Service | Repository | HEAD | Dirty lines |
-| --- | --- | --- | --- |
+| Service | Repository | Branch | HEAD | Dirty lines |
+| --- | --- | --- | --- | --- |
 ${table}
 
 ## Approval Boundary
@@ -72,17 +82,27 @@ Do not deploy, create runtime records, or run the approved supplier import unles
 - TRACE_DROPSHIP_WAREHOUSE_ID
 - TRACE_IMPORT_IDEMPOTENCY_KEY
 - TRACE_CLEANUP_EVIDENCE
+- DEPLOYMENT_EVIDENCE_FILE pointing to completed deployment evidence JSON
 - CATALOG_TOKEN, WAREHOUSE_TOKEN, SUPPLIERS_TOKEN kept only in shell environment
 
 ## Command Order
 
 1. Run \`node reports/validation/cross-service-preflight-check.js\` and confirm source checks pass and completionGate is incomplete before deployment.
 2. Generate deployment evidence skeleton with \`DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js\`.
-3. Deploy Warehouse, Catalog, and Suppliers in that order using each repo's \`./scripts/deploy.sh\`.
-4. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence.
-5. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, and the completed deployment evidence file.
-6. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
-7. Run \`node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>\` and require status complete before claiming the goal is done.
+3. Deploy Warehouse first: \`ssh alfares 'cd /home/ssf/Documents/Github/warehouse-microservice && ./scripts/deploy.sh'\`.
+4. Deploy Catalog second: \`ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/deploy.sh'\`.
+5. Deploy Suppliers third: \`ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && ./scripts/deploy.sh'\`.
+6. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence for Warehouse, Catalog, and Suppliers.
+7. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, and the completed deployment evidence file.
+8. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
+9. Run the final verification commands below and require status complete before claiming the goal is done.
+
+## Final Verification Commands
+
+- \`node reports/validation/verify-runtime-evidence-report.js\`
+- \`node reports/validation/verify-runtime-evidence-manifest.js <manifest-file>\`
+- \`node reports/validation/verify-runtime-evidence-bundle.js <manifest-file> <report-file>\`
+- \`node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>\`
 
 ## Non-Completion Reminder
 
@@ -90,15 +110,31 @@ A deployment alone is not completion. A source-only synthetic check is not compl
 `;
 }
 
+function assertSelfTestContent(markdown) {
+  const required = [
+    'STOCK-TRACEABILITY-RUNTIME-HANDOFF',
+    'completionGate',
+    'TRACE_SUPPLIER_WAREHOUSE_ID',
+    'DEPLOYMENT_EVIDENCE_FILE',
+    'Deploy Warehouse first',
+    'RUN_APPROVED_RUNTIME_SMOKE=true',
+    'verify-runtime-evidence-report.js',
+    'verify-runtime-evidence-manifest.js <manifest-file>',
+    'verify-runtime-evidence-bundle.js <manifest-file> <report-file>',
+    'verify-stock-traceability-completion.js <report-file> <manifest-file>',
+  ];
+  const missing = required.filter((pattern) => !markdown.includes(pattern));
+  assert(missing.length === 0, `handoff missing required content: ${missing.join(', ')}`);
+  assert(!/catalog-token-synthetic|warehouse-token-synthetic|suppliers-token-synthetic|Bearer\s+/i.test(markdown), 'handoff must not render token values');
+}
+
 try {
   const rows = serviceRows();
   const preflight = runJson(['reports/validation/cross-service-preflight-check.js']);
   const markdown = render(rows, preflight);
-  assert(markdown.includes('completionGate'), 'handoff must include completion gate');
-  assert(markdown.includes('TRACE_SUPPLIER_WAREHOUSE_ID'), 'handoff must include supplier warehouse input');
-  assert(markdown.includes('verify-stock-traceability-completion.js'), 'handoff must include final completion verifier');
+  assertSelfTestContent(markdown);
   if (selfTest) {
-    console.log(JSON.stringify({ status: 'passed', services: rows.length }, null, 2));
+    console.log(JSON.stringify({ status: 'passed', services: rows.length, completionGate: preflight.completionGate?.status }, null, 2));
   } else {
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
     fs.writeFileSync(outputFile, markdown);
