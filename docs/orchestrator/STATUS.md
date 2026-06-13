@@ -4,11 +4,11 @@
 
 Change: widened Suppliers import sourceFingerprint validation and persistence from 128 to 256 characters. The approved stock traceability source fingerprint includes the trace product ID, supplier replenishment warehouse ID, dropship warehouse ID, supplier stock quantity, and supplier SKU, so runtime evidence can exceed the earlier 128-character limit. Added an unapplied migration artifact for the production column width change and aligned the bootstrap migration definition.
 
-Validation evidence: npm run build passed; node reports/validation/synthetic-stock-traceability-check.js passed; node reports/validation/synthetic-approved-import-run-check.js passed; node reports/validation/cross-service-preflight-check.js passed with completionGate=incomplete. Production import_jobs.sourceFingerprint was widened to varchar(256), and Suppliers c23cf74 was deployed after owner approval.
+Validation evidence: npm run build passed, node reports/validation/synthetic-approved-import-run-check.js passed, and the sourceFingerprint width source commit is c23cf74. Clean-worktree-sensitive runtime bundle and flow negative checks are rerun after this status correction commit.
 
-Boundary decision: owner-approved production migration execution and Suppliers deployment were performed for the sourceFingerprint width fix. No production supplier import, Warehouse stock mutation, hard delete, cleanup mutation, or token disclosure was performed in this chunk.
+Boundary decision: no production migration execution, deployment, production supplier import, Warehouse stock mutation, hard delete, cleanup mutation, runtime token inspection, or token disclosure was performed by this status chunk.
 
-Next unfinished chunk: regenerate current-head readiness, approval, and deployment evidence for Suppliers c23cf74, then rerun the guarded runtime evidence flow.
+Next unfinished chunk: owner-approved production migration/deployment if the live database still has the older column width, then current-head readiness, approval, deployment evidence, and guarded runtime evidence regeneration.
 
 ## 2026-06-13 - Synthetic Trace Sellable Quantity Proof
 
