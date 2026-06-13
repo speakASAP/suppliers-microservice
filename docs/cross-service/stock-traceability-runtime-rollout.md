@@ -82,7 +82,7 @@ The runtime smoke is complete only when current production responses prove all a
 | Catalog forwards logistics. | Catalog availability or FlipFlop projection returns `availability.logistics.preferredRoute`, route options, and route legs. |
 | Catalog coverage classifies the product. | Catalog coverage returns `coverageStatus: covered` and `stockOrigin: mixed_stock` for the synthetic mixed-source product. |
 | Coverage audit finds active goods. | Catalog coverage audit returns the synthetic product on its page or an approved filtered page. |
-| Suppliers mutation boundary is preserved. | With `TRACE_EXPECT_SUPPLIERS_JOB=true`, smoke reads Suppliers import jobs and verifies approved Warehouse mutation policy, idempotency key, source fingerprint matching the approved trace import request, Warehouse authority, and applied update count. |
+| Suppliers mutation boundary is preserved. | With `TRACE_EXPECT_SUPPLIERS_JOB=true`, smoke reads Suppliers import jobs and verifies the job belongs to `TRACE_SUPPLIER_ID`, Catalog product validation passed before Warehouse mutation, checked Catalog product IDs include `TRACE_PRODUCT_ID`, the source fingerprint matches the approved trace import request, Warehouse authority is preserved, mutation was owner-approved, and applied update count is positive. |
 | Warehouse remains stock authority. | No Catalog or Suppliers persistence creates independent stock truth; Warehouse availability remains the source of totals. |
 
 ## Rollback And Cleanup
