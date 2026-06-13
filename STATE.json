@@ -1,12 +1,13 @@
 {
   "blockers": [
-    "TASK-002 supplier-specific API integration remains draft pending owner-supplied supplier contract details"
+    "No real supplier identity, private endpoint, credential shape, or production payload contract exists",
+    "TASK-002 real supplier adapter remains blocked pending owner-supplied supplier contract details"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "owner-approved-nest-major-dependency-upgrade",
+  "last_milestone": "warehouse-reconciliation-client-source-validated",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -28,16 +29,20 @@
       "npm_audit_remaining_findings": "0_total",
       "compatible_dependency_audit_remediation_deployed": "done_sha256_663539137f10c53665d1e122a031026b4a96ccdbda3be5d178b8cd91bcc02bce",
       "latest_pod_health": "healthy_suppliers-microservice-75b848b565-5h26q",
-      "nest_major_dependency_upgrade": "done_11_x_deployed_sha256_f4049681685f9068c16b989664ffa8b9a2cc8d8beaa3709b13058b65b08f7264"
+      "nest_major_dependency_upgrade": "done_11_x_deployed_sha256_f4049681685f9068c16b989664ffa8b9a2cc8d8beaa3709b13058b65b08f7264",
+      "supplier_contract_discovery": "none_found_repo_runtime_or_sanitized_production_metadata",
+      "production_supplier_count": 0,
+      "warehouse_reconciliation_client": "source_validated_no_deploy",
+      "warehouse_reconciliation_validation": "build_synthetic_checks_doc_gates_passed"
     }
   },
-  "next_focus": "Owner-supplied supplier contract details for TASK-002 supplier-specific API integration",
+  "next_focus": "Cross-service inventory topology/end-to-end smoke evidence, or deploy SUP-G7 only after explicit owner approval",
   "open_task_ids": [
     "TASK-002"
   ],
   "project": "suppliers-microservice",
   "stage": "production",
-  "tasks_active": 0,
+  "tasks_active": 1,
   "tasks_failed_last_cycle": 0,
   "v": 1
 }

@@ -120,3 +120,21 @@ Validation evidence: `python3 scripts/pre_coding_gate.py --root .` passed before
 Deployment evidence: committed upgrade as `611b246`, ran `./scripts/deploy.sh`, and pushed image digest `sha256:f4049681685f9068c16b989664ffa8b9a2cc8d8beaa3709b13058b65b08f7264`. Because the deployment references mutable `latest`, an explicit `kubectl rollout restart deployment/suppliers-microservice -n statex-apps` was required. Running pod `suppliers-microservice-75b848b565-5h26q` is ready on that digest. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.
 
 Next unfinished chunk: `TASK-002` supplier-specific API integration remains blocked pending owner-supplied supplier API contract details.
+
+## 2026-06-13 - Supplier Contract Discovery And TASK-006 Creation
+
+Discovery: searched repository docs/source for `TASK-002`, supplier contracts, adapter code, API URLs, credentials, endpoints, and integration references. Found only draft planning artifacts that require owner-supplied supplier identity and contract details before coding. Runtime configuration key inspection found no supplier-specific API keys. Sanitized production database aggregate query returned zero supplier rows, zero active suppliers, zero API URLs, and zero credential references.
+
+Decision: no supplier-specific contract or implementation exists to continue. Created `TASK-006` as a separate suppliers-owned task to implement contract-first adapter infrastructure from the empty production state without inventing private supplier details.
+
+Next unfinished chunk: implement `TASK-006` contract template, adapter interface/registry, synthetic validation checks, and import wiring while preserving credential safety, idempotency, category mapping, Catalog boundary, and Warehouse boundary rules.
+
+## 2026-06-13 - Goal 7 Warehouse Reconciliation Client
+
+Change: added a validation-first Suppliers-to-Warehouse reconciliation client path. Normalized stock candidates now require supplierSku, productId, warehouseId, non-negative stockQuantity, and optional observedAt. ImportsService can call Warehouse `POST /api/supplier-reconciliations` only when mutation is explicitly approved and attempted; default import execution remains non-mutating. Warehouse URL and bearer token come from runtime environment only. External references are idempotency-derived SHA-256 references.
+
+Boundary decision: no supplier-specific adapter, Catalog write, production import, Warehouse production mutation, schema change, deployment, or secret change was performed.
+
+Validation evidence: `python3 scripts/pre_coding_gate.py --root .` passed; `npm run build` passed; compiled synthetic boundary validation passed; compiled synthetic mocked Warehouse reconciliation client validation passed; `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues` passed with 100/100; `python3 scripts/deployment_readiness_gate.py --root .` passed; `git diff --check` passed.
+
+Next unfinished chunk: deploy only with explicit owner approval if runtime use is needed, then continue with cross-service inventory topology/end-to-end smoke evidence.
