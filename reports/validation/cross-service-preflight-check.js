@@ -55,7 +55,7 @@ const checks = [
   {
     service: 'warehouse',
     file: 'test/stock.service.spec.ts',
-    patterns: ['rejects reservation from supplier-managed stock without supplier linkage', 'is supplier-managed but is not linked to a supplier', "relations: ['warehouse']"],
+    patterns: ['rejects reservation from supplier-managed stock without supplier linkage', 'rejects fulfillment from supplier-managed stock without supplier linkage', 'is supplier-managed but is not linked to a supplier', "relations: ['warehouse']"],
   },
   {
     service: 'warehouse',
