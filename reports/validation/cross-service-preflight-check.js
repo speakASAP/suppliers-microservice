@@ -40,12 +40,12 @@ const checks = [
   {
     service: 'warehouse',
     file: 'src/suppliers/supplier-reconciliation.service.ts',
-    patterns: ['is supplier-managed but is not linked to a supplier', 'belongs to supplier', 'supplier_reconciliation'],
+    patterns: ['is supplier-managed but is not linked to a supplier', 'belongs to supplier', 'supplier_reconciliation', 'const existing = await reconciliationRepository.findOne'],
   },
   {
     service: 'warehouse',
     file: 'test/supplier-reconciliation.service.spec.ts',
-    patterns: ['rejects supplier-managed warehouses that are not linked to a supplier', 'rejects supplier reconciliation when the warehouse belongs to another supplier'],
+    patterns: ['returns the existing reconciliation when a supplier reference is replayed after validating warehouse ownership', 'rejects replayed reconciliation when the warehouse is no longer linked to the request supplier', 'rejects supplier-managed warehouses that are not linked to a supplier', 'rejects supplier reconciliation when the warehouse belongs to another supplier'],
   },
   {
     service: 'warehouse',
@@ -125,7 +125,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-stock-traceability-smoke.js',
-    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'fixtureCheck', 'readHealth', "service, endpoint", 'catalogRouteTypes', 'projectionRouteTypes', 'summarizeLogisticsLegs', 'hasRequiredLogisticsLegs', 'stockAuthority', 'warehouseTotalAvailable', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
+    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'fixtureCheck', 'readHealth', "service, endpoint", 'catalogRouteTypes', 'projectionRouteTypes', 'summarizeLogisticsLegs', 'hasRequiredLogisticsLegs', 'stockAuthority', 'warehouseTotalAvailable', 'assertConfiguredSupplierOwnership', 'assertConfiguredRouteSupplierOwnership', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
   },
   {
     service: 'suppliers',
@@ -155,7 +155,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-bundle.js',
-    patterns: ['verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-report.js', 'deployment evidence commit must match manifest service head', 'fixture and smoke artifacts must use the same TRACE_PRODUCT_ID', 'smoke artifact must include the fixture dropship warehouse origin', 'Runtime complete', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'deploymentManifestMismatchRejected'],
+    patterns: ['verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-report.js', 'deployment evidence commit must match manifest service head', 'fixture and smoke artifacts must use the same TRACE_PRODUCT_ID', 'smoke artifact must include the fixture dropship warehouse origin for TRACE_SUPPLIER_ID', 'fixture supplier warehouse origin must belong to TRACE_SUPPLIER_ID', 'Runtime complete', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'deploymentManifestMismatchRejected'],
   },
   {
     service: 'suppliers',
@@ -170,7 +170,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-evidence-flow-negative-check.js',
-    patterns: ['approved-smoke-missing-deployment-evidence', 'approved-smoke-missing-owner-approval', 'approved-smoke-missing-mutation-allowance', 'approved-smoke-invalid-deployment-evidence', 'approved-smoke-deployment-sha-not-current-head', 'approved-smoke-missing-protected-endpoint-evidence', 'approved-smoke-health-evidence-still-placeholder', 'approved-smoke-template-not-complete-evidence', 'RUN_APPROVED_RUNTIME_SMOKE', 'DEPLOYMENT_EVIDENCE_FILE', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', '--manifest-self-test'],
+    patterns: ['approved-smoke-missing-deployment-evidence', 'approved-smoke-missing-owner-approval', 'approved-smoke-missing-mutation-allowance', 'approved-smoke-invalid-deployment-evidence', 'approved-smoke-deployment-sha-not-current-head', 'approved-smoke-missing-protected-endpoint-evidence', 'approved-smoke-health-evidence-still-placeholder', 'approved-smoke-template-not-complete-evidence', 'RUN_APPROVED_RUNTIME_SMOKE', 'DEPLOYMENT_EVIDENCE_FILE', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', '--manifest-self-test'],
   },
   {
     service: 'suppliers',

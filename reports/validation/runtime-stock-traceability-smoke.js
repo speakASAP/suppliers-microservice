@@ -163,6 +163,20 @@ function assertConfiguredWarehouseId(label, configuredId, rows, matcher) {
   assert(rows.some((row) => row.warehouseId === configuredId && matcher(row)), `expected ${label} fixture warehouse ${configuredId} in runtime evidence`);
 }
 
+function assertConfiguredSupplierOwnership(label, expectedSupplierId, configuredId, rows) {
+  if (!expectedSupplierId || !configuredId) return;
+  const row = rows.find((item) => item.warehouseId === configuredId);
+  assert(row, `expected ${label} warehouse ${configuredId} in runtime evidence`);
+  assert(row.supplierId === expectedSupplierId, `expected ${label} warehouse ${configuredId} to belong to supplier ${expectedSupplierId}`);
+}
+
+function assertConfiguredRouteSupplierOwnership(label, expectedSupplierId, configuredId, routeType, options) {
+  if (!expectedSupplierId || !configuredId) return;
+  const route = options.find((item) => item.warehouseId === configuredId && item.routeType === routeType);
+  assert(route, `expected ${label} route ${routeType} for warehouse ${configuredId}`);
+  assert(route.supplierId === expectedSupplierId, `expected ${label} route ${routeType} for warehouse ${configuredId} to belong to supplier ${expectedSupplierId}`);
+}
+
 async function readSupplierJob({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey }) {
   const supplierJobs = await requestJson('Suppliers import jobs', `${suppliersUrl}/api/imports?supplierId=${encodeURIComponent(supplierId)}`, {
     method: 'GET',
@@ -412,10 +426,14 @@ if (planOnly) {
   assertConfiguredWarehouseId('own', ownWarehouseId, warehouseRows, (row) => row.warehouseType === 'own' && Number(row.available) > 0);
   assertConfiguredWarehouseId('supplier replenishment', supplierWarehouseId, warehouseRows, (row) => row.warehouseType === 'supplier' && row.supplierId && Number(row.available) > 0);
   assertConfiguredWarehouseId('supplier dropship', dropshipWarehouseId, warehouseRows, (row) => row.warehouseType === 'dropship' && row.supplierId && Number(row.available) > 0);
+  assertConfiguredSupplierOwnership("supplier replenishment", supplierId, supplierWarehouseId, warehouseRows);
+  assertConfiguredSupplierOwnership("supplier dropship", supplierId, dropshipWarehouseId, warehouseRows);
   assert(logisticsOptions.some((option) => option.routeType === 'local_fulfillment'), 'expected local fulfillment route');
   assert(logisticsOptions.some((option) => option.routeType === 'supplier_replenishment'), 'expected supplier replenishment route');
   assert(logisticsOptions.some((option) => option.routeType === 'supplier_dropship'), 'expected supplier dropship route');
   assert(hasRequiredLogisticsLegs(logisticsOptions), 'expected Warehouse logistics legs to prove local fulfillment, supplier replenishment, and supplier dropship paths');
+  assertConfiguredRouteSupplierOwnership("supplier replenishment", supplierId, supplierWarehouseId, "supplier_replenishment", logisticsOptions);
+  assertConfiguredRouteSupplierOwnership("supplier dropship", supplierId, dropshipWarehouseId, "supplier_dropship", logisticsOptions);
   assert(catalogItem?.source === 'warehouse', 'expected Catalog availability source warehouse');
   assert(catalogItem?.warehouses?.length >= 2, 'expected Catalog to forward origin rows');
   assert(catalogItem?.logistics?.options?.length >= 2, 'expected Catalog to forward logistics options');

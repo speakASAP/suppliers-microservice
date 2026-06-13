@@ -55,14 +55,26 @@ function runNodeJson(commandArgs, env = {}) {
 }
 
 
-function hasWarehouseOrigin(smoke, warehouseId, warehouseType) {
+function hasWarehouseOrigin(smoke, warehouseId, warehouseType, supplierId) {
   if (!warehouseId) return true;
-  return (smoke.warehouseOrigins || []).some((row) => row.warehouseId === warehouseId && row.warehouseType === warehouseType && Number(row.available) > 0);
+  return (smoke.warehouseOrigins || []).some((row) => row.warehouseId === warehouseId
+    && row.warehouseType === warehouseType
+    && Number(row.available) > 0
+    && (!supplierId || row.supplierId === supplierId));
 }
 
-function hasRouteForWarehouse(smoke, warehouseId, routeType) {
+function hasRouteForWarehouse(smoke, warehouseId, routeType, supplierId) {
   if (!warehouseId) return true;
-  return (smoke.logisticsLegs || []).some((route) => route.warehouseId === warehouseId && route.routeType === routeType && Array.isArray(route.legs) && route.legs.length > 0);
+  return (smoke.logisticsLegs || []).some((route) => route.warehouseId === warehouseId
+    && route.routeType === routeType
+    && (!supplierId || route.supplierId === supplierId)
+    && Array.isArray(route.legs)
+    && route.legs.length > 0);
+}
+
+function supplierIdForOrigin(artifact, warehouseId, warehouseType) {
+  if (!warehouseId) return null;
+  return (artifact.warehouseOrigins || []).find((row) => row.warehouseId === warehouseId && row.warehouseType === warehouseType)?.supplierId || null;
 }
 
 function verifyTraceArtifactConsistency(manifest) {
@@ -79,14 +91,18 @@ function verifyTraceArtifactConsistency(manifest) {
   const ownWarehouseId = fixture.supplierImport?.ownWarehouseId;
   const supplierWarehouseId = fixture.supplierImport?.supplierWarehouseId;
   const dropshipWarehouseId = fixture.supplierImport?.dropshipWarehouseId;
+  const supplierId = smoke.supplierImport?.supplierId;
+  assert(supplierId, 'smoke artifact must include TRACE_SUPPLIER_ID evidence');
   assert(smoke.supplierImport?.supplierWarehouseId === supplierWarehouseId, 'fixture and smoke artifacts must use the same supplier replenishment warehouse');
   assert(smoke.supplierImport?.dropshipWarehouseId === dropshipWarehouseId, 'fixture and smoke artifacts must use the same dropship warehouse');
+  assert(supplierIdForOrigin(fixture, supplierWarehouseId, 'supplier') === supplierId, 'fixture supplier warehouse origin must belong to TRACE_SUPPLIER_ID');
+  assert(supplierIdForOrigin(fixture, dropshipWarehouseId, 'dropship') === supplierId, 'fixture dropship warehouse origin must belong to TRACE_SUPPLIER_ID');
   assert(hasWarehouseOrigin(smoke, ownWarehouseId, 'own'), 'smoke artifact must include the fixture own warehouse origin');
-  assert(hasWarehouseOrigin(smoke, supplierWarehouseId, 'supplier'), 'smoke artifact must include the fixture supplier warehouse origin');
-  assert(hasWarehouseOrigin(smoke, dropshipWarehouseId, 'dropship'), 'smoke artifact must include the fixture dropship warehouse origin');
+  assert(hasWarehouseOrigin(smoke, supplierWarehouseId, 'supplier', supplierId), 'smoke artifact must include the fixture supplier warehouse origin for TRACE_SUPPLIER_ID');
+  assert(hasWarehouseOrigin(smoke, dropshipWarehouseId, 'dropship', supplierId), 'smoke artifact must include the fixture dropship warehouse origin for TRACE_SUPPLIER_ID');
   assert(hasRouteForWarehouse(smoke, ownWarehouseId, 'local_fulfillment'), 'smoke artifact must include the fixture own warehouse local route');
-  assert(hasRouteForWarehouse(smoke, supplierWarehouseId, 'supplier_replenishment'), 'smoke artifact must include the fixture supplier replenishment route');
-  assert(hasRouteForWarehouse(smoke, dropshipWarehouseId, 'supplier_dropship'), 'smoke artifact must include the fixture dropship route');
+  assert(hasRouteForWarehouse(smoke, supplierWarehouseId, 'supplier_replenishment', supplierId), 'smoke artifact must include the fixture supplier replenishment route for TRACE_SUPPLIER_ID');
+  assert(hasRouteForWarehouse(smoke, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route for TRACE_SUPPLIER_ID');
   assert(smoke.cleanupEvidence, 'smoke artifact must include cleanup or archival evidence');
 }
 
@@ -145,6 +161,7 @@ function sampleFixture() {
     traceProductSkuPrefix: 'CODEX-STOCK-TRACE-',
     supplierImport: {
       triggered: false,
+      supplierId: 'supplier-synthetic',
       ownWarehouseId: 'warehouse-own',
       supplierWarehouseId: 'warehouse-supplier',
       dropshipWarehouseId: 'warehouse-dropship',
@@ -199,6 +216,7 @@ function sampleSmoke() {
     },
     supplierJob: {
       status: 'completed',
+      supplierId: 'supplier-synthetic',
       idempotencyKey: 'manual:traceability-synthetic',
       warehouseAuthority: 'warehouse-microservice',
       warehouseStockUpdateAttempted: true,
@@ -310,6 +328,30 @@ function runSelfTest() {
   }
   assert(mixedWarehouseRejected, 'bundle verifier must reject fixture and smoke artifacts for different supplier warehouses');
 
+  const mismatchedSupplierSmokeFile = path.join(dir, 'smoke-mismatched-supplier.json');
+  const mismatchedSupplierSmoke = sampleSmoke();
+  mismatchedSupplierSmoke.supplierImport.supplierId = 'supplier-other';
+  mismatchedSupplierSmoke.supplierJob.supplierId = 'supplier-other';
+  writeJson(mismatchedSupplierSmokeFile, mismatchedSupplierSmoke);
+  const mismatchedSupplierReportFile = path.join(dir, 'report-mismatched-supplier.md');
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
+    FIXTURE_CHECK_RESULT_FILE: fixtureFile,
+    SMOKE_RESULT_FILE: mismatchedSupplierSmokeFile,
+    DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
+    RUNTIME_EVIDENCE_OUTPUT: mismatchedSupplierReportFile,
+    REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=supplier-other TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+  });
+  const mismatchedSupplierManifestFile = path.join(dir, 'manifest-mismatched-supplier.json');
+  writeManifest(mismatchedSupplierManifestFile, { fixture: fixtureFile, smoke: mismatchedSupplierSmokeFile, deployment: deploymentFile, report: mismatchedSupplierReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let mismatchedSupplierRejected = false;
+  try {
+    verifyBundle({ manifestFile: mismatchedSupplierManifestFile, reportFile: mismatchedSupplierReportFile });
+  } catch (error) {
+    mismatchedSupplierRejected = /TRACE_SUPPLIER_ID/.test(error.message);
+  }
+  assert(mismatchedSupplierRejected, 'bundle verifier must reject supplier identity that does not match fixture warehouse ownership');
+
   const mismatchedDeploymentFile = path.join(dir, 'deployment-mismatched.json');
   const mismatchedDeployment = sampleDeployment();
   mismatchedDeployment.services.catalog.commitSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
@@ -323,7 +365,7 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, deploymentManifestMismatchRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, deploymentManifestMismatchRejected: true };
 }
 
 try {

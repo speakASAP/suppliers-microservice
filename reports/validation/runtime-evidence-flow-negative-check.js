@@ -122,6 +122,7 @@ const cases = [
   runPassCase('manifest-bundle-self-test-cross-checks-deployment', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'deploymentManifestMismatchRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mixed-trace-product', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mixedTraceProductRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mixed-supplier-warehouse', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mixedSupplierWarehouseRejected'),
+  runPassCase('manifest-bundle-self-test-rejects-mismatched-supplier-id', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mismatchedSupplierRejected'),
   runCase('approved-smoke-missing-deployment-evidence', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
