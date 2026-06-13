@@ -2,7 +2,7 @@
 
 Stage: production. Health: verified healthy after the owner-approved cross-service runtime evidence flow and post-smoke token cleanup on 2026-06-13.
 
-Current owner-selected task: SUP-G7 cross-service stock integration slice. Latest follow-up: current-head runtime evidence hardening is source-only through Warehouse `f9a73c0`, Catalog `e454e7d`, and Suppliers `e652d0c`; completion remains pending until owner-approved deployment and guarded runtime evidence are regenerated for these current clean heads. The earlier owner-approved guarded runtime evidence completed on 2026-06-13 for its recorded deployed commits only and the checked-in live report is now explicitly marked `failed-runtime` / `partial` so it cannot be mistaken for current completion evidence.
+Current owner-selected task: SUP-G7 cross-service stock integration slice. Latest follow-up: current-head runtime evidence hardening is source-only through Warehouse `f9a73c0`, Catalog `e454e7d`, and Suppliers `d26c4fd`; completion remains pending until owner-approved deployment and guarded runtime evidence are regenerated for these current clean heads. The earlier owner-approved guarded runtime evidence completed on 2026-06-13 for its recorded deployed commits only and the checked-in live report is now explicitly marked `failed-runtime` / `partial` so it cannot be mistaken for current completion evidence.
 
 Preserved intent: Suppliers is the validation-first supplier import service. It preserves supplier metadata, import jobs, supplier-to-Catalog category mappings, supplier payload validation, and idempotent import orchestration while avoiding credential leakage, unvalidated Catalog writes, unsafe Warehouse stock mutation, and ownership drift.
 

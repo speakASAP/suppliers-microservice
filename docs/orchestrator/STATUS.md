@@ -405,3 +405,13 @@ Validation evidence: `node reports/validation/cross-service-preflight-check.js` 
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Completion Audit Supplier Identity Alignment
+
+Change: aligned the completion audit with the implemented supplier identity boundary. The audit now records that Suppliers stamps stock candidates with the import supplier ID, rejects supplier identity drift before Warehouse mutation, and requires runtime import evidence to belong to `TRACE_SUPPLIER_ID`, include checked Catalog product IDs for `TRACE_PRODUCT_ID`, preserve Warehouse authority, and show a positive applied update count. Cross-service preflight now enforces those completion-audit requirements.
+
+Validation evidence: strict documentation audit passed, `node reports/validation/cross-service-preflight-check.js` passed, and whitespace diff check passed before commit `d26c4fd`. After commit, cross-service preflight passed from clean Warehouse `f9a73c0`, Catalog `e454e7d`, and Suppliers `d26c4fd`; `verify-stock-traceability-completion.js` remained incomplete with reason `runtime report is not passed-runtime/runtime-complete`; fresh deployment evidence and runtime handoff templates were generated under /tmp from the same clean heads.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
