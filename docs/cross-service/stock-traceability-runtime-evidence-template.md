@@ -135,7 +135,7 @@ Record the command with tokens replaced by `[REDACTED]`. Keep these fields visib
 | Catalog coverage and audit classify covered mixed stock. | `coverageStatus`, `stockOrigin`, and audit matched product. | pending-runtime |
 | FlipFlop projection forwards Warehouse-sourced availability and logistics. | Source, stock quantity, route count, forwarded route types, and forwarded route legs including positive reservable local plus supplier movement. | pending-runtime |
 | Suppliers import preserves Catalog identity and Warehouse authority. | Job status, idempotency key, `sourceFingerprint` matching `trace:<TRACE_PRODUCT_ID>:<TRACE_SUPPLIER_WAREHOUSE_ID>:<TRACE_DROPSHIP_WAREHOUSE_ID>:<TRACE_SUPPLIER_STOCK_QTY>:<TRACE_SUPPLIER_SKU>`, `catalogProductValidation=passed`, checked Catalog product IDs, Warehouse authority, mutation attempted, approved, and update count. | pending-runtime |
-| Warehouse remains stock authority across totals. | Warehouse total, summed Warehouse origins, Catalog availability total, Catalog coverage total, and FlipFlop stock quantity all match with `source=warehouse`. | pending-runtime |
+| Warehouse remains stock authority across totals. | Warehouse total, summed Warehouse origins, Catalog availability total, and Catalog coverage total all match with `source=warehouse`; FlipFlop stock quantity matches traceable reservable route availability recorded as `projectionSellableRouteAvailable`. | pending-runtime |
 | Cleanup or archival evidence is recorded. | `TRACE_CLEANUP_EVIDENCE` value or completed cleanup summary. | pending-runtime |
 
 ## Smoke Output Summary

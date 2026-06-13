@@ -707,6 +707,20 @@ function runSelfTest() {
   }
   assert(mismatchedStockAuthorityRejected, 'bundle verifier must reject raw smoke stock authority totals that do not match Warehouse totals');
 
+  const mismatchedProjectionSellableSmokeFile = path.join(dir, 'smoke-mismatched-projection-sellable.json');
+  const mismatchedProjectionSellableSmoke = sampleSmoke();
+  mismatchedProjectionSellableSmoke.stockAuthority.projectionSellableRouteAvailable = 13;
+  writeJson(mismatchedProjectionSellableSmokeFile, mismatchedProjectionSellableSmoke);
+  const mismatchedProjectionSellableManifestFile = path.join(dir, 'manifest-mismatched-projection-sellable.json');
+  writeManifest(mismatchedProjectionSellableManifestFile, { fixture: fixtureFile, smoke: mismatchedProjectionSellableSmokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
+  let mismatchedProjectionSellableRejected = false;
+  try {
+    verifyBundle({ manifestFile: mismatchedProjectionSellableManifestFile, reportFile });
+  } catch (error) {
+    mismatchedProjectionSellableRejected = /sellable route/.test(error.message);
+  }
+  assert(mismatchedProjectionSellableRejected, 'bundle verifier must reject FlipFlop sellable route totals that do not match projection route evidence');
+
   const cleanupPlaceholderSmokeFile = path.join(dir, 'smoke-cleanup-placeholder.json');
   const cleanupPlaceholderSmoke = sampleSmoke();
   cleanupPlaceholderSmoke.cleanupEvidence = 'placeholder cleanup evidence after run';
@@ -929,7 +943,7 @@ function runSelfTest() {
   }
   assert(mismatchedApprovalPathRejected, 'bundle verifier must reject report command approval path that does not match manifest approval artifact');
 
-  return { ...passed, nonCanonicalDeploymentGeneratedAtRejected: true, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, mismatchedDeploymentReportRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedCommandProductRejected: true, mismatchedCommandIdempotencyRejected: true, mismatchedApprovalPathRejected: true, mismatchedApprovalInputsRejected: true };
+  return { ...passed, nonCanonicalDeploymentGeneratedAtRejected: true, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, mismatchedProjectionSellableRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, mismatchedDeploymentReportRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedCommandProductRejected: true, mismatchedCommandIdempotencyRejected: true, mismatchedApprovalPathRejected: true, mismatchedApprovalInputsRejected: true };
 }
 
 try {

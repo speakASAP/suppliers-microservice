@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - FlipFlop Sellable Runtime Negative Proof
+
+Change: added a dedicated runtime bundle self-test for FlipFlop sellable stock evidence. The bundle verifier now rejects smoke artifacts whose `projectionSellableRouteAvailable` does not match the traceable reservable route evidence forwarded by FlipFlop, and operator-facing runtime plan/template text no longer says FlipFlop stock must equal raw Warehouse totals.
+
+Validation evidence: before commit, node --check passed for verify-runtime-evidence-bundle.js and runtime-evidence-flow-negative-check.js, node reports/validation/cross-service-preflight-check.js passed, python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues passed, and git diff --check passed. Bundle self-tests that require clean current service worktrees are rerun after commit.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse mutation, or cleanup mutation was performed.
+
+Next unfinished chunk: owner-approved current-head deployment and guarded runtime evidence regeneration remains required before stock traceability can be marked complete.
+
 ## 2026-06-13 - FlipFlop Sellable Quantity Runtime Evidence Gate
 
 Change: aligned the runtime smoke, report generator, report verifier, bundle verifier, completion audit, and source traceability docs with Catalog's hardened FlipFlop sellable stock contract. Runtime evidence now records raw Warehouse totals separately from `projectionSellableRouteAvailable`, and verifies FlipFlop `stockQuantity` against traceable reservable route availability instead of raw Warehouse `totalAvailable`.
