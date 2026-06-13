@@ -329,6 +329,7 @@ function sampleDeployment() {
 }
 
 function writeReadinessBundle(dir, serviceHeads) {
+  fs.mkdirSync(dir, { recursive: true });
   const files = {
     approvalRequest: path.join(dir, 'stock-traceability-runtime-approval-request.md'),
     deploymentTemplate: path.join(dir, 'stock-traceability-deployment-evidence.template.json'),
