@@ -57,6 +57,8 @@ const baseEnv = {
   TRACE_OWN_WAREHOUSE_ID: 'warehouse-own',
   TRACE_SUPPLIER_WAREHOUSE_ID: 'warehouse-supplier',
   TRACE_DROPSHIP_WAREHOUSE_ID: 'warehouse-dropship',
+  TRACE_SUPPLIER_STOCK_QTY: '7',
+  TRACE_SUPPLIER_SKU: 'SUP-SKU-TRACE',
 };
 
 function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root = crossServiceRoot) {

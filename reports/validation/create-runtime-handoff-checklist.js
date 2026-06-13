@@ -94,6 +94,8 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 - TRACE_SUPPLIER_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID
 - TRACE_DROPSHIP_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID
 - TRACE_IMPORT_IDEMPOTENCY_KEY
+- TRACE_SUPPLIER_STOCK_QTY
+- TRACE_SUPPLIER_SKU
 - TRACE_CLEANUP_EVIDENCE
 - DEPLOYMENT_EVIDENCE_FILE pointing to completed deployment evidence JSON
 - RUNTIME_APPROVAL_ARTIFACT_FILE pointing to owner-approved JSON for current clean service heads
@@ -111,7 +113,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 8. Deploy Catalog second: \`ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/deploy.sh'\`.
 9. Deploy Suppliers third: \`ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && ./scripts/deploy.sh'\`.
 10. Generate completed deployment evidence with \`DEPLOYMENT_EVIDENCE_OUTPUT=/tmp/stock-traceability-deployment-evidence.json WAREHOUSE_HEALTH_EVIDENCE=<summary> WAREHOUSE_PROTECTED_ENDPOINT_EVIDENCE=<401-or-403-summary> CATALOG_HEALTH_EVIDENCE=<summary> CATALOG_PROTECTED_ENDPOINT_EVIDENCE=<401-or-403-summary> SUPPLIERS_HEALTH_EVIDENCE=<summary> SUPPLIERS_PROTECTED_ENDPOINT_EVIDENCE=<401-or-403-summary> node reports/validation/create-deployment-evidence.js\`, then verify it with \`node reports/validation/verify-deployment-evidence.js /tmp/stock-traceability-deployment-evidence.json\`.
-11. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, RUNTIME_APPROVAL_ARTIFACT_FILE, and the completed deployment evidence file.
+11. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, TRACE_SUPPLIER_STOCK_QTY, TRACE_SUPPLIER_SKU, cleanup evidence, RUNTIME_APPROVAL_ARTIFACT_FILE, and the completed deployment evidence file.
 12. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
 13. Confirm the fixture command and approved smoke command use the same TRACE_PRODUCT_ID, TRACE_PRODUCT_SKU_PREFIX, TRACE_OWN_WAREHOUSE_ID, TRACE_SUPPLIER_WAREHOUSE_ID, and TRACE_DROPSHIP_WAREHOUSE_ID.
 14. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.
@@ -151,6 +153,8 @@ function assertSelfTestContent(markdown) {
     'stock-traceability-runtime-readiness-manifest.json',
     'Deploy Warehouse first',
     'RUN_APPROVED_RUNTIME_SMOKE=true',
+    'TRACE_SUPPLIER_STOCK_QTY',
+    'TRACE_SUPPLIER_SKU',
     'verify-runtime-evidence-report.js',
     'verify-runtime-evidence-manifest.js <manifest-file>',
     'verify-runtime-evidence-bundle.js <manifest-file> <report-file>',

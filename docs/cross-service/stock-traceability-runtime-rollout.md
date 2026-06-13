@@ -61,6 +61,8 @@ When owner-approved mutation is allowed, run the smoke with a synthetic Supplier
 - `TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id>`
 - `TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id>`
 - `TRACE_IMPORT_IDEMPOTENCY_KEY=<stable replay key>`
+- `TRACE_SUPPLIER_STOCK_QTY=<approved synthetic supplier quantity>`
+- `TRACE_SUPPLIER_SKU=<approved synthetic supplier sku>`
 - `TRACE_CLEANUP_EVIDENCE=<cleanup result or deferred cleanup reference>`
 
 The approved supplier must be active and must use supplier `code` value `synthetic-trace`, which maps to the registered synthetic adapter. The smoke sends `sourceFingerprint` as `trace:<TRACE_PRODUCT_ID>:<TRACE_SUPPLIER_WAREHOUSE_ID>:<TRACE_DROPSHIP_WAREHOUSE_ID>:<TRACE_SUPPLIER_STOCK_QTY>:<TRACE_SUPPLIER_SKU>`, waits for the async import job to complete, and verifies the Warehouse policy fields before checking Catalog and Warehouse read models.

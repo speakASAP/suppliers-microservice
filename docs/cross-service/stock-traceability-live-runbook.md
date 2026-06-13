@@ -35,6 +35,8 @@ Prepare these values before deploying:
 | `TRACE_SUPPLIER_WAREHOUSE_ID` | Warehouse supplier replenishment location linked to `TRACE_SUPPLIER_ID`. |
 | `TRACE_DROPSHIP_WAREHOUSE_ID` | Warehouse dropship location linked to `TRACE_SUPPLIER_ID`. |
 | `TRACE_IMPORT_IDEMPOTENCY_KEY` | Stable replay key for this approved smoke, for example `manual:traceability-20260613-001`. |
+| `TRACE_SUPPLIER_STOCK_QTY` | Approved synthetic supplier quantity used in the Suppliers source fingerprint, for example `7`. |
+| `TRACE_SUPPLIER_SKU` | Approved synthetic supplier SKU used in the Suppliers source fingerprint, for example `SUP-SKU-TRACE`. |
 | `TRACE_CLEANUP_EVIDENCE` | Completed cleanup evidence or explicit deferral reference, for example `deferred:stock-traceability-runbook-20260613`. |
 | `RUNTIME_APPROVAL_ARTIFACT_FILE` | JSON owner approval artifact whose service heads match the current clean Warehouse, Catalog, and Suppliers repositories and whose scope allows only synthetic traceability records and one guarded synthetic import. |
 | `CATALOG_TOKEN` | Approved Catalog bearer token with read access to protected Catalog endpoints. |
@@ -164,6 +166,8 @@ TRACE_OWN_WAREHOUSE_ID="<own-warehouse-id>" \
 TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-replenishment-warehouse-id>" \
 TRACE_DROPSHIP_WAREHOUSE_ID="<supplier-dropship-warehouse-id>" \
 TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
+TRACE_SUPPLIER_STOCK_QTY="7" \
+TRACE_SUPPLIER_SKU="SUP-SKU-TRACE" \
 TRACE_CLEANUP_EVIDENCE="deferred:stock-traceability-runbook-20260613" \
 DEPLOYMENT_EVIDENCE_FILE="/tmp/stock-traceability-deployment-evidence.json" \
 RUNTIME_APPROVAL_ARTIFACT_FILE="/tmp/stock-traceability-runtime-approval.json" \
@@ -192,6 +196,8 @@ TRACE_OWN_WAREHOUSE_ID="<own-warehouse-id>" \
 TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-replenishment-warehouse-id>" \
 TRACE_DROPSHIP_WAREHOUSE_ID="<supplier-dropship-warehouse-id>" \
 TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
+TRACE_SUPPLIER_STOCK_QTY="7" \
+TRACE_SUPPLIER_SKU="SUP-SKU-TRACE" \
 TRACE_CLEANUP_EVIDENCE="deferred:stock-traceability-runbook-20260613" \
 DEPLOYMENT_EVIDENCE_FILE="/tmp/stock-traceability-deployment-evidence.json" \
 RUNTIME_APPROVAL_ARTIFACT_FILE="/tmp/stock-traceability-runtime-approval.json" \
@@ -214,7 +220,7 @@ The captured smoke artifact must include:
 - Warehouse logistics routes and route legs containing local fulfillment plus supplier replenishment and dropship;
 - Catalog availability and FlipFlop projection with Warehouse source, origin rows, logistics routes, and route legs;
 - Catalog coverage and audit with `covered` and `mixed_stock`;
-- Suppliers import job with approved trace source fingerprint matching the approved trace product and supplier warehouse IDs, Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
+- Suppliers import job with approved trace source fingerprint matching the approved trace product, supplier warehouse IDs, supplier stock quantity, and supplier SKU from the redacted command, Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
 - cleanup or cleanup-deferral evidence.
 
 ## Failure Handling
