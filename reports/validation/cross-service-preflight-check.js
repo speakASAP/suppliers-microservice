@@ -251,7 +251,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-approval-artifact.js',
-    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'readinessManifest binding is required', 'readinessManifest.sha256', 'approvedForCurrentCleanHeads', 'syntheticRecordsOnly', 'oneGuardedSyntheticImport', 'forbiddenActionsAcknowledged', 'token disclosure', 'worktree must be clean before runtime approval can authorize mutation', 'mismatchedApprovalHeadRejected', 'dirtyApprovalRootRejected'],
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'readinessManifest binding is required', 'readinessManifest.sha256', 'verify-runtime-readiness-bundle.js', 'approval artifact readiness manifest must pass', 'approvedForCurrentCleanHeads', 'syntheticRecordsOnly', 'oneGuardedSyntheticImport', 'forbiddenActionsAcknowledged', 'token disclosure', 'worktree must be clean before runtime approval can authorize mutation', 'mismatchedApprovalHeadRejected', 'dirtyApprovalRootRejected'],
   },
   {
     service: 'suppliers',

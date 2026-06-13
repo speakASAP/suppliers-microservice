@@ -3,7 +3,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 
 const args = process.argv.slice(2);
 const selfTest = args.includes('--self-test');
@@ -83,6 +83,16 @@ function assertReadinessManifestBinding(artifact, artifactDir) {
   const readinessFile = path.isAbsolute(readiness.file) ? readiness.file : path.join(artifactDir, readiness.file);
   assert(fs.existsSync(readinessFile), 'approval artifact readinessManifest.file does not exist: ' + readiness.file);
   assert(sha256File(readinessFile) === readiness.sha256, 'approval artifact readinessManifest.sha256 must match readiness manifest file');
+  if (!selfTest) {
+    const result = spawnSync(process.execPath, ['reports/validation/verify-runtime-readiness-bundle.js', readinessFile], {
+      cwd: process.cwd(),
+      env: { ...process.env, CROSS_SERVICE_ROOT: crossServiceRoot },
+      encoding: 'utf8',
+    });
+    assert(result.status === 0, 'approval artifact readiness manifest must pass verify-runtime-readiness-bundle.js: ' + (result.stdout + result.stderr).trim());
+    const verified = JSON.parse(result.stdout);
+    assert(verified.status === 'verified', 'approval artifact readiness manifest verifier must return verified');
+  }
   const readinessJson = JSON.parse(fs.readFileSync(readinessFile, 'utf8'));
   assert(readinessJson.status === 'ready-for-owner-approval', 'approval artifact readiness manifest must be ready-for-owner-approval');
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
