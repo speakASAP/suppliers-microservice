@@ -37,6 +37,12 @@ function runJson(commandArgs) {
   return JSON.parse(result.stdout);
 }
 
+function formatCompletionReason(reason) {
+  if (!reason) return "-";
+  const oneLine = String(reason).replace(/\s+/g, " ").trim();
+  return oneLine.length > 500 ? `${oneLine.slice(0, 497)}...` : oneLine;
+}
+
 function serviceRows() {
   return Object.entries(services).map(([name, repo]) => {
     const status = git(repo, ['status', '--short']);
@@ -61,7 +67,7 @@ Metadata:
 - preflightStatus: ${preflight.status || 'unknown'}
 - liveRuntimeReport: ${preflight.liveRuntimeReport?.status || 'unknown'}
 - completionGate: ${preflight.completionGate?.status || 'unknown'}
-- completionReason: ${preflight.completionGate?.result?.reason || '-'}
+- completionReason: ${formatCompletionReason(preflight.completionGate?.result?.reason)}
 
 ## Source Snapshot
 
