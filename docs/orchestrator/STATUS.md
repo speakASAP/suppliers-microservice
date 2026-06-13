@@ -333,3 +333,13 @@ Validation evidence: before commit, `node reports/validation/cross-service-prefl
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Catalog Channel Readiness Warehouse Gate Alignment
+
+Change: updated Suppliers cross-service preflight after Catalog a24636f so the integration contract now requires FlipFlop channel readiness to depend on sellable Warehouse coverage. The preflight checks Catalog readiness source for Warehouse coverage enforcement and checks the focused spec for the stock-without-reservable-route blocking case plus injected coverage facts used by projection.
+
+Validation evidence: node reports/validation/cross-service-preflight-check.js passed and verified Catalog src/channel-readiness/channel-readiness.service.ts plus src/channel-readiness/channel-readiness.service.spec.ts. The completion gate remains incomplete because the saved runtime manifest still references an older Catalog head.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.

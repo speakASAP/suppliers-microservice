@@ -74,6 +74,16 @@ const checks = [
   },
   {
     service: 'catalog',
+    file: 'src/channel-readiness/channel-readiness.service.ts',
+    patterns: ['WarehouseAvailabilityService', 'warehouseCoverageIssues', 'sellableWithWarehouse', 'warehouse_logistics_route_missing', 'warehouseCoverage: facts.warehouseCoverage'],
+  },
+  {
+    service: 'catalog',
+    file: 'src/channel-readiness/channel-readiness.service.spec.ts',
+    patterns: ['blocks FlipFlop readiness when Warehouse has stock but no reservable route', 'uses injected Warehouse coverage facts without fetching coverage again', 'warehouse_logistics_route_missing', 'sellableWithWarehouse: false'],
+  },
+  {
+    service: 'catalog',
     file: 'src/warehouse-availability/warehouse-availability.service.spec.ts',
     patterns: ['supplier_replenishment', 'supplier_dropship', 'alfares_receiving_or_handoff', "to: 'customer'", "responsibility: 'supplier'", "responsibility: 'warehouse'", 'does not attach stale Warehouse logistics', 'ignores duplicate and unrequested Warehouse logistics plans'],
   },
