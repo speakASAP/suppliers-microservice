@@ -95,7 +95,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'src/imports/imports.service.ts',
-    patterns: ['apply_with_owner_approval', 'warehouseStockUpdateApproved', 'supplier-reconciliations', 'requireForSupplier'],
+    patterns: ['apply_with_owner_approval', 'warehouseStockUpdateApproved', 'supplier-reconciliations', 'requireForSupplier', 'assertCatalogProductsExist', 'CATALOG_SERVICE_TOKEN', '/api/products/'],
   },
   {
     service: 'suppliers',
@@ -190,7 +190,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-live-runbook.md',
-    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs', 'All three repositories must be clean before generating deployment evidence', 'rejects dirty Warehouse, Catalog, or Suppliers worktrees', 'node reports/validation/run-runtime-evidence-flow.js --plan-only', 'node reports/validation/run-runtime-evidence-flow.js --manifest-self-test', 'node reports/validation/verify-runtime-evidence-manifest.js --self-test', 'node reports/validation/verify-runtime-evidence-bundle.js --self-test'],
+    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs', 'Suppliers runtime must have `CATALOG_SERVICE_URL` and `CATALOG_SERVICE_TOKEN`', 'All three repositories must be clean before generating deployment evidence', 'rejects dirty Warehouse, Catalog, or Suppliers worktrees', 'node reports/validation/run-runtime-evidence-flow.js --plan-only', 'node reports/validation/run-runtime-evidence-flow.js --manifest-self-test', 'node reports/validation/verify-runtime-evidence-manifest.js --self-test', 'node reports/validation/verify-runtime-evidence-bundle.js --self-test'],
     forbiddenPatterns: ['runtime-stock-traceability-smoke.js --config-only', 'CATALOG_TOKEN=catalog-token-synthetic', 'WAREHOUSE_TOKEN=warehouse-token-synthetic', 'SUPPLIERS_TOKEN=suppliers-token-synthetic'],
   },
   {
@@ -216,7 +216,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/synthetic-approved-import-run-check.js',
-    patterns: ['duplicateWarehouseCandidateRejected', 'Duplicate Warehouse stock candidate', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
+    patterns: ['duplicateWarehouseCandidateRejected', 'Duplicate Warehouse stock candidate', 'approved mutation must verify each unique Catalog product before Warehouse mutation', 'unknown Catalog product must block Warehouse mutation', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
   },
 ];
 

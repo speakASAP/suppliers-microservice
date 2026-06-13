@@ -245,6 +245,8 @@ export class ImportsService {
       };
     }
 
+    await this.assertCatalogProductsExist(candidates);
+
     const token = process.env.WAREHOUSE_SERVICE_TOKEN || process.env.WAREHOUSE_INTERNAL_SERVICE_TOKEN;
     if (!token) {
       throw new ServiceUnavailableException("Warehouse service token is not configured");
@@ -292,6 +294,54 @@ export class ImportsService {
       appliedUpdates,
       errors: [],
     };
+  }
+
+  private async assertCatalogProductsExist(candidates: NormalizedSupplierImportItem[]): Promise<void> {
+    const productIds = [...new Set(candidates.map((candidate) => String(candidate.productId || "").trim()).filter(Boolean))];
+    if (productIds.length === 0) {
+      return;
+    }
+
+    const token = process.env.CATALOG_SERVICE_TOKEN || process.env.CATALOG_INTERNAL_SERVICE_TOKEN || process.env.CATALOG_TOKEN;
+    if (!token) {
+      throw new ServiceUnavailableException("Catalog service token is not configured for supplier stock validation");
+    }
+
+    const baseUrl = (process.env.CATALOG_SERVICE_URL || process.env.CATALOG_BASE_URL || "http://catalog-microservice:3000").replace(/\/$/, "");
+    const missingProductIds: string[] = [];
+
+    for (const productId of productIds) {
+      try {
+        const response = await firstValueFrom(this.httpService.get(
+          baseUrl + "/api/products/" + encodeURIComponent(productId),
+          {
+            headers: {
+              Authorization: "Bearer " + token,
+              "Content-Type": "application/json",
+            },
+            timeout: Number(process.env.CATALOG_PRODUCT_LOOKUP_TIMEOUT_MS || 5000),
+          },
+        ));
+        const catalogProductId = response?.data?.data?.id;
+        if (catalogProductId !== productId) {
+          missingProductIds.push(productId);
+        }
+      } catch (error) {
+        const status = typeof error === "object" && error !== null ? (error as { response?: { status?: number } }).response?.status : undefined;
+        if (status === 404) {
+          missingProductIds.push(productId);
+          continue;
+        }
+        if (status === 401 || status === 403) {
+          throw new ServiceUnavailableException("Catalog product lookup rejected suppliers service credentials");
+        }
+        throw new ServiceUnavailableException("Catalog product lookup dependency is unavailable");
+      }
+    }
+
+    if (missingProductIds.length > 0) {
+      throw new BadRequestException("Supplier stock candidates reference unknown Catalog product IDs: " + missingProductIds.join(", "));
+    }
   }
 
   private async assertSupplierCanImport(supplierId: string): Promise<Supplier> {

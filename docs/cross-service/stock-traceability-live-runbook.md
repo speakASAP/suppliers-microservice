@@ -38,6 +38,7 @@ Prepare these values before deploying:
 | `CATALOG_TOKEN` | Approved Catalog bearer token with read access to protected Catalog endpoints. |
 | `WAREHOUSE_TOKEN` | Approved Warehouse bearer token with read access and supplier reconciliation permission. |
 | `SUPPLIERS_TOKEN` | Approved Suppliers bearer token with import-job access. |
+| `CATALOG_SERVICE_URL` / `CATALOG_SERVICE_TOKEN` | Suppliers runtime configuration used to verify Catalog product identity before approved Warehouse stock mutation. Keep token value in the runtime environment only. |
 
 ## Pre-Deploy Snapshot
 
@@ -107,7 +108,7 @@ curl -sk https://catalog.alfares.cz/health
 curl -sk -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" --data '{"productIds":["anonymous-protection-check"]}' https://catalog.alfares.cz/api/products/availability/coverage
 ```
 
-Deploy Suppliers last:
+Deploy Suppliers last. Before approved supplier stock mutation, Suppliers runtime must have `CATALOG_SERVICE_URL` and `CATALOG_SERVICE_TOKEN` or `CATALOG_INTERNAL_SERVICE_TOKEN` configured so it can verify Catalog product identity before calling Warehouse reconciliation:
 
 ```bash
 ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && ./scripts/deploy.sh'
@@ -154,7 +155,7 @@ The smoke must return `status: "passed"` and include:
 - Warehouse logistics routes and route legs containing local fulfillment plus supplier replenishment and dropship;
 - Catalog availability and FlipFlop projection with Warehouse source, origin rows, logistics routes, and route legs;
 - Catalog coverage and audit with `covered` and `mixed_stock`;
-- Suppliers import job with Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
+- Suppliers import job with Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
 - cleanup or cleanup-deferral evidence.
 
 Save the smoke JSON to a file for report generation:

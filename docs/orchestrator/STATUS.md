@@ -343,3 +343,13 @@ Validation evidence: node reports/validation/cross-service-preflight-check.js pa
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Suppliers Catalog Identity Guard Before Warehouse Mutation
+
+Change: tightened the Suppliers approved stock reconciliation path so owner-approved supplier stock mutation verifies each unique Catalog product ID through Catalog before posting any reconciliation to Warehouse. Validate-only imports and unapproved mutation attempts still make no Catalog or Warehouse downstream calls; unknown Catalog product IDs fail the import job before Warehouse mutation.
+
+Validation evidence: `npm run build`, `node reports/validation/synthetic-approved-import-run-check.js`, and `git diff --check` passed. The synthetic approved import check now proves approved mutation performs one Catalog lookup for the unique product before two Warehouse reconciliation calls, while an unknown Catalog product performs zero Warehouse calls.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: update cross-service preflight/docs alignment, regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.

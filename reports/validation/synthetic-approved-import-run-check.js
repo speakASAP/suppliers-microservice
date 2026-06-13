@@ -6,7 +6,15 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function createHarness() {
+function observableSuccess(data) {
+  return { subscribe: (observer) => { observer.next(data); observer.complete(); } };
+}
+
+function observableError(error) {
+  return { subscribe: (observer) => { observer.error(error); } };
+}
+
+function createHarness(options = {}) {
   const job = {
     id: 'job-synthetic',
     supplierId: 'supplier-synthetic',
@@ -16,6 +24,10 @@ function createHarness() {
   };
   const updates = [];
   const posts = [];
+  const catalogLookups = [];
+  const catalogProducts = options.catalogProducts ?? {
+    'product-synthetic': { id: 'product-synthetic', sku: 'CODEX-STOCK-TRACE-001' },
+  };
   const importJobRepository = {
     findOne: async ({ where }) => {
       if (where?.id === job.id && where?.supplierId === job.supplierId) return { ...job, ...updates.at(-1) };
@@ -30,9 +42,18 @@ function createHarness() {
     findOne: async ({ where }) => where?.id === job.supplierId ? { id: job.supplierId, code: 'SYN', apiType: 'synthetic', isActive: true } : null,
   };
   const httpService = {
-    post: (url, body, options) => {
-      posts.push({ url, body, options });
-      return { subscribe: (observer) => { observer.next({ data: { success: true } }); observer.complete(); } };
+    get: (url, requestOptions) => {
+      catalogLookups.push({ url, options: requestOptions });
+      const productId = decodeURIComponent(String(url).split('/').at(-1));
+      const product = catalogProducts[productId];
+      if (!product) {
+        return observableError({ response: { status: 404 } });
+      }
+      return observableSuccess({ data: { success: true, data: product } });
+    },
+    post: (url, body, requestOptions) => {
+      posts.push({ url, body, options: requestOptions });
+      return observableSuccess({ data: { success: true } });
     },
   };
   const adapter = {
@@ -66,13 +87,15 @@ function createHarness() {
     requireForSupplier: () => adapter,
   };
 
-  return { service: new ImportsService(importJobRepository, supplierRepository, httpService, adapterRegistry), job, updates, posts };
+  return { service: new ImportsService(importJobRepository, supplierRepository, httpService, adapterRegistry), job, updates, posts, catalogLookups };
 }
 
-async function runScenario(options) {
+async function runScenario(options, harnessOptions = {}) {
   process.env.WAREHOUSE_SERVICE_TOKEN = 'synthetic-token';
   process.env.WAREHOUSE_SERVICE_URL = 'http://warehouse.example.test';
-  const harness = createHarness();
+  process.env.CATALOG_SERVICE_TOKEN = 'synthetic-catalog-token';
+  process.env.CATALOG_SERVICE_URL = 'http://catalog.example.test';
+  const harness = createHarness(harnessOptions);
   await harness.service.runImport(harness.job.id, harness.job.supplierId, options);
   return harness;
 }
@@ -133,6 +156,7 @@ async function assertSyntheticTraceAdapter() {
   const validateOnly = await runScenario({});
   const validateOnlyCompletion = validateOnly.updates.at(-1);
   assert(validateOnly.posts.length === 0, 'validate-only import must not call Warehouse');
+  assert(validateOnly.catalogLookups.length === 0, 'validate-only import must not call Catalog product lookup');
   assert(validateOnlyCompletion.warehouseStockUpdateAttempted === false, 'validate-only must record no mutation attempt');
   assert(validateOnlyCompletion.warehouseStockUpdateApproved === false, 'validate-only must record no approval');
   assert(Number(validateOnlyCompletion.updatedProducts || 0) === 0, 'validate-only must not report applied updates');
@@ -140,12 +164,15 @@ async function assertSyntheticTraceAdapter() {
   const unapproved = await runScenario({ warehouseStockUpdateMode: 'apply_with_owner_approval' });
   const unapprovedCompletion = unapproved.updates.at(-1);
   assert(unapproved.posts.length === 0, 'unapproved mutation attempt must not call Warehouse');
+  assert(unapproved.catalogLookups.length === 0, 'unapproved mutation attempt must not call Catalog product lookup');
   assert(unapprovedCompletion.status === 'failed', 'unapproved mutation attempt must fail validation');
   assert(unapprovedCompletion.warehouseStockUpdateAttempted === true, 'unapproved attempt must be recorded as attempted');
   assert(unapprovedCompletion.warehouseStockUpdateApproved === false, 'unapproved attempt must not be approved');
 
   const approved = await runScenario({ warehouseStockUpdateMode: 'apply_with_owner_approval', ownerApproval: 'explicit' });
   const approvedCompletion = approved.updates.at(-1);
+  assert(approved.catalogLookups.length === 1, 'approved mutation must verify each unique Catalog product before Warehouse mutation');
+  assert(approved.catalogLookups[0].url === 'http://catalog.example.test/api/products/product-synthetic', 'approved mutation must call Catalog product identity endpoint');
   assert(approved.posts.length === 2, 'approved mutation must call Warehouse once per supplier stock candidate');
   assert(approved.posts.every((post) => post.url === 'http://warehouse.example.test/api/supplier-reconciliations'), 'approved mutation must call Warehouse supplier reconciliation endpoint');
   assert(approved.posts.some((post) => post.body.warehouseId === 'warehouse-supplier'), 'approved mutation must include supplier replenishment warehouse');
@@ -156,28 +183,46 @@ async function assertSyntheticTraceAdapter() {
   assert(approvedCompletion.warehouseStockUpdateApproved === true, 'approved mutation must record approval');
   assert(approvedCompletion.updatedProducts === 2, 'approved mutation must report both applied updates');
 
+  const unknownCatalogProduct = await runScenario(
+    { warehouseStockUpdateMode: 'apply_with_owner_approval', ownerApproval: 'explicit' },
+    { catalogProducts: {} },
+  );
+  const unknownCatalogProductCompletion = unknownCatalogProduct.updates.at(-1);
+  assert(unknownCatalogProduct.catalogLookups.length === 1, 'unknown Catalog product path must check Catalog once');
+  assert(unknownCatalogProduct.posts.length === 0, 'unknown Catalog product must block Warehouse mutation');
+  assert(unknownCatalogProductCompletion.status === 'failed', 'unknown Catalog product must fail the import job');
+  assert(JSON.stringify(unknownCatalogProductCompletion.errors).includes('unknown Catalog product IDs'), 'unknown Catalog product failure must explain the missing Catalog identity');
+
   console.log(JSON.stringify({
     status: 'passed',
     duplicateWarehouseCandidateRejected: true,
     syntheticAdapter: 'passed',
     validateOnly: {
+      catalogLookups: validateOnly.catalogLookups.length,
       warehouseCalls: validateOnly.posts.length,
       attempted: validateOnlyCompletion.warehouseStockUpdateAttempted,
       approved: validateOnlyCompletion.warehouseStockUpdateApproved,
     },
     unapprovedAttempt: {
+      catalogLookups: unapproved.catalogLookups.length,
       warehouseCalls: unapproved.posts.length,
       status: unapprovedCompletion.status,
       attempted: unapprovedCompletion.warehouseStockUpdateAttempted,
       approved: unapprovedCompletion.warehouseStockUpdateApproved,
     },
     approvedAttempt: {
+      catalogLookups: approved.catalogLookups.length,
       warehouseCalls: approved.posts.length,
       status: approvedCompletion.status,
       attempted: approvedCompletion.warehouseStockUpdateAttempted,
       approved: approvedCompletion.warehouseStockUpdateApproved,
       updatedProducts: approvedCompletion.updatedProducts,
       externalReferencePrefix: approved.posts[0].body.externalReference.slice(0, 16),
+    },
+    unknownCatalogProduct: {
+      catalogLookups: unknownCatalogProduct.catalogLookups.length,
+      warehouseCalls: unknownCatalogProduct.posts.length,
+      status: unknownCatalogProductCompletion.status,
     },
   }, null, 2));
 })().catch((error) => {

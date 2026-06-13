@@ -122,7 +122,7 @@ Record the command with tokens replaced by `[REDACTED]`. Keep these fields visib
 | Catalog availability forwards Warehouse origin rows and logistics. | Source, row count, logistics option count, forwarded route types, and forwarded route legs including local plus supplier movement. | pending-runtime |
 | Catalog coverage and audit classify covered mixed stock. | `coverageStatus`, `stockOrigin`, and audit matched product. | pending-runtime |
 | FlipFlop projection forwards Warehouse-sourced availability and logistics. | Source, stock quantity, route count, forwarded route types, and forwarded route legs including local plus supplier movement. | pending-runtime |
-| Suppliers import preserves Warehouse authority. | Job status, idempotency key, Warehouse authority, mutation attempted, approved, and update count. | pending-runtime |
+| Suppliers import preserves Catalog identity and Warehouse authority. | Job status, idempotency key, Catalog product lookup completed before Warehouse mutation, Warehouse authority, mutation attempted, approved, and update count. | pending-runtime |
 | Warehouse remains stock authority across totals. | Warehouse total, summed Warehouse origins, Catalog availability total, Catalog coverage total, and FlipFlop stock quantity all match with `source=warehouse`. | pending-runtime |
 | Cleanup or archival evidence is recorded. | `TRACE_CLEANUP_EVIDENCE` value or completed cleanup summary. | pending-runtime |
 
@@ -136,7 +136,7 @@ Include only summarized fields from the JSON smoke output:
 - Warehouse, Catalog, and FlipFlop route type and route-leg lists;
 - Catalog coverage summary;
 - stock-authority total consistency summary;
-- Suppliers import job summary;
+- Suppliers import job summary, including Catalog product identity validation before Warehouse reconciliation;
 - cleanup evidence.
 
 Do not paste raw full responses or tokens.
