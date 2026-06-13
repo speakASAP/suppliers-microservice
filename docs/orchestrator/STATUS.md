@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Runtime Handoff Deployment Evidence Wording
+
+Change: clarified the runtime handoff required-input text so `DEPLOYMENT_EVIDENCE_FILE` is described once as completed deployment evidence JSON bound to `RUNTIME_READINESS_MANIFEST_FILE`. This removes duplicate wording from the generated owner handoff without changing runtime behavior or approval boundaries.
+
+Validation evidence: node --check reports/validation/create-runtime-handoff-checklist.js passed, and node reports/validation/create-runtime-handoff-checklist.js --self-test passed with dirtyRowsRejected true before commit. Clean-worktree handoff and preflight validation are rerun after this status entry is committed.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head completion remains pending owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: owner-approved production migration/deployment if needed, then current-head approval artifact, deployment evidence, and guarded runtime evidence regeneration.
+
 ## 2026-06-13 - Trace Source Fingerprint Length
 
 Change: widened Suppliers import sourceFingerprint validation and persistence from 128 to 256 characters. The approved stock traceability source fingerprint includes the trace product ID, supplier replenishment warehouse ID, dropship warehouse ID, supplier stock quantity, and supplier SKU, so runtime evidence can exceed the earlier 128-character limit. Added an unapplied migration artifact for the production column width change and aligned the bootstrap migration definition.
