@@ -18,6 +18,12 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function isCanonicalIsoUtcTimestamp(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
+}
+
 function readJson(filePath, label) {
   assert(fs.existsSync(filePath), `${label} does not exist: ${filePath}`);
   try {
@@ -68,7 +74,7 @@ function verifyManifest(manifestFile) {
   const manifest = readJson(manifestFile, 'runtime evidence manifest');
   assert(manifest.status === 'runtime-complete-evidence-bundle', 'manifest status must be runtime-complete-evidence-bundle');
   assert(typeof manifest.generatedAt === 'string' && manifest.generatedAt.trim(), 'manifest generatedAt is required');
-  assert(!Number.isNaN(Date.parse(manifest.generatedAt)), 'manifest generatedAt must be an ISO-compatible timestamp');
+  assert(isCanonicalIsoUtcTimestamp(manifest.generatedAt), 'manifest generatedAt must be a canonical UTC ISO timestamp');
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
     const head = manifest.serviceHeads?.[service];
     assert(/^[0-9a-f]{7,40}$/i.test(head || ''), `manifest ${service} head must be a commit SHA`);
@@ -127,6 +133,18 @@ function runSelfTest() {
   }, null, 2));
   const passed = verifyManifest(manifestFile);
 
+  const nonCanonicalTimeFile = path.join(dir, "non-canonical-time-manifest.json");
+  const nonCanonicalTime = readJson(manifestFile, "self-test manifest");
+  nonCanonicalTime.generatedAt = "June 13 2026";
+  fs.writeFileSync(nonCanonicalTimeFile, JSON.stringify(nonCanonicalTime, null, 2));
+  let nonCanonicalGeneratedAtRejected = false;
+  try {
+    verifyManifest(nonCanonicalTimeFile);
+  } catch (error) {
+    nonCanonicalGeneratedAtRejected = /canonical UTC ISO timestamp/.test(error.message);
+  }
+  assert(nonCanonicalGeneratedAtRejected, "manifest verifier self-test must reject non-canonical generatedAt timestamps");
+
   const tamperedFile = path.join(dir, "tampered-manifest.json");
   const tampered = readJson(manifestFile, "self-test manifest");
   tampered.artifacts.report.sha256 = "0".repeat(64);
@@ -148,7 +166,7 @@ function runSelfTest() {
   }
   assert(dirtyWorktreeRejected, "manifest verifier self-test must reject dirty service worktrees");
   crossServiceRoot = previousRoot;
-  return { ...passed, cleanWorktreeRequired: true, tamperedHashRejected: true, dirtyWorktreeRejected: true };
+  return { ...passed, cleanWorktreeRequired: true, nonCanonicalGeneratedAtRejected: true, tamperedHashRejected: true, dirtyWorktreeRejected: true };
 }
 
 try {
