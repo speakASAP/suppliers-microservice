@@ -339,7 +339,7 @@ const cases = [
     deployment.services.catalog.protectedEndpointEvidence = 'anonymous coverage returned 200';
   }),
   runDeploymentCase('deployment-health-evidence-placeholder', (deployment) => {
-    deployment.services.suppliers.healthEvidence = 'TODO: record /api/health response after deployment';
+    deployment.services.suppliers.healthEvidence = 'placeholder /api/health response after deployment';
   }),
   runDeploymentCase('missing-current-head-deployment-marker', (deployment) => {
     delete deployment.generatedFromCurrentHeads;

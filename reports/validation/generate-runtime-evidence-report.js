@@ -32,7 +32,7 @@ function hasText(value) {
 }
 
 function isCompletedEvidenceText(value) {
-  return hasText(value) && !/TODO/i.test(value);
+  return hasText(value) && !/TODO|placeholder/i.test(value);
 }
 
 function isCommitSha(value) {

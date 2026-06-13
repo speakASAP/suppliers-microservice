@@ -25,7 +25,7 @@ function hasText(value) {
 }
 
 function isCompletedEvidenceText(value) {
-  return hasText(value) && !/TODO/i.test(value);
+  return hasText(value) && !/TODO|placeholder/i.test(value);
 }
 
 function isCommitSha(value) {
@@ -106,8 +106,8 @@ function validateDeploymentEvidence(filePath) {
     assert(isCommitSha(item.commitSha), `deployment evidence ${service} commitSha must be a 7-40 character hex SHA`);
     assert(item.commitSha === currentHeadForService(service), `deployment evidence ${service} commitSha must match current ${deploymentRepos[service]} HEAD ${currentHeadForService(service)}`);
     assert(hasText(item.deployCommand || './scripts/deploy.sh'), `deployment evidence ${service} deployCommand is required`);
-    assert(isCompletedEvidenceText(item.healthEvidence), `deployment evidence ${service} healthEvidence must be completed and must not contain TODO`);
-    assert(isCompletedEvidenceText(item.protectedEndpointEvidence), `deployment evidence ${service} protectedEndpointEvidence must be completed and must not contain TODO`);
+    assert(isCompletedEvidenceText(item.healthEvidence), `deployment evidence ${service} healthEvidence must be completed and must not contain TODO or placeholder`);
+    assert(isCompletedEvidenceText(item.protectedEndpointEvidence), `deployment evidence ${service} protectedEndpointEvidence must be completed and must not contain TODO or placeholder`);
     assert(/401|403/.test(item.protectedEndpointEvidence || ''), `deployment evidence ${service} protectedEndpointEvidence must include 401 or 403`);
     assertCleanWorktreeForService(service);
   }
@@ -225,7 +225,7 @@ function runSelfTest() {
   assert(missingProtectedEndpointRejected, 'self-test must reject protected endpoint evidence without 401 or 403');
 
   const placeholder = validDeploymentForRoot(root);
-  placeholder.services.suppliers.healthEvidence = 'TODO: record Suppliers /api/health';
+  placeholder.services.suppliers.healthEvidence = 'placeholder Suppliers /api/health response';
   const placeholderFile = writeDeployment(path.join(dir, 'placeholder'), placeholder);
   let placeholderEvidenceRejected = false;
   try {
@@ -233,7 +233,7 @@ function runSelfTest() {
   } catch (error) {
     placeholderEvidenceRejected = /healthEvidence must be completed/.test(error.message);
   }
-  assert(placeholderEvidenceRejected, 'self-test must reject TODO deployment evidence');
+  assert(placeholderEvidenceRejected, 'self-test must reject placeholder deployment evidence');
 
   fs.writeFileSync(path.join(repoPathForService('suppliers'), 'dirty.txt'), 'dirty\n');
   let dirtyDeploymentRootRejected = false;

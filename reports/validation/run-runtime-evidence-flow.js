@@ -59,7 +59,7 @@ function hasText(value) {
 }
 
 function isCompletedEvidenceText(value) {
-  return hasText(value) && !/TODO/i.test(value);
+  return hasText(value) && !/TODO|placeholder/i.test(value);
 }
 
 function isCommitSha(value) {
@@ -188,8 +188,8 @@ function validateDeploymentEvidenceFile(filePath) {
     const currentHead = currentHeadForService(service);
     assert(item.commitSha === currentHead, `DEPLOYMENT_EVIDENCE_FILE ${service} commitSha must match current ${deploymentRepos[service]} HEAD ${currentHead}`);
     assert(hasText(item.deployCommand || './scripts/deploy.sh'), `DEPLOYMENT_EVIDENCE_FILE ${service} deployCommand is required`);
-    assert(isCompletedEvidenceText(item.healthEvidence), `DEPLOYMENT_EVIDENCE_FILE ${service} healthEvidence must be completed and must not contain TODO`);
-    assert(isCompletedEvidenceText(item.protectedEndpointEvidence), `DEPLOYMENT_EVIDENCE_FILE ${service} protectedEndpointEvidence must be completed and must not contain TODO`);
+    assert(isCompletedEvidenceText(item.healthEvidence), `DEPLOYMENT_EVIDENCE_FILE ${service} healthEvidence must be completed and must not contain TODO or placeholder`);
+    assert(isCompletedEvidenceText(item.protectedEndpointEvidence), `DEPLOYMENT_EVIDENCE_FILE ${service} protectedEndpointEvidence must be completed and must not contain TODO or placeholder`);
     assert(/401|403/.test(item.protectedEndpointEvidence || ''), `DEPLOYMENT_EVIDENCE_FILE ${service} protectedEndpointEvidence must include 401 or 403`);
   }
   for (const service of ['warehouse', 'catalog', 'suppliers']) {

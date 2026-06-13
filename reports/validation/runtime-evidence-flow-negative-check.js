@@ -434,7 +434,7 @@ const cases = [
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
     TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
     TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
-    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ suppliers: { healthEvidence: 'TODO: record /api/health response after deployment' } }),
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ suppliers: { healthEvidence: 'placeholder /api/health response after deployment' } }),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'suppliers healthEvidence'),

@@ -291,7 +291,7 @@ function verify(report) {
     assert(!line.includes('| - |'), `${service} deployment evidence row contains missing values`);
     const cells = rowCells(line);
     assert(/^[0-9a-f]{7,40}$/i.test(cells[1] || ''), `${service} deployment evidence must include a commit SHA`);
-    assert(!/TODO/i.test(line), `${service} deployment evidence must not contain TODO placeholders`);
+    assert(!/TODO|placeholder/i.test(line), `${service} deployment evidence must not contain TODO or placeholder values`);
     assert(/401|403/.test(line), `${service} protected endpoint evidence must include 401 or 403`);
     assert(line.includes('./scripts/deploy.sh'), `${service} deployment evidence must include deploy command`);
   }

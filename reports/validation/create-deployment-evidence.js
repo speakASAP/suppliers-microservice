@@ -59,7 +59,7 @@ function commitShaFor(repo) {
 function requireEvidenceText(name) {
   const value = envValue(name);
   assert(value, `${name} is required to generate completed deployment evidence`);
-  assert(!/TODO/i.test(value), `${name} must be completed and must not contain TODO`);
+  assert(!/TODO|placeholder/i.test(value), `${name} must be completed and must not contain TODO or placeholder`);
   assert(!/Bearer\s+|TOKEN|SERVICE_TOKEN|api[_-]?key|secret|password/i.test(value), `${name} must not contain token or credential values`);
   return value;
 }
@@ -190,6 +190,17 @@ function runSelfTest() {
   process.env.CATALOG_PROTECTED_ENDPOINT_EVIDENCE = previousCatalogAuth;
   assert(weakProtectedEvidenceRejected, 'self-test must reject weak protected endpoint evidence');
 
+  const previousSuppliersHealth = process.env.SUPPLIERS_HEALTH_EVIDENCE;
+  process.env.SUPPLIERS_HEALTH_EVIDENCE = 'placeholder Suppliers /api/health response after deployment';
+  let placeholderEvidenceRejected = false;
+  try {
+    buildEvidence();
+  } catch (error) {
+    placeholderEvidenceRejected = /must be completed/.test(error.message);
+  }
+  process.env.SUPPLIERS_HEALTH_EVIDENCE = previousSuppliersHealth;
+  assert(placeholderEvidenceRejected, 'self-test must reject placeholder deployment evidence');
+
   fs.writeFileSync(path.join(repoPathFor(serviceConfig.suppliers.repo), 'dirty.txt'), 'dirty\n');
   let dirtyWorktreeRejected = false;
   try {
@@ -199,7 +210,7 @@ function runSelfTest() {
   }
   assert(dirtyWorktreeRejected, 'self-test must reject dirty service worktrees');
 
-  console.log(JSON.stringify({ status: 'passed', services: Object.keys(evidence.services), missingHealthRejected, weakProtectedEvidenceRejected, dirtyWorktreeRejected }, null, 2));
+  console.log(JSON.stringify({ status: 'passed', services: Object.keys(evidence.services), missingHealthRejected, weakProtectedEvidenceRejected, placeholderEvidenceRejected, dirtyWorktreeRejected }, null, 2));
 }
 
 try {
