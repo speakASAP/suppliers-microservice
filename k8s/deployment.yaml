@@ -34,6 +34,16 @@ spec:
                 secretKeyRef:
                   name: database-credentials
                   key: DB_PASSWORD
+            - name: CATALOG_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-microservice-secret
+                  key: JWT_TOKEN
+            - name: WAREHOUSE_SERVICE_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: warehouse-microservice-secret
+                  key: JWT_TOKEN
           envFrom:
             - configMapRef:
                 name: suppliers-microservice-config

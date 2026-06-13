@@ -16,6 +16,8 @@ data:
   # DATABASE_POOL_SIZE: "10"
   # LOG_LEVEL: "info"
   AUTH_SERVICE_URL: "http://auth-microservice.statex-apps.svc.cluster.local:3370"
+  CATALOG_SERVICE_URL: "http://catalog-microservice.statex-apps.svc.cluster.local:3200"
+  WAREHOUSE_SERVICE_URL: "http://warehouse-microservice.statex-apps.svc.cluster.local:3201"
   LOGGING_SERVICE_URL: "http://logging-microservice.statex-apps.svc.cluster.local:3367"
   DB_HOST: "db-server-postgres"
   DB_PORT: "5432"
