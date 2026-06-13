@@ -109,7 +109,9 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 7. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, and the completed deployment evidence file.
 8. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
 9. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.
-10. Run the final verification commands below and require status complete before claiming the goal is done.
+10. Confirm the bundle verifier proves local fulfillment, supplier replenishment, and dropship routes have positive availability and \`canReserveFromWarehouse=true\` in Warehouse, Catalog, and FlipFlop smoke artifacts.
+11. Confirm the bundle verifier proves the Suppliers import job completed, validated the Catalog product ID, preserved Warehouse stock authority, and recorded an owner-approved Warehouse update.
+12. Run the final verification commands below and require status complete before claiming the goal is done.
 
 ## Final Verification Commands
 
@@ -120,7 +122,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 
 ## Non-Completion Reminder
 
-A deployment alone is not completion. A source-only synthetic check is not completion. The goal is complete only after the final report, manifest, and bundle verifier prove Warehouse-owned local, supplier replenishment, dropship stock, supplier identity ownership, and logistics route legs through Catalog and Suppliers.
+A deployment alone is not completion. A source-only synthetic check is not completion. The goal is complete only after the final report, manifest, and bundle verifier prove Warehouse-owned local, supplier replenishment, dropship stock, positive reservable logistics routes through Catalog and FlipFlop, supplier identity ownership, and Suppliers import Catalog/Warehouse authority evidence.
 `;
 }
 
@@ -137,6 +139,8 @@ function assertSelfTestContent(markdown) {
     'verify-runtime-evidence-manifest.js <manifest-file>',
     'verify-runtime-evidence-bundle.js <manifest-file> <report-file>',
     'same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options',
+    'positive availability and \`canReserveFromWarehouse=true\`',
+    'Suppliers import job completed, validated the Catalog product ID, preserved Warehouse stock authority',
     'verify-stock-traceability-completion.js <report-file> <manifest-file>',
   ];
   const missing = required.filter((pattern) => !markdown.includes(pattern));
