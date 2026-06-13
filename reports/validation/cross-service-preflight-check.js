@@ -180,7 +180,8 @@ const checks = [
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-live-runbook.md',
-    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs', 'All three repositories must be clean before generating deployment evidence', 'rejects dirty Warehouse, Catalog, or Suppliers worktrees'],
+    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs', 'All three repositories must be clean before generating deployment evidence', 'rejects dirty Warehouse, Catalog, or Suppliers worktrees', 'node reports/validation/run-runtime-evidence-flow.js --plan-only', 'node reports/validation/run-runtime-evidence-flow.js --manifest-self-test', 'node reports/validation/verify-runtime-evidence-manifest.js --self-test', 'node reports/validation/verify-runtime-evidence-bundle.js --self-test'],
+    forbiddenPatterns: ['runtime-stock-traceability-smoke.js --config-only', 'CATALOG_TOKEN=catalog-token-synthetic', 'WAREHOUSE_TOKEN=warehouse-token-synthetic', 'SUPPLIERS_TOKEN=suppliers-token-synthetic'],
   },
   {
     service: 'suppliers',
@@ -243,11 +244,13 @@ function runCheck(check) {
 
   const text = fs.readFileSync(filePath, 'utf8');
   const missingPatterns = check.patterns.filter((pattern) => !text.includes(pattern));
+  const presentForbiddenPatterns = (check.forbiddenPatterns || []).filter((pattern) => text.includes(pattern));
   return {
     service: check.service,
     file: check.file,
-    ok: missingPatterns.length === 0,
+    ok: missingPatterns.length === 0 && presentForbiddenPatterns.length === 0,
     missingPatterns,
+    presentForbiddenPatterns,
   };
 }
 
