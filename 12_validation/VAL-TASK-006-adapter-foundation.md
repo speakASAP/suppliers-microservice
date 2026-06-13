@@ -2,7 +2,7 @@
 
 ```yaml
 id: VAL-TASK-006
-status: pending
+status: passed
 owner: supplier-service-owner
 created: 2026-06-13
 last_updated: 2026-06-13
@@ -15,7 +15,7 @@ related_adrs: []
 
 ## Summary
 
-Validation report placeholder for TASK-006. No supplier-specific adapter has been implemented yet.
+TASK-006 adapter foundation is implemented with synthetic contract validation only. The change adds a Suppliers-owned adapter contract, adapter registry, missing-adapter handling in import execution, and a synthetic validation script. No real supplier adapter, supplier API call, Catalog write, Warehouse mutation, database schema change, deployment, or secret change was performed.
 
 ## Upstream goal
 
@@ -32,53 +32,75 @@ Create a suppliers-owned contract-first adapter implementation path because repo
 
 ## Issues found
 
-Initial discovery found no supplier rows, no active suppliers, no supplier API URLs, no credential references, and no concrete supplier-specific contract artifacts. TASK-006 implementation remains pending.
+Initial discovery found no supplier rows, no active suppliers, no supplier API URLs, no credential references, and no concrete supplier-specific contract artifacts. Real supplier adapter work remains blocked until an owner-supplied supplier contract is provided through `../docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md`.
 
 ## Recommendation
 
-Proceed with TASK-006 contract-first adapter infrastructure. Do not implement a real supplier adapter until a supplier identity and source contract are supplied through the template and reviewed.
+Use the adapter foundation for future owner-approved supplier onboarding. Do not implement a real supplier adapter until supplier identity, source contract, runtime secret references, and synthetic samples are reviewed.
 
 ## Traceability confirmation
 
-This report traces to `../11_tasks/TASK-006-adapter-foundation.md` and `../21_execution_plans/EP-TASK-006-adapter-foundation.md`.
+This report traces to `../11_tasks/TASK-006-adapter-foundation.md`, `../21_execution_plans/EP-TASK-006-adapter-foundation.md`, `../13_context_packages/CP-TASK-006-adapter-foundation.md`, and `../22_goal_impact/GOAL-IMPACT-TASK-006.md`.
 
 ## Evidence
 
-Discovery evidence to date:
+Discovery evidence retained:
 
 - Repository search found only draft TASK-002 planning artifacts and notes that supplier-specific validation rules are missing.
 - Runtime key inspection found no supplier-specific API keys.
 - Sanitized production aggregate query returned zero supplier rows, zero active suppliers, zero supplier API URLs, and zero supplier credential references.
 
+Implementation evidence:
+
+- Added `../src/imports/adapters/supplier-import-adapter.ts`.
+- Added `../src/imports/adapters/supplier-adapter-registry.ts`.
+- Updated `../src/imports/imports.module.ts` to provide the registry.
+- Updated `../src/imports/imports.service.ts` to require an adapter, validate adapter output, and record sanitized missing-adapter failures before downstream writes.
+- Added `../reports/validation/synthetic-adapter-foundation-check.js`.
+
 ## Gate evidence
 
-Pending implementation.
+- `python3 scripts/pre_coding_gate.py --root .`: passed.
+- `npm run build`: passed.
+- `node reports/validation/synthetic-adapter-foundation-check.js`: passed.
+- `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues`: passed, 100/100.
+- `python3 scripts/deployment_readiness_gate.py --root .`: passed.
+- `npm audit --audit-level=high`: passed, zero vulnerabilities.
+
+## Contract validation evidence
+
+Synthetic adapter validation passed with one synthetic adapter, one synthetic item, deterministic replay key, deterministic source fingerprint, sanitized missing-adapter error, and malformed adapter payload blocked before downstream writes.
 
 ## Invariant evidence
 
-No secrets, production payloads, Catalog writes, Warehouse mutations, or production supplier imports were performed during discovery and task creation.
+No secrets, production payloads, Catalog writes, Warehouse mutations, or production supplier imports were performed. Missing adapter behavior records blocked validation state and keeps Warehouse update attempted and approved flags false.
 
 ## Sensitive-data scan evidence
 
-Pending implementation. Discovery output recorded only key names and aggregate counts.
+Targeted scan over adapter code, import service wiring, synthetic validation script, contract template, and this report found no matches for literal bearer credentials, password assignments, API key assignments, secret assignments, or token assignments.
 
 ## Replay and determinism evidence when applicable
 
-Pending implementation. TASK-006 must validate deterministic adapter-backed import behavior before downstream writes.
+The synthetic validation script runs the same synthetic adapter twice with the same idempotency key and source record ID, then verifies identical replay keys and source fingerprints. Import job idempotency remains backed by the existing supplier/idempotency-key uniqueness path.
 
 ## Passed criteria
 
-- Discovery avoided decoded secrets and raw payloads.
-- Separate task artifacts were created for implementation planning.
+- Supplier contract template exists and lists required future onboarding fields.
+- Adapter interface and registry exist in Suppliers-owned code.
+- Missing-adapter behavior is explicit, sanitized, and blocks downstream writes.
+- Malformed synthetic adapter output fails before downstream writes.
+- Deterministic replay metadata is validated synthetically.
+- Build and IPS gates passed.
 
 ## Failed criteria
 
-None for discovery. Implementation criteria remain pending.
+None for TASK-006 synthetic adapter foundation.
 
 ## Deviations
 
-No real supplier contract exists; TASK-006 must not invent one.
+No real supplier contract exists; TASK-006 did not invent one. `scp` was not usable from the local environment because it resolved the configured host alias through `alfares.local`, so patched files were transferred through SSH write commands.
 
 ## Change Note
 
 - 2026-06-13: Validation placeholder created with discovery evidence.
+- 2026-06-13: Adapter foundation implemented and validated with synthetic contract checks only.
