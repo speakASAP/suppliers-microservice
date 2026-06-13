@@ -1,13 +1,12 @@
 {
   "blockers": [
-    "TASK-002 supplier-specific API integration remains draft pending owner-supplied supplier contract details",
-    "Remaining npm audit findings require breaking Nest major dependency upgrades"
+    "TASK-002 supplier-specific API integration remains draft pending owner-supplied supplier contract details"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "compatible-dependency-audit-remediation",
+  "last_milestone": "owner-approved-nest-major-dependency-upgrade",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -26,15 +25,15 @@
       "warehouse_stock_update_boundary": "done",
       "warehouse_stock_update_boundary_deployed": "done",
       "compatible_dependency_audit_remediation": "done_package_lock_only",
-      "npm_audit_remaining_findings": "25_total_7_high_15_moderate_3_low_breaking_nest_upgrade_required",
+      "npm_audit_remaining_findings": "0_total",
       "compatible_dependency_audit_remediation_deployed": "done_sha256_663539137f10c53665d1e122a031026b4a96ccdbda3be5d178b8cd91bcc02bce",
-      "latest_pod_health": "healthy_suppliers-microservice-689df99cc9-g94sz"
+      "latest_pod_health": "healthy_suppliers-microservice-75b848b565-5h26q",
+      "nest_major_dependency_upgrade": "done_11_x_deployed_sha256_f4049681685f9068c16b989664ffa8b9a2cc8d8beaa3709b13058b65b08f7264"
     }
   },
-  "next_focus": "Owner-approved Nest major dependency upgrade plan, or owner-supplied supplier contract details for TASK-002",
+  "next_focus": "Owner-supplied supplier contract details for TASK-002 supplier-specific API integration",
   "open_task_ids": [
-    "TASK-002",
-    "NEST-MAJOR-UPGRADE"
+    "TASK-002"
   ],
   "project": "suppliers-microservice",
   "stage": "production",

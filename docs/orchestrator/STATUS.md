@@ -108,3 +108,15 @@ Change: ran npm audit remediation without `--force`, installed the resolved depe
 Validation evidence: `python3 scripts/pre_coding_gate.py --root .` passed. `npm run build` passed. `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues` passed. `python3 scripts/deployment_readiness_gate.py --root .` passed. `npm audit fix` now reports 25 remaining findings, with production-impacting fixes requiring breaking Nest major upgrades such as `@nestjs/core`/`@nestjs/platform-express` 11.x, `@nestjs/config` 4.x, `@nestjs/typeorm` 11.x, and `@nestjs/schedule` 6.x. Deployment commit `cfa7483` built and pushed image digest `sha256:663539137f10c53665d1e122a031026b4a96ccdbda3be5d178b8cd91bcc02bce`; because the deployment uses the mutable `latest` tag, an explicit rollout restart was required. New pod `suppliers-microservice-689df99cc9-g94sz` became ready, in-pod `/api/health` returned healthy, and external `https://suppliers.alfares.cz/api/health` returned healthy.
 
 Next unfinished chunk: owner-approved Nest major dependency upgrade plan, or owner-supplied supplier contract details for `TASK-002` supplier-specific API integration.
+
+## 2026-06-13 - Owner-Approved Nest Major Dependency Upgrade
+
+Approval: owner approved the Nest major dependency upgrade plan and requested moving ahead with the next goal.
+
+Change: upgraded Nest runtime and tooling packages to the current major line used by npm audit fixes: `@nestjs/common`, `@nestjs/core`, and `@nestjs/platform-express` to 11.1.26; `@nestjs/config` to 4.0.4; `@nestjs/axios` to 4.0.1; `@nestjs/jwt` to 11.0.2; `@nestjs/schedule` to 6.1.3; `@nestjs/typeorm` to 11.0.1; `@nestjs/cli` to 11.0.23. Also refreshed compatible supporting packages including `pg` 8.21.0, `typeorm` 0.3.30, and `class-validator` 0.14.4. No service source, schema, Kubernetes manifest, supplier integration, Catalog write, Warehouse mutation, or migration was changed.
+
+Validation evidence: `python3 scripts/pre_coding_gate.py --root .` passed before edits. `npm run build` passed after the upgrade. `npm audit --json` reported zero vulnerabilities. `npm ls --depth=0` showed a coherent Nest 11 package tree. `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues` passed. `python3 scripts/deployment_readiness_gate.py --root .` passed.
+
+Deployment evidence: committed upgrade as `611b246`, ran `./scripts/deploy.sh`, and pushed image digest `sha256:f4049681685f9068c16b989664ffa8b9a2cc8d8beaa3709b13058b65b08f7264`. Because the deployment references mutable `latest`, an explicit `kubectl rollout restart deployment/suppliers-microservice -n statex-apps` was required. Running pod `suppliers-microservice-75b848b565-5h26q` is ready on that digest. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.
+
+Next unfinished chunk: `TASK-002` supplier-specific API integration remains blocked pending owner-supplied supplier API contract details.
