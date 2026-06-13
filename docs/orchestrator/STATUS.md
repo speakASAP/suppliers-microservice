@@ -352,7 +352,7 @@ Validation evidence: `npm run build`, `node reports/validation/synthetic-approve
 
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
-Next unfinished chunk: update cross-service preflight/docs alignment, regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
 
 ## 2026-06-13 - Runtime Evidence For Suppliers Catalog Product Validation
 
@@ -390,8 +390,18 @@ Next unfinished chunk: regenerate handoff and deployment evidence for latest cle
 
 Change: marked the checked-in live runtime report as stale historical evidence instead of current completion evidence. The report now uses `failed-runtime` and `partial`, records `stale-runtime` assertion rows, and explicitly says fresh guarded runtime evidence must include the `Suppliers import preserves Catalog identity and Warehouse authority.` assertion with Catalog product validation, checked product IDs, approved trace source fingerprint, Warehouse authority, owner-approved mutation, and applied update count.
 
-Validation evidence: `node reports/validation/cross-service-preflight-check.js` passed with liveRuntimeReport `not-passed-runtime`; `node reports/validation/verify-stock-traceability-completion.js` exited incomplete with reason `runtime report is not passed-runtime/runtime-complete`; runtime bundle self-test, runtime evidence flow negative checks, strict doc audit, and whitespace diff check passed before commit `702370a`. Fresh deployment evidence and runtime handoff templates were generated under /tmp from clean Warehouse `f9a73c0`, Catalog `e454e7d`, and Suppliers `702370a`.
+Validation evidence: `node reports/validation/cross-service-preflight-check.js` passed with liveRuntimeReport `not-passed-runtime`; `node reports/validation/verify-stock-traceability-completion.js` exited incomplete with reason `runtime report is not passed-runtime/runtime-complete`; runtime bundle self-test, runtime evidence flow negative checks, strict doc audit, and whitespace diff check passed before commit `702370a`. Fresh deployment evidence and runtime handoff templates were generated under /tmp from clean Warehouse `f9a73c0`, Catalog `e454e7d`, and Suppliers `702370a`. Later source-only status updates regenerated those operator artifacts again from newer Suppliers heads.
 
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
-Next unfinished chunk: keep source/status artifacts aligned with the incomplete completion gate, then request owner-approved deployment and guarded runtime evidence regeneration for the latest clean heads.
+Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Runtime Rollout Boundary Alignment
+
+Change: aligned the runtime rollout plan with the implemented Suppliers mutation boundary. The rollout now says approved Suppliers import evidence must prove the job belongs to `TRACE_SUPPLIER_ID`, Catalog product validation passed before Warehouse mutation, checked Catalog product IDs include `TRACE_PRODUCT_ID`, the approved trace source fingerprint matches, Warehouse authority is preserved, mutation was owner-approved, and applied update count is positive. Cross-service preflight now checks this rollout contract directly.
+
+Validation evidence: `node reports/validation/cross-service-preflight-check.js` passed, strict documentation audit passed, and whitespace diff check passed before commit `e652d0c`. After commit, cross-service preflight passed from clean Warehouse `f9a73c0`, Catalog `e454e7d`, and Suppliers `e652d0c`; `verify-stock-traceability-completion.js` remained incomplete with reason `runtime report is not passed-runtime/runtime-complete`; fresh deployment evidence and runtime handoff templates were generated under /tmp from the same clean heads.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
