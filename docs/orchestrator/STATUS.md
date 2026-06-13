@@ -53,3 +53,15 @@ Boundary decision: no production data query, production migration execution, dep
 Validation evidence: python3 scripts/pre_coding_gate.py --root . passed before source edits. npm run build passed. Synthetic compiled-service mapping check passed with one deterministic upsert row and one reported missing category. python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues passed. python3 scripts/deployment_readiness_gate.py --root . passed.
 
 Next unfinished chunk: Goal 5 - Warehouse Stock Update Boundary. Operational follow-ups remain: apply the owner-approved import-job migration and deploy the production image only after owner approval.
+
+## 2026-06-13 - Production Migration And Deployment
+
+Approval: owner approved applying the prepared migration and proceeding with deployment.
+
+Migration: applied `src/database/migrations/202606130001-import-job-idempotency-validation.sql` to the live `suppliers` database through the `db-server-postgres` pod. Production had no public Suppliers tables before migration, so the migration was expanded to create the service-owned `suppliers`, `category_mappings`, and `import_jobs` tables idempotently before adding the Goal 3 import-job idempotency and payload-validation columns.
+
+Deployment: committed source as `765e30e` and ran `./scripts/deploy.sh`. The script built and pushed `localhost:5000/suppliers-microservice:765e30e` and `:latest`, applied Kubernetes manifests, and reported rollout success. Because the deployment spec still referenced `:latest`, an explicit `kubectl rollout restart deployment/suppliers-microservice -n statex-apps` was required to pull the new image.
+
+Verification: new pod `suppliers-microservice-c88759bd5-rv2x8` is ready, in-pod `/usr/bin/curl` exists, in-pod `curl http://127.0.0.1:3202/api/health` returned healthy, and external `https://suppliers.alfares.cz/api/health` returned healthy.
+
+Known deviation: npm install during Docker build reported existing npm audit findings. They were not remediated in this goal.
