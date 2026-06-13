@@ -3,6 +3,9 @@
 -- Do not apply to production until the owner approves a migration/deployment chunk.
 
 ALTER TABLE "import_jobs"
+  ADD COLUMN IF NOT EXISTS "catalogProductValidationStatus" varchar(50) NOT NULL DEFAULT $$pending$$,
+  ADD COLUMN IF NOT EXISTS "catalogProductValidationErrors" jsonb,
+  ADD COLUMN IF NOT EXISTS "catalogProductIdsChecked" jsonb,
   ADD COLUMN IF NOT EXISTS "warehouseStockValidationStatus" varchar(50) NOT NULL DEFAULT $$pending$$,
   ADD COLUMN IF NOT EXISTS "warehouseStockValidationErrors" jsonb,
   ADD COLUMN IF NOT EXISTS "warehouseStockUpdatePolicy" jsonb,

@@ -353,3 +353,13 @@ Validation evidence: `npm run build`, `node reports/validation/synthetic-approve
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
 Next unfinished chunk: update cross-service preflight/docs alignment, regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Runtime Evidence For Suppliers Catalog Product Validation
+
+Change: persisted Catalog product validation evidence on Suppliers import jobs and extended runtime smoke/report validation to require it. Approved supplier stock mutation now records `catalogProductValidationStatus`, `catalogProductIdsChecked`, and validation errors on the import job; runtime evidence must show `catalogProductValidation=passed` and checked product IDs before Warehouse authority can count as complete.
+
+Validation evidence: `npm run build`, `node reports/validation/synthetic-approved-import-run-check.js`, `node reports/validation/generate-runtime-evidence-report.js --self-test`, `node reports/validation/verify-runtime-evidence-report.js --self-test`, and `git diff --check` passed before full preflight. The synthetic check proves unknown Catalog product IDs record failed Catalog validation and make zero Warehouse calls.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: run full Suppliers validation, commit the persisted Catalog validation evidence change, regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.

@@ -69,7 +69,7 @@ function summarizeOrigins(origins) {
 
 function summarizeSupplierJob(job) {
   if (!job) return 'Supplier import evidence missing.';
-  return `status=${valueOrDash(job.status)}, idempotencyKey=${valueOrDash(job.idempotencyKey)}, authority=${valueOrDash(job.warehouseAuthority)}, attempted=${boolWord(job.warehouseStockUpdateAttempted)}, approved=${boolWord(job.warehouseStockUpdateApproved)}, updatedProducts=${valueOrDash(job.updatedProducts)}`;
+  return `status=${valueOrDash(job.status)}, idempotencyKey=${valueOrDash(job.idempotencyKey)}, catalogProductValidation=${valueOrDash(job.catalogProductValidationStatus)}, checkedProducts=${Array.isArray(job.catalogProductIdsChecked) ? job.catalogProductIdsChecked.join(',') : '-'}, authority=${valueOrDash(job.warehouseAuthority)}, attempted=${boolWord(job.warehouseStockUpdateAttempted)}, approved=${boolWord(job.warehouseStockUpdateApproved)}, updatedProducts=${valueOrDash(job.updatedProducts)}`;
 }
 
 function summarizeFixtureCheck(fixture) {
@@ -223,9 +223,12 @@ function buildAssertions(smoke, fixture) {
       passed: Boolean(smoke.projection?.productId && smoke.projection?.source === 'warehouse' && Number(smoke.projection?.routeCount || 0) >= 3 && hasAllRequiredRouteTypes(smoke.projection?.routeTypes) && hasRequiredRouteLegs(smoke.projection?.routeLegs)),
     },
     {
-      assertion: 'Suppliers import preserves Warehouse authority.',
+      assertion: 'Suppliers import preserves Catalog identity and Warehouse authority.',
       evidence: summarizeSupplierJob(smoke.supplierJob),
       passed: smoke.supplierJob?.status === 'completed'
+        && smoke.supplierJob?.catalogProductValidationStatus === 'passed'
+        && Array.isArray(smoke.supplierJob?.catalogProductIdsChecked)
+        && smoke.supplierJob.catalogProductIdsChecked.includes(smoke.productId)
         && smoke.supplierJob?.warehouseAuthority === 'warehouse-microservice'
         && smoke.supplierJob?.warehouseStockUpdateAttempted === true
         && smoke.supplierJob?.warehouseStockUpdateApproved === true
@@ -399,6 +402,9 @@ function sampleSmoke() {
       warehouseAuthority: 'warehouse-microservice',
       warehouseStockUpdateAttempted: true,
       warehouseStockUpdateApproved: true,
+      catalogProductValidationStatus: 'passed',
+      catalogProductIdsChecked: ['product-synthetic'],
+      catalogProductValidationErrorCount: 0,
       updatedProducts: 1,
     },
     projection: {

@@ -103,6 +103,9 @@ function summarizeSupplierJob(job) {
     warehouseStockUpdateAttempted: job.warehouseStockUpdateAttempted,
     warehouseStockUpdateApproved: job.warehouseStockUpdateApproved,
     warehouseAuthority: job.warehouseStockUpdatePolicy?.warehouseAuthority,
+    catalogProductValidationStatus: job.catalogProductValidationStatus,
+    catalogProductIdsChecked: Array.isArray(job.catalogProductIdsChecked) ? job.catalogProductIdsChecked : [],
+    catalogProductValidationErrorCount: Array.isArray(job.catalogProductValidationErrors) ? job.catalogProductValidationErrors.length : 0,
     updatedProducts: job.updatedProducts,
   };
 }
@@ -358,6 +361,8 @@ if (planOnly) {
     assert(supplierJob.status === 'completed', 'expected Suppliers import job to complete before traceability assertions');
     assert(supplierJob.warehouseStockUpdateAttempted === true, 'expected Suppliers job to record Warehouse stock update attempted');
     assert(supplierJob.warehouseStockUpdateApproved === true, 'expected Suppliers job to record approved Warehouse stock update');
+    assert(supplierJob.catalogProductValidationStatus === 'passed', 'expected Suppliers job to record passed Catalog product validation');
+    assert(Array.isArray(supplierJob.catalogProductIdsChecked) && supplierJob.catalogProductIdsChecked.includes(productId), 'expected Suppliers job to record checked Catalog product ID before Warehouse mutation');
     assert(supplierJob.warehouseStockUpdatePolicy?.warehouseAuthority === 'warehouse-microservice', 'expected Suppliers job to preserve Warehouse authority policy');
     assert(Number(supplierJob.updatedProducts || 0) > 0, 'expected Suppliers job to record applied Warehouse updates');
   }

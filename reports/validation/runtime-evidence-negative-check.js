@@ -75,6 +75,8 @@ function baseSmoke() {
       status: 'completed',
       idempotencyKey: 'manual:traceability-synthetic',
       warehouseAuthority: 'warehouse-microservice',
+      catalogProductValidationStatus: 'passed',
+      catalogProductIdsChecked: ['product-synthetic'],
       warehouseStockUpdateAttempted: true,
       warehouseStockUpdateApproved: true,
       updatedProducts: 1,

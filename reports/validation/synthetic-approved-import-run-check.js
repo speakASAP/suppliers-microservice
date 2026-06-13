@@ -182,6 +182,8 @@ async function assertSyntheticTraceAdapter() {
   assert(approvedCompletion.warehouseStockUpdateAttempted === true, 'approved mutation must record attempt');
   assert(approvedCompletion.warehouseStockUpdateApproved === true, 'approved mutation must record approval');
   assert(approvedCompletion.updatedProducts === 2, 'approved mutation must report both applied updates');
+  assert(approvedCompletion.catalogProductValidationStatus === 'passed', 'approved mutation must record passed Catalog product validation');
+  assert(JSON.stringify(approvedCompletion.catalogProductIdsChecked) === JSON.stringify(['product-synthetic']), 'approved mutation must record checked Catalog product IDs');
 
   const unknownCatalogProduct = await runScenario(
     { warehouseStockUpdateMode: 'apply_with_owner_approval', ownerApproval: 'explicit' },
@@ -191,7 +193,9 @@ async function assertSyntheticTraceAdapter() {
   assert(unknownCatalogProduct.catalogLookups.length === 1, 'unknown Catalog product path must check Catalog once');
   assert(unknownCatalogProduct.posts.length === 0, 'unknown Catalog product must block Warehouse mutation');
   assert(unknownCatalogProductCompletion.status === 'failed', 'unknown Catalog product must fail the import job');
-  assert(JSON.stringify(unknownCatalogProductCompletion.errors).includes('unknown Catalog product IDs'), 'unknown Catalog product failure must explain the missing Catalog identity');
+  assert(unknownCatalogProductCompletion.catalogProductValidationStatus === 'failed', 'unknown Catalog product must record failed Catalog product validation');
+  assert(JSON.stringify(unknownCatalogProductCompletion.catalogProductValidationErrors).includes('unknown Catalog product ID'), 'unknown Catalog product validation error must identify the missing Catalog identity');
+  assert(JSON.stringify(unknownCatalogProductCompletion.errors).includes('unknown Catalog product ID'), 'unknown Catalog product failure must explain the missing Catalog identity');
 
   console.log(JSON.stringify({
     status: 'passed',
@@ -217,12 +221,15 @@ async function assertSyntheticTraceAdapter() {
       attempted: approvedCompletion.warehouseStockUpdateAttempted,
       approved: approvedCompletion.warehouseStockUpdateApproved,
       updatedProducts: approvedCompletion.updatedProducts,
+      catalogProductValidationStatus: approvedCompletion.catalogProductValidationStatus,
+      catalogProductIdsChecked: approvedCompletion.catalogProductIdsChecked,
       externalReferencePrefix: approved.posts[0].body.externalReference.slice(0, 16),
     },
     unknownCatalogProduct: {
       catalogLookups: unknownCatalogProduct.catalogLookups.length,
       warehouseCalls: unknownCatalogProduct.posts.length,
       status: unknownCatalogProductCompletion.status,
+      catalogProductValidationStatus: unknownCatalogProductCompletion.catalogProductValidationStatus,
     },
   }, null, 2));
 })().catch((error) => {

@@ -22,11 +22,18 @@ export interface ImportJobStart {
   shouldRun: boolean;
 }
 
+export interface CatalogProductValidationResult {
+  status: "pending" | "skipped" | "passed" | "failed";
+  productIds: string[];
+  errors: Array<{ index: number; field: string; error: string }>;
+}
+
 export interface WarehouseReconciliationResult {
   policy: WarehouseStockBoundaryPolicy;
   totalStockUpdates: number;
   appliedUpdates: number;
   errors: Array<{ sku: string; error: string }>;
+  catalogProductValidation: CatalogProductValidationResult;
 }
 
 @Injectable()
@@ -57,6 +64,9 @@ export class ImportsService {
       triggerType,
       sourceFingerprint: options.sourceFingerprint,
       payloadValidationStatus: "pending",
+      catalogProductValidationStatus: "pending",
+      catalogProductValidationErrors: null,
+      catalogProductIdsChecked: null,
       warehouseStockValidationStatus: "pending",
       warehouseStockUpdateAttempted: false,
       warehouseStockUpdateApproved: false,
@@ -98,6 +108,9 @@ export class ImportsService {
       completedAt: null,
       payloadValidationStatus: "pending",
       payloadValidationErrors: null,
+      catalogProductValidationStatus: "pending",
+      catalogProductValidationErrors: null,
+      catalogProductIdsChecked: null,
       warehouseStockValidationStatus: "pending",
       warehouseStockValidationErrors: null,
       warehouseStockUpdatePolicy: null,
@@ -131,6 +144,9 @@ export class ImportsService {
           failedProducts: adapterValidation.errors.length,
           payloadValidationStatus: "failed",
           payloadValidationErrors: adapterValidation.errors,
+          catalogProductValidationStatus: "blocked",
+          catalogProductValidationErrors: [{ index: -1, field: "adapter", error: "Supplier adapter contract validation failed before Catalog product validation" }],
+          catalogProductIdsChecked: [],
           warehouseStockValidationStatus: "blocked",
           warehouseStockValidationErrors: [{ index: -1, field: "adapter", error: "Supplier adapter contract validation failed before downstream writes" }],
           warehouseStockUpdateAttempted: false,
@@ -151,6 +167,9 @@ export class ImportsService {
           failedProducts: validation.errors.length,
           payloadValidationStatus: "failed",
           payloadValidationErrors: validation.errors,
+          catalogProductValidationStatus: "blocked",
+          catalogProductValidationErrors: [{ index: -1, field: "payload", error: "Supplier payload validation failed before Catalog product validation" }],
+          catalogProductIdsChecked: [],
           warehouseStockValidationStatus: "blocked",
           warehouseStockValidationErrors: [{ index: -1, field: "payload", error: "Supplier payload validation failed before Warehouse stock validation" }],
           warehouseStockUpdateAttempted: false,
@@ -188,6 +207,9 @@ export class ImportsService {
           failedProducts: warehouseBoundary.errors.length,
           payloadValidationStatus: "passed",
           payloadValidationErrors: [],
+          catalogProductValidationStatus: warehouseReconciliation.catalogProductValidation.status,
+          catalogProductValidationErrors: warehouseReconciliation.catalogProductValidation.errors,
+          catalogProductIdsChecked: warehouseReconciliation.catalogProductValidation.productIds,
           warehouseStockValidationStatus: "failed",
           warehouseStockValidationErrors: warehouseBoundary.errors,
           warehouseStockUpdatePolicy: warehouseBoundary.policy,
@@ -207,6 +229,9 @@ export class ImportsService {
         failedProducts: 0,
         payloadValidationStatus: "passed",
         payloadValidationErrors: [],
+        catalogProductValidationStatus: warehouseReconciliation.catalogProductValidation.status,
+        catalogProductValidationErrors: warehouseReconciliation.catalogProductValidation.errors,
+        catalogProductIdsChecked: warehouseReconciliation.catalogProductValidation.productIds,
         warehouseStockValidationStatus: "passed",
         warehouseStockValidationErrors: [],
         warehouseStockUpdatePolicy: warehouseBoundary.policy,
@@ -233,6 +258,7 @@ export class ImportsService {
         totalStockUpdates: boundary.totalStockUpdates,
         appliedUpdates: 0,
         errors,
+        catalogProductValidation: { status: "skipped", productIds: [], errors: [] },
       };
     }
 
@@ -242,10 +268,20 @@ export class ImportsService {
         totalStockUpdates: boundary.totalStockUpdates,
         appliedUpdates: 0,
         errors: [],
+        catalogProductValidation: { status: "skipped", productIds: [], errors: [] },
       };
     }
 
-    await this.assertCatalogProductsExist(candidates);
+    const catalogProductValidation = await this.validateCatalogProductsExist(candidates);
+    if (catalogProductValidation.errors.length > 0) {
+      return {
+        policy: boundary.policy,
+        totalStockUpdates: boundary.totalStockUpdates,
+        appliedUpdates: 0,
+        errors: catalogProductValidation.errors.map((item) => ({ sku: "N/A", error: item.field + ": " + item.error })),
+        catalogProductValidation,
+      };
+    }
 
     const token = process.env.WAREHOUSE_SERVICE_TOKEN || process.env.WAREHOUSE_INTERNAL_SERVICE_TOKEN;
     if (!token) {
@@ -284,6 +320,7 @@ export class ImportsService {
           totalStockUpdates: boundary.totalStockUpdates,
           appliedUpdates,
           errors: [{ sku: candidate.supplierSku, error: message }],
+          catalogProductValidation,
         };
       }
     }
@@ -293,13 +330,14 @@ export class ImportsService {
       totalStockUpdates: boundary.totalStockUpdates,
       appliedUpdates,
       errors: [],
+      catalogProductValidation,
     };
   }
 
-  private async assertCatalogProductsExist(candidates: NormalizedSupplierImportItem[]): Promise<void> {
+  private async validateCatalogProductsExist(candidates: NormalizedSupplierImportItem[]): Promise<CatalogProductValidationResult> {
     const productIds = [...new Set(candidates.map((candidate) => String(candidate.productId || "").trim()).filter(Boolean))];
     if (productIds.length === 0) {
-      return;
+      return { status: "skipped", productIds: [], errors: [] };
     }
 
     const token = process.env.CATALOG_SERVICE_TOKEN || process.env.CATALOG_INTERNAL_SERVICE_TOKEN || process.env.CATALOG_TOKEN;
@@ -340,8 +378,18 @@ export class ImportsService {
     }
 
     if (missingProductIds.length > 0) {
-      throw new BadRequestException("Supplier stock candidates reference unknown Catalog product IDs: " + missingProductIds.join(", "));
+      return {
+        status: "failed",
+        productIds,
+        errors: missingProductIds.map((productId) => ({
+          index: -1,
+          field: "catalogProductId",
+          error: "Supplier stock candidate references unknown Catalog product ID " + productId,
+        })),
+      };
     }
+
+    return { status: "passed", productIds, errors: [] };
   }
 
   private async assertSupplierCanImport(supplierId: string): Promise<Supplier> {
@@ -362,6 +410,9 @@ export class ImportsService {
       failedProducts: 1,
       payloadValidationStatus: isMissingAdapter ? "blocked" : "failed",
       payloadValidationErrors: [{ index: -1, field: isMissingAdapter ? "adapter" : "import", error: message }],
+      catalogProductValidationStatus: "blocked",
+      catalogProductValidationErrors: [{ index: -1, field: "import", error: "Import failed before Catalog product validation completed" }],
+      catalogProductIdsChecked: [],
       warehouseStockValidationStatus: "blocked",
       warehouseStockValidationErrors: [{ index: -1, field: "warehouse", error: "Warehouse stock validation blocked before downstream writes" }],
       warehouseStockUpdateAttempted: false,

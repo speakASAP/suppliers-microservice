@@ -30,6 +30,15 @@ export class ImportJob {
   payloadValidationErrors: ImportValidationError[];
 
   @Column({ length: 50, default: "pending" })
+  catalogProductValidationStatus: string;
+
+  @Column({ type: "jsonb", nullable: true })
+  catalogProductValidationErrors: ImportValidationError[];
+
+  @Column({ type: "jsonb", nullable: true })
+  catalogProductIdsChecked: string[];
+
+  @Column({ length: 50, default: "pending" })
   warehouseStockValidationStatus: string;
 
   @Column({ type: "jsonb", nullable: true })
