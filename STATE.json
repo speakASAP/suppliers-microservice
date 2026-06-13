@@ -7,7 +7,7 @@
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "warehouse-reconciliation-client-source-validated",
+  "last_milestone": "cross-service-stock-traceability-source-evidence",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -33,10 +33,12 @@
       "supplier_contract_discovery": "none_found_repo_runtime_or_sanitized_production_metadata",
       "production_supplier_count": 0,
       "warehouse_reconciliation_client": "source_validated_no_deploy",
-      "warehouse_reconciliation_validation": "build_synthetic_checks_doc_gates_passed"
+      "warehouse_reconciliation_validation": "build_synthetic_checks_doc_gates_passed",
+      "cross_service_stock_traceability": "source_synthetic_passed_no_deploy",
+      "cross_service_traceability_artifacts": "docs/cross-service/stock-traceability-flow.md,reports/validation/synthetic-stock-traceability-check.js,docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md"
     }
   },
-  "next_focus": "Cross-service inventory topology/end-to-end smoke evidence, or deploy SUP-G7 only after explicit owner approval",
+  "next_focus": "Owner-approved runtime deployment/smoke or Warehouse operator inventory topology/read model",
   "open_task_ids": [
     "TASK-002"
   ],

@@ -138,3 +138,13 @@ Boundary decision: no supplier-specific adapter, Catalog write, production impor
 Validation evidence: `python3 scripts/pre_coding_gate.py --root .` passed; `npm run build` passed; compiled synthetic boundary validation passed; compiled synthetic mocked Warehouse reconciliation client validation passed; `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues` passed with 100/100; `python3 scripts/deployment_readiness_gate.py --root .` passed; `git diff --check` passed.
 
 Next unfinished chunk: deploy only with explicit owner approval if runtime use is needed, then continue with cross-service inventory topology/end-to-end smoke evidence.
+
+## 2026-06-13 - Cross-Service Stock Traceability Source Evidence
+
+Change: added `docs/cross-service/stock-traceability-flow.md` and `reports/validation/synthetic-stock-traceability-check.js`. The synthetic check proves the source-level data contract for one product across Suppliers candidate validation, Warehouse supplier reconciliation request shape, Warehouse own/dropship origin availability rows, and Catalog/FlipFlop Warehouse-sourced projection.
+
+Validation evidence: `node reports/validation/synthetic-stock-traceability-check.js` passed and produced one synthetic product with both `own` and `dropship` origin rows.
+
+Boundary decision: this is not production runtime proof. No deployment, production stock mutation, real supplier payload, credential, Catalog write, or external API call was used.
+
+Next unfinished chunk: owner-approved runtime deployment/smoke or Warehouse operator inventory topology/read model.

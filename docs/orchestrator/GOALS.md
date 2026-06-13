@@ -41,3 +41,10 @@ Status: done
 - [x] Verify health endpoint after owner approval for external checks.
 - [x] Trigger DocsRAG ingestion when credentials and tooling are available.
 - [x] Verify retrieval returns current Suppliers IPS docs.
+
+## Goal 7 - Warehouse Reconciliation Client
+Status: done
+- [x] Add validation-first normalized supplier stock candidate requirements.
+- [x] Add approved Warehouse supplier reconciliation client using runtime service token.
+- [x] Preserve default import execution as non-mutating.
+- [x] Validate idempotency-derived external references and no credential leakage.

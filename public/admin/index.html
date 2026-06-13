@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin | Alfares Suppliers</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="admin-page">
+  <aside class="admin-sidebar">
+    <a class="brand inverse" href="/"><span class="brand-mark">AS</span><span>Alfares Suppliers</span></a>
+    <nav class="admin-nav" aria-label="Admin navigation">
+      <a class="active" href="#dashboard">Dashboard</a>
+      <a href="#suppliers">Suppliers</a>
+      <a href="#imports">Imports</a>
+      <a href="#mappings">Mappings</a>
+      <a href="#catalog">Catalog</a>
+      <a href="#warehouse">Warehouse</a>
+      <a href="#consumers">Consumers</a>
+      <a href="#alerts">Alerts</a>
+      <a href="#settings">Settings</a>
+    </nav>
+  </aside>
+
+  <main class="admin-shell">
+    <header class="admin-topbar">
+      <div>
+        <h1>Supplier control dashboard</h1>
+        <p>All supplier connections, validation jobs, category mappings, and downstream service routes.</p>
+      </div>
+      <div class="topbar-tools">
+        <input id="supplierSearch" type="search" placeholder="Search suppliers">
+        <span id="adminIdentity" class="identity">Admin</span>
+        <button id="logoutButton" class="button ghost" type="button">Logout</button>
+      </div>
+    </header>
+
+    <section id="authGate" class="auth-gate" hidden>
+      <h2>Authentication required</h2>
+      <p>The admin dashboard loads protected Suppliers APIs. Sign in with a JWT that has `global:superadmin` or `internal:suppliers-microservice:admin` access.</p>
+      <a class="button primary" href="/login/">Sign in</a>
+    </section>
+
+    <section id="dashboardContent" class="dashboard-grid">
+      <section class="kpi-strip" aria-label="Supplier metrics">
+        <article><span id="kpiSuppliers">0</span><small>Suppliers</small></article>
+        <article><span id="kpiActive">0</span><small>Active</small></article>
+        <article><span id="kpiImports">0</span><small>Recent imports</small></article>
+        <article><span id="kpiBlocked">0</span><small>Blocked checks</small></article>
+      </section>
+
+      <section class="service-map" id="dashboard">
+        <div class="panel-heading">
+          <h2>Service interconnection map</h2>
+          <button id="refreshButton" class="button secondary" type="button">Refresh</button>
+        </div>
+        <div class="route-rail" aria-label="Supplier service routes">
+          <div class="route-stop supplier">Supplier APIs<span>REST XML CSV FTP</span></div>
+          <div class="route-stop validation">Import validation<span>Payload and replay evidence</span></div>
+          <div class="route-stop mapping">Category mapping<span>Catalog category IDs</span></div>
+          <div class="route-stop catalog">Catalog<span>Product truth</span></div>
+          <div class="route-stop warehouse">Warehouse<span>Stock reconciliation</span></div>
+          <div class="route-stop consumers">Consumers<span>FlipFlop Allegro Orders</span></div>
+        </div>
+      </section>
+
+      <section class="supplier-panel" id="suppliers">
+        <div class="panel-heading">
+          <h2>Suppliers</h2>
+          <button id="toggleCreateSupplier" class="button secondary" type="button">New supplier</button>
+        </div>
+        <form id="createSupplierForm" class="inline-form" hidden>
+          <input name="name" required placeholder="Supplier name">
+          <input name="code" required placeholder="Code">
+          <select name="apiType" required>
+            <option value="rest">REST</option>
+            <option value="xml">XML</option>
+            <option value="csv">CSV</option>
+            <option value="ftp">FTP</option>
+          </select>
+          <input name="apiUrl" type="url" placeholder="API URL">
+          <input name="syncSchedule" placeholder="Cron schedule">
+          <button class="button primary" type="submit">Create</button>
+        </form>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Supplier</th>
+                <th>API type</th>
+                <th>Services</th>
+                <th>Mapping status</th>
+                <th>Last sync</th>
+                <th>Import status</th>
+                <th>Warehouse policy</th>
+              </tr>
+            </thead>
+            <tbody id="supplierRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <aside class="detail-panel">
+        <h2 id="detailName">Select supplier</h2>
+        <p id="detailCode" class="muted">Supplier details and safe credential reference status.</p>
+        <dl class="detail-list">
+          <div><dt>Credential reference</dt><dd id="detailCredentials">Not loaded</dd></div>
+          <div><dt>Connected services</dt><dd>Catalog, Warehouse, FlipFlop, Allegro, Orders, Logging</dd></div>
+          <div><dt>Catalog boundary</dt><dd>Category IDs only, Catalog owns taxonomy</dd></div>
+          <div><dt>Warehouse boundary</dt><dd>Mutation requires validated and approved reconciliation</dd></div>
+        </dl>
+        <button id="runImportButton" class="button primary full-button" type="button" disabled>Run import</button>
+        <p id="actionResult" class="form-note"></p>
+      </aside>
+
+      <section class="imports-panel" id="imports">
+        <div class="panel-heading">
+          <h2>Recent import evidence</h2>
+        </div>
+        <div id="importTimeline" class="timeline"></div>
+      </section>
+    </section>
+  </main>
+  <script src="/assets/app.js"></script>
+</body>
+</html>

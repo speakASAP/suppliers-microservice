@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register | Alfares Suppliers</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell single">
+    <section class="auth-panel wide">
+      <a class="brand" href="/"><span class="brand-mark">AS</span><span>Alfares Suppliers</span></a>
+      <h1>Register interest</h1>
+      <p>Tell us which supplier channels and downstream services you want connected. Identity creation remains owned by the Auth service.</p>
+      <form id="registerForm" class="form-grid">
+        <label>Company<input required name="company" placeholder="Company name"></label>
+        <label>Work email<input required type="email" name="email" placeholder="ops@example.com"></label>
+        <label>Supplier channels<select name="channels"><option>REST and XML APIs</option><option>CSV feeds</option><option>FTP drops</option><option>Mixed supplier estate</option></select></label>
+        <label>Primary service<select name="service"><option>Warehouse stock reconciliation</option><option>Catalog product import</option><option>Marketplace feed operations</option><option>Orders and availability</option></select></label>
+        <label class="full">Notes<textarea name="notes" rows="5" placeholder="Supplier count, marketplaces, import cadence, mapping constraints"></textarea></label>
+        <button class="button primary large" type="submit">Send registration request</button>
+      </form>
+      <p id="registerResult" class="form-note"></p>
+    </section>
+  </main>
+  <script src="/assets/app.js"></script>
+</body>
+</html>

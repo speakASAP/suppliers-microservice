@@ -10,6 +10,14 @@ export interface ImportPayloadValidationResult {
   errors: ImportValidationError[];
 }
 
+export interface NormalizedWarehouseStockCandidate {
+  supplierSku: string;
+  productId: string;
+  warehouseId: string;
+  stockQuantity: number;
+  observedAt?: string;
+}
+
 export interface WarehouseStockBoundaryPolicy {
   actor: string;
   reason: string;
@@ -109,8 +117,23 @@ export function validateWarehouseStockUpdateBoundary(
       errors.push({ index, field: "supplierSku", error: "supplierSku is required before Warehouse stock validation" });
     }
 
+    if (!hasNonEmptyString(item.productId)) {
+      errors.push({ index, field: "productId", error: "productId is required before Warehouse stock validation" });
+    }
+
+    if (!hasNonEmptyString(item.warehouseId)) {
+      errors.push({ index, field: "warehouseId", error: "warehouseId is required before Warehouse stock validation" });
+    }
+
     if (!isNonNegativeInteger(item.stockQuantity)) {
       errors.push({ index, field: "stockQuantity", error: "stockQuantity must be a non-negative integer" });
+    }
+
+    if (item.observedAt !== undefined) {
+      const observedAt = hasNonEmptyString(item.observedAt) ? new Date(String(item.observedAt)) : null;
+      if (!observedAt || Number.isNaN(observedAt.getTime())) {
+        errors.push({ index, field: "observedAt", error: "observedAt must be a valid date string when provided" });
+      }
     }
 
     if (item.warehouseLocationId !== undefined && !hasNonEmptyString(item.warehouseLocationId)) {
