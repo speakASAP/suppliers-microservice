@@ -92,6 +92,18 @@ function supplierIdForOrigin(artifact, warehouseId, warehouseType) {
   return (artifact.warehouseOrigins || []).find((row) => row.warehouseId === warehouseId && row.warehouseType === warehouseType)?.supplierId || null;
 }
 
+function assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId) {
+  const job = smoke.supplierJob;
+  assert(job?.status === 'completed', 'smoke artifact supplier job must be completed');
+  assert(job.supplierId === supplierId, 'smoke artifact supplier job must belong to TRACE_SUPPLIER_ID');
+  assert(job.catalogProductValidationStatus === 'passed', 'smoke artifact supplier job must prove Catalog product validation passed');
+  assert(Array.isArray(job.catalogProductIdsChecked) && job.catalogProductIdsChecked.includes(smoke.productId), 'smoke artifact supplier job must include checked TRACE_PRODUCT_ID');
+  assert(job.warehouseAuthority === 'warehouse-microservice', 'smoke artifact supplier job must preserve Warehouse stock authority');
+  assert(job.warehouseStockUpdateAttempted === true, 'smoke artifact supplier job must record Warehouse update attempted');
+  assert(job.warehouseStockUpdateApproved === true, 'smoke artifact supplier job must record approved Warehouse update');
+  assert(Number(job.updatedProducts || 0) > 0, 'smoke artifact supplier job must record updated products');
+}
+
 function verifyTraceArtifactConsistency(manifest) {
   const fixture = readJson(manifest.artifacts.fixture.file, 'fixture evidence artifact');
   const smoke = readJson(manifest.artifacts.smoke.file, 'smoke evidence artifact');
@@ -124,6 +136,7 @@ function verifyTraceArtifactConsistency(manifest) {
   assert(hasRouteForWarehouse(smoke.projection?.routeLegs, ownWarehouseId, 'local_fulfillment'), 'smoke artifact must include the fixture own warehouse local route in FlipFlop projection');
   assert(hasRouteForWarehouse(smoke.projection?.routeLegs, supplierWarehouseId, 'supplier_replenishment', supplierId), 'smoke artifact must include the fixture supplier replenishment route in FlipFlop projection for TRACE_SUPPLIER_ID');
   assert(hasRouteForWarehouse(smoke.projection?.routeLegs, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route in FlipFlop projection for TRACE_SUPPLIER_ID');
+  assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId);
   assert(smoke.cleanupEvidence, 'smoke artifact must include cleanup or archival evidence');
 }
 
@@ -420,6 +433,21 @@ function runSelfTest() {
   }
   assert(nonReservableSupplierRouteRejected, 'bundle verifier must reject non-reservable supplier route evidence');
 
+  const missingSupplierJobCatalogValidationSmokeFile = path.join(dir, 'smoke-missing-supplier-job-catalog-validation.json');
+  const missingSupplierJobCatalogValidationSmoke = sampleSmoke();
+  delete missingSupplierJobCatalogValidationSmoke.supplierJob.catalogProductValidationStatus;
+  missingSupplierJobCatalogValidationSmoke.supplierJob.catalogProductIdsChecked = [];
+  writeJson(missingSupplierJobCatalogValidationSmokeFile, missingSupplierJobCatalogValidationSmoke);
+  const missingSupplierJobCatalogValidationManifestFile = path.join(dir, 'manifest-missing-supplier-job-catalog-validation.json');
+  writeManifest(missingSupplierJobCatalogValidationManifestFile, { fixture: fixtureFile, smoke: missingSupplierJobCatalogValidationSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let missingSupplierJobCatalogValidationRejected = false;
+  try {
+    verifyBundle({ manifestFile: missingSupplierJobCatalogValidationManifestFile, reportFile: reportFile });
+  } catch (error) {
+    missingSupplierJobCatalogValidationRejected = /Catalog product validation/.test(error.message);
+  }
+  assert(missingSupplierJobCatalogValidationRejected, 'bundle verifier must reject supplier job without Catalog product validation evidence');
+
   const missingProjectionOwnRouteSmokeFile = path.join(dir, 'smoke-missing-projection-own-route.json');
   const missingProjectionOwnRouteSmoke = sampleSmoke();
   missingProjectionOwnRouteSmoke.projection.routeLegs = missingProjectionOwnRouteSmoke.projection.routeLegs.filter((route) => route.warehouseId !== 'warehouse-own');
@@ -470,7 +498,7 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, missingSupplierJobCatalogValidationRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
 }
 
 try {
