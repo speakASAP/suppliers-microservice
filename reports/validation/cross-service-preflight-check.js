@@ -149,6 +149,16 @@ const checks = [
   },
   {
     service: 'suppliers',
+    file: 'reports/validation/create-deployment-evidence.js',
+    patterns: ['DEPLOYMENT_EVIDENCE_OUTPUT', 'WAREHOUSE_HEALTH_EVIDENCE', 'WAREHOUSE_PROTECTED_ENDPOINT_EVIDENCE', 'CATALOG_HEALTH_EVIDENCE', 'CATALOG_PROTECTED_ENDPOINT_EVIDENCE', 'SUPPLIERS_HEALTH_EVIDENCE', 'SUPPLIERS_PROTECTED_ENDPOINT_EVIDENCE', 'completed deployment evidence', 'must include anonymous 401 or 403', 'verify-deployment-evidence.js', 'missingHealthRejected', 'weakProtectedEvidenceRejected'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/verify-deployment-evidence.js',
+    patterns: ['DEPLOYMENT_EVIDENCE_FILE', 'generated from current service heads', 'completion verifier reminder', 'protectedEndpointEvidence must include 401 or 403', 'worktree must be clean before deployment evidence can authorize runtime proof', 'staleDeploymentHeadRejected', 'missingProtectedEndpointRejected', 'placeholderEvidenceRejected', 'dirtyDeploymentRootRejected'],
+  },
+  {
+    service: 'suppliers',
     file: 'reports/validation/run-runtime-evidence-flow.js',
     patterns: ['--fixture-check', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'fixture-ready', 'validateApprovedSmokeConfig', 'validateDeploymentEvidenceFile', 'generatedFromCurrentHeads', 'completion verifier reminder', 'assertCleanWorktreeForService', 'worktree must be clean before approved runtime evidence', 'currentHeadForService', 'commitSha must match current', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'TRACE_OWN_WAREHOUSE_ID', 'FIXTURE_CHECK_RESULT_FILE', 'generate-runtime-evidence-report.js', 'verify-runtime-evidence-report.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'verify-stock-traceability-completion.js', 'RUNTIME_EVIDENCE_MANIFEST', 'stock-traceability-runtime-evidence-manifest.json', 'sha256', 'dirtyWorktreeRejected', 'manifest self-test must reject dirty service worktrees before writing runtime evidence', '--manifest-self-test'],
   },
