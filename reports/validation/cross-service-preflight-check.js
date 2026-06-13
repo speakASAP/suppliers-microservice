@@ -150,7 +150,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-stock-traceability-completion.js',
-    patterns: ['runtime report is not passed-runtime/runtime-complete', 'no runtime evidence manifest was provided', 'defaultManifest', 'verify-runtime-evidence-bundle.js', 'complete verified bundle'],
+    patterns: ['runtime report is not passed-runtime/runtime-complete', 'no runtime evidence manifest was provided', 'defaultManifest', 'verify-runtime-evidence-bundle.js', 'complete verified bundle', 'completeVerifiedBundleAccepted', 'generatedFromCurrentHeads', 'completionReminder', 'initSelfTestRepo'],
   },
   {
     service: 'suppliers',
