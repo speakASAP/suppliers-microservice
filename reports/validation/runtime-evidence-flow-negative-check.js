@@ -256,6 +256,7 @@ const cases = [
   runPassCase('runtime-readiness-bundle-self-test-rejects-dirty-or-stale-artifacts', ['reports/validation/create-runtime-readiness-bundle.js', '--self-test'], 'missingManifestVerificationRejected'),
   runPassCase('runtime-readiness-verifier-self-test-rejects-tampering-or-stale-heads', ['reports/validation/verify-runtime-readiness-bundle.js', '--self-test'], 'staleHeadRejected'),
   runPassCase('manifest-self-test-writes-hashed-evidence', ['--manifest-self-test'], 'manifest-self-test-passed'),
+  runPassCase('runtime-report-verifier-self-test-rejects-placeholder-assertions', ['reports/validation/verify-runtime-evidence-report.js', '--self-test'], 'placeholderAssertionRejected'),
   runPassCase('manifest-verifier-self-test-rejects-tampering', ['reports/validation/verify-runtime-evidence-manifest.js', '--self-test'], 'tamperedHashRejected'),
   runPassCase('manifest-bundle-self-test-cross-checks-deployment', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'deploymentManifestMismatchRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mixed-trace-product', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mixedTraceProductRejected'),

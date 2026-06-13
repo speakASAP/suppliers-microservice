@@ -231,6 +231,7 @@ function verify(report) {
     assert(row, `required runtime assertion is missing or not passed: ${assertion}`);
     assert(!row.includes('Evidence missing'), `required runtime assertion has missing evidence: ${assertion}`);
     assert(!row.includes('| - |'), `required runtime assertion has placeholder evidence: ${assertion}`);
+    assert(!/TODO|placeholder/i.test(row), `required runtime assertion has TODO or placeholder evidence: ${assertion}`);
   }
 
   const warehouseAvailabilityRow = rows.find((line) => line.startsWith(`| Warehouse availability returns own plus supplier and dropship stock. |`));
@@ -301,8 +302,24 @@ function verify(report) {
 
 try {
   const reportPath = process.env.RUNTIME_EVIDENCE_REPORT || 'docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md';
-  const report = selfTest ? sampleReport() : fs.readFileSync(reportPath, 'utf8');
-  console.log(JSON.stringify(verify(report), null, 2));
+  if (selfTest) {
+    const valid = verify(sampleReport());
+    const placeholderReport = sampleReport().replace(
+      '| Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:traceability-runbook | passed-runtime |',
+      '| Cleanup or archival evidence is recorded. | cleanupEvidence=placeholder cleanup evidence after run | passed-runtime |',
+    );
+    let placeholderAssertionRejected = false;
+    try {
+      verify(placeholderReport);
+    } catch (error) {
+      placeholderAssertionRejected = /TODO or placeholder evidence/.test(error.message);
+    }
+    assert(placeholderAssertionRejected, 'runtime evidence report self-test must reject placeholder assertion evidence');
+    console.log(JSON.stringify({ ...valid, placeholderAssertionRejected }, null, 2));
+  } else {
+    const report = fs.readFileSync(reportPath, 'utf8');
+    console.log(JSON.stringify(verify(report), null, 2));
+  }
 } catch (error) {
   console.error(JSON.stringify({ status: 'failed', error: error.message }, null, 2));
   process.exit(1);
