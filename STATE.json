@@ -26,7 +26,9 @@
       "warehouse_stock_update_boundary": "done",
       "warehouse_stock_update_boundary_deployed": "done",
       "compatible_dependency_audit_remediation": "done_package_lock_only",
-      "npm_audit_remaining_findings": "25_total_7_high_15_moderate_3_low_breaking_nest_upgrade_required"
+      "npm_audit_remaining_findings": "25_total_7_high_15_moderate_3_low_breaking_nest_upgrade_required",
+      "compatible_dependency_audit_remediation_deployed": "done_sha256_663539137f10c53665d1e122a031026b4a96ccdbda3be5d178b8cd91bcc02bce",
+      "latest_pod_health": "healthy_suppliers-microservice-689df99cc9-g94sz"
     }
   },
   "next_focus": "Owner-approved Nest major dependency upgrade plan, or owner-supplied supplier contract details for TASK-002",
