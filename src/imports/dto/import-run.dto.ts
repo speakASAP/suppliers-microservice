@@ -19,7 +19,7 @@ export class RunImportDto {
 
   @IsOptional()
   @IsString()
-  @Length(8, 128)
+  @Length(8, 256)
   @Matches(/^[A-Za-z0-9._:-]+$/)
   sourceFingerprint?: string;
 

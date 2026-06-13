@@ -17,7 +17,7 @@ export class ImportJob {
   @Column({ length: 50, default: "manual" })
   triggerType: ImportTriggerType;
 
-  @Column({ length: 128, nullable: true })
+  @Column({ length: 256, nullable: true })
   sourceFingerprint: string;
 
   @Column({ length: 50, default: "pending" })
