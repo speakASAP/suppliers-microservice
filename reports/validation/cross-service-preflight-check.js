@@ -169,6 +169,11 @@ const checks = [
   },
   {
     service: 'suppliers',
+    file: 'reports/validation/create-runtime-readiness-bundle.js',
+    patterns: ['RUNTIME_READINESS_BUNDLE_DIR', 'stock-traceability-runtime-readiness-manifest.json', 'create-runtime-approval-request.js', 'create-deployment-evidence-template.js', 'create-runtime-handoff-checklist.js', 'run-runtime-evidence-flow.js', 'sha256', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE', 'dirtyRowsRejected', 'missingHeadRejected'],
+  },
+  {
+    service: 'suppliers',
     file: 'reports/validation/verify-stock-traceability-completion.js',
     patterns: ['runtime report is not passed-runtime/runtime-complete', 'no runtime evidence manifest was provided', 'defaultManifest', 'verify-runtime-evidence-bundle.js', 'complete verified bundle', 'completeVerifiedBundleAccepted', 'generatedFromCurrentHeads', 'completionReminder', 'initSelfTestRepo', 'canReserveFromWarehouse: true', 'catalogProductValidationStatus', 'catalogProductIdsChecked'],
   },
@@ -205,7 +210,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-live-runbook.md',
-    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs', 'Suppliers runtime must have `CATALOG_SERVICE_URL` and `CATALOG_SERVICE_TOKEN`', 'All three repositories must be clean before generating deployment evidence', 'rejects dirty Warehouse, Catalog, or Suppliers worktrees', 'node reports/validation/run-runtime-evidence-flow.js --plan-only', 'node reports/validation/run-runtime-evidence-flow.js --manifest-self-test', 'node reports/validation/verify-runtime-evidence-manifest.js --self-test', 'node reports/validation/verify-runtime-evidence-bundle.js --self-test', 'First validate the approved-smoke configuration', 'DEPLOYMENT_EVIDENCE_FILE="/tmp/stock-traceability-deployment-evidence.json"', 'status: "runtime-complete"', 'stock-traceability-runtime-evidence-manifest.json'],
+    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs', 'Suppliers runtime must have `CATALOG_SERVICE_URL` and `CATALOG_SERVICE_TOKEN`', 'All three repositories must be clean before generating deployment evidence', 'rejects dirty Warehouse, Catalog, or Suppliers worktrees', 'node reports/validation/create-runtime-readiness-bundle.js --self-test', 'RUNTIME_READINESS_BUNDLE_DIR=/tmp/stock-traceability-runtime-readiness', 'stock-traceability-runtime-readiness-manifest.json', 'node reports/validation/run-runtime-evidence-flow.js --plan-only', 'node reports/validation/run-runtime-evidence-flow.js --manifest-self-test', 'node reports/validation/verify-runtime-evidence-manifest.js --self-test', 'node reports/validation/verify-runtime-evidence-bundle.js --self-test', 'First validate the approved-smoke configuration', 'DEPLOYMENT_EVIDENCE_FILE="/tmp/stock-traceability-deployment-evidence.json"', 'status: "runtime-complete"', 'stock-traceability-runtime-evidence-manifest.json'],
     forbiddenPatterns: ['runtime-stock-traceability-smoke.js --config-only', 'CATALOG_TOKEN=catalog-token-synthetic', 'WAREHOUSE_TOKEN=warehouse-token-synthetic', 'SUPPLIERS_TOKEN=suppliers-token-synthetic', 'Save the smoke JSON to a file for report generation'],
   },
   {
