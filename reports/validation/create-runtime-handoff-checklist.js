@@ -98,7 +98,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 - TRACE_SUPPLIER_SKU
 - TRACE_CLEANUP_EVIDENCE
 - DEPLOYMENT_EVIDENCE_FILE pointing to completed deployment evidence JSON
-- RUNTIME_APPROVAL_ARTIFACT_FILE pointing to owner-approved JSON for current clean service heads
+- RUNTIME_APPROVAL_ARTIFACT_FILE pointing to owner-approved JSON for current clean service heads and exact approvedTraceInputs
 - CATALOG_TOKEN, WAREHOUSE_TOKEN, SUPPLIERS_TOKEN kept only in shell environment
 
 ## Command Order
@@ -107,7 +107,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 2. Generate aligned readiness bundle with \`RUNTIME_READINESS_BUNDLE_DIR=/tmp/stock-traceability-runtime-readiness node reports/validation/create-runtime-readiness-bundle.js\`, verify it with \`node reports/validation/verify-runtime-readiness-bundle.js /tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json\`, and preserve \`stock-traceability-runtime-readiness-manifest.json\`.
 3. Generate deployment evidence skeleton with \`DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js\`.
 4. Generate the approval prompt with \`RUNTIME_APPROVAL_REQUEST_OUTPUT=/tmp/stock-traceability-runtime-approval-request.md node reports/validation/create-runtime-approval-request.js\`.
-5. After owner approval, generate the matching approval artifact with \`OWNER_APPROVAL=explicit RUNTIME_APPROVED_BY=<owner-id> RUNTIME_READINESS_MANIFEST_FILE=/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json RUNTIME_APPROVAL_REQUEST_FILE=/tmp/stock-traceability-runtime-approval-request.md RUNTIME_APPROVAL_ARTIFACT_OUTPUT=/tmp/stock-traceability-runtime-approval.json node reports/validation/create-runtime-approval-artifact.js\`.
+5. After owner approval, generate the matching approval artifact with \`OWNER_APPROVAL=explicit RUNTIME_APPROVED_BY=<owner-id> TRACE_PRODUCT_ID=<approved-synthetic-product-id> TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=<active-synthetic-trace-supplier-id> TRACE_OWN_WAREHOUSE_ID=<own-warehouse-id> TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id> TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id> TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-20260613-001 TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE RUNTIME_READINESS_MANIFEST_FILE=/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json RUNTIME_APPROVAL_REQUEST_FILE=/tmp/stock-traceability-runtime-approval-request.md RUNTIME_APPROVAL_ARTIFACT_OUTPUT=/tmp/stock-traceability-runtime-approval.json node reports/validation/create-runtime-approval-artifact.js\`. The artifact must bind the exact approved trace product, supplier, warehouse, idempotency, supplier stock quantity, and supplier SKU values.
 6. Validate the approval artifact with \`node reports/validation/verify-runtime-approval-artifact.js /tmp/stock-traceability-runtime-approval.json\`.
 7. Deploy Warehouse first: \`ssh alfares 'cd /home/ssf/Documents/Github/warehouse-microservice && ./scripts/deploy.sh'\`.
 8. Deploy Catalog second: \`ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/deploy.sh'\`.

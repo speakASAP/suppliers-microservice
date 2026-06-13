@@ -16,6 +16,18 @@ const deploymentRepos = {
   suppliers: 'suppliers-microservice',
 };
 
+const requiredTraceInputKeys = [
+  'TRACE_PRODUCT_ID',
+  'TRACE_PRODUCT_SKU_PREFIX',
+  'TRACE_SUPPLIER_ID',
+  'TRACE_OWN_WAREHOUSE_ID',
+  'TRACE_SUPPLIER_WAREHOUSE_ID',
+  'TRACE_DROPSHIP_WAREHOUSE_ID',
+  'TRACE_IMPORT_IDEMPOTENCY_KEY',
+  'TRACE_SUPPLIER_STOCK_QTY',
+  'TRACE_SUPPLIER_SKU',
+];
+
 const requiredForbiddenActions = [
   'real supplier imports',
   'production payload ingestion',
@@ -64,6 +76,15 @@ function isIsoDate(value) {
 
 function hasText(value) {
   return typeof value === 'string' && value.trim().length > 0;
+}
+
+function assertTraceInputs(artifact) {
+  const inputs = artifact.approvedTraceInputs || {};
+  const missing = requiredTraceInputKeys.filter((key) => !hasText(inputs[key]));
+  assert(missing.length === 0, 'approval artifact approvedTraceInputs missing: ' + missing.join(', '));
+  assert(inputs.TRACE_PRODUCT_SKU_PREFIX === 'CODEX-STOCK-TRACE-', 'approval artifact approvedTraceInputs.TRACE_PRODUCT_SKU_PREFIX must be CODEX-STOCK-TRACE-');
+  assert(/^\d+$/.test(inputs.TRACE_SUPPLIER_STOCK_QTY) && Number(inputs.TRACE_SUPPLIER_STOCK_QTY) > 0, 'approval artifact approvedTraceInputs.TRACE_SUPPLIER_STOCK_QTY must be a positive integer string');
+  assert(!Object.values(inputs).some((value) => /Bearer\s+|TOKEN=|api[_-]?key|secret|password/i.test(String(value))), 'approval artifact approvedTraceInputs must not contain secrets');
 }
 
 function assertNoSecrets(artifactText) {
@@ -127,6 +148,7 @@ function validateApprovalArtifact(filePath) {
   assert(scope.runApprovedRuntimeSmoke === true, 'approval artifact scope.runApprovedRuntimeSmoke must be true');
   assert(scope.ownerApproval === 'explicit', 'approval artifact scope.ownerApproval must be explicit');
   assert(scope.smokeAllowMutation === true, 'approval artifact scope.smokeAllowMutation must be true');
+  assertTraceInputs(artifact);
 
   const forbidden = forbiddenActionText(artifact).toLowerCase();
   const missingForbidden = requiredForbiddenActions.filter((action) => !forbidden.includes(action));
@@ -173,6 +195,17 @@ function validArtifactForRoot(root, dir = fs.mkdtempSync(path.join(os.tmpdir(), 
     approvedForCurrentCleanHeads: true,
     serviceHeads,
     readinessManifest: writeReadinessManifest(dir, serviceHeads),
+    approvedTraceInputs: {
+      TRACE_PRODUCT_ID: 'product-synthetic',
+      TRACE_PRODUCT_SKU_PREFIX: 'CODEX-STOCK-TRACE-',
+      TRACE_SUPPLIER_ID: 'supplier-synthetic',
+      TRACE_OWN_WAREHOUSE_ID: 'warehouse-own',
+      TRACE_SUPPLIER_WAREHOUSE_ID: 'warehouse-supplier',
+      TRACE_DROPSHIP_WAREHOUSE_ID: 'warehouse-dropship',
+      TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+      TRACE_SUPPLIER_STOCK_QTY: '7',
+      TRACE_SUPPLIER_SKU: 'SUP-SKU-TRACE',
+    },
     scope: {
       syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
       syntheticRecordsOnly: true,
@@ -238,6 +271,17 @@ function runSelfTest() {
   }
   assert(missingForbiddenActionRejected, 'self-test must reject approval artifacts that omit forbidden action acknowledgements');
 
+  const missingTraceInput = validArtifactForRoot(root);
+  delete missingTraceInput.approvedTraceInputs.TRACE_SUPPLIER_SKU;
+  const missingTraceInputFile = writeArtifact(path.join(dir, 'missing-trace-input'), missingTraceInput);
+  let missingTraceInputRejected = false;
+  try {
+    validateApprovalArtifact(missingTraceInputFile);
+  } catch (error) {
+    missingTraceInputRejected = /approvedTraceInputs missing/.test(error.message);
+  }
+  assert(missingTraceInputRejected, 'self-test must reject approval artifacts without exact approved trace inputs');
+
   const missingReadiness = validArtifactForRoot(root, path.join(dir, 'missing-readiness-source'));
   delete missingReadiness.readinessManifest;
   const missingReadinessFile = writeArtifact(path.join(dir, 'missing-readiness'), missingReadiness);
@@ -265,6 +309,7 @@ function runSelfTest() {
     missingForbiddenActionRejected,
     dirtyApprovalRootRejected,
     missingReadinessManifestRejected,
+    missingTraceInputRejected,
   }, null, 2));
 }
 
@@ -281,6 +326,7 @@ try {
     approvedBy: approval.approvedBy,
     approvedAt: approval.approvedAt,
     serviceHeads: approval.serviceHeads,
+    approvedTraceInputs: approval.approvedTraceInputs,
   }, null, 2));
 } catch (error) {
   console.error(JSON.stringify({ status: 'failed', error: error.message }, null, 2));

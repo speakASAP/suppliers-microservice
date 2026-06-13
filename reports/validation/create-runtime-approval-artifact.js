@@ -12,6 +12,18 @@ const outputFile = process.env.RUNTIME_APPROVAL_ARTIFACT_OUTPUT || '/tmp/stock-t
 const approvalRequestFile = process.env.RUNTIME_APPROVAL_REQUEST_FILE || '/tmp/stock-traceability-runtime-approval-request-current.md';
 const readinessManifestFile = process.env.RUNTIME_READINESS_MANIFEST_FILE || '/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json';
 
+const requiredTraceInputEnv = [
+  'TRACE_PRODUCT_ID',
+  'TRACE_PRODUCT_SKU_PREFIX',
+  'TRACE_SUPPLIER_ID',
+  'TRACE_OWN_WAREHOUSE_ID',
+  'TRACE_SUPPLIER_WAREHOUSE_ID',
+  'TRACE_DROPSHIP_WAREHOUSE_ID',
+  'TRACE_IMPORT_IDEMPOTENCY_KEY',
+  'TRACE_SUPPLIER_STOCK_QTY',
+  'TRACE_SUPPLIER_SKU',
+];
+
 const services = {
   warehouse: 'warehouse-microservice',
   catalog: 'catalog-microservice',
@@ -87,6 +99,14 @@ function assertApprovalEnv() {
   assert(envValue('RUNTIME_APPROVED_BY'), 'RUNTIME_APPROVED_BY is required to generate runtime approval artifact');
 }
 
+function traceInputsFromEnv() {
+  const missing = requiredTraceInputEnv.filter((name) => !envValue(name));
+  assert(missing.length === 0, 'runtime approval artifact requires approved trace inputs: ' + missing.join(', '));
+  assert(envValue('TRACE_PRODUCT_SKU_PREFIX') === 'CODEX-STOCK-TRACE-', 'TRACE_PRODUCT_SKU_PREFIX must be CODEX-STOCK-TRACE- for runtime approval');
+  assert(/^\d+$/.test(envValue('TRACE_SUPPLIER_STOCK_QTY')) && Number(envValue('TRACE_SUPPLIER_STOCK_QTY')) > 0, 'TRACE_SUPPLIER_STOCK_QTY must be a positive integer string');
+  return Object.fromEntries(requiredTraceInputEnv.map((name) => [name, envValue(name)]));
+}
+
 function sha256File(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
@@ -125,7 +145,7 @@ function assertNoSecrets(value) {
   assert(!/Bearer\s+|CATALOG_TOKEN|WAREHOUSE_TOKEN|SUPPLIERS_TOKEN|SERVICE_TOKEN|api[_-]?key|secret|password/i.test(value), 'runtime approval artifact must not contain token or credential values');
 }
 
-function renderArtifact(rows, readinessManifest) {
+function renderArtifact(rows, readinessManifest, approvedTraceInputs) {
   const serviceHeads = Object.fromEntries(rows.map((row) => [row.name, row.head]));
   const approvedBy = envValue('RUNTIME_APPROVED_BY');
   const approvedAt = envValue('RUNTIME_APPROVED_AT') || new Date().toISOString();
@@ -138,8 +158,9 @@ function renderArtifact(rows, readinessManifest) {
     approvedForCurrentCleanHeads: true,
     serviceHeads,
     readinessManifest,
+    approvedTraceInputs,
     scope: {
-      syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
+      syntheticSkuPrefix: approvedTraceInputs.TRACE_PRODUCT_SKU_PREFIX,
       syntheticRecordsOnly: true,
       oneGuardedSyntheticImport: true,
       runApprovedRuntimeSmoke: true,
@@ -172,6 +193,7 @@ function assertSelfTestContent(artifact) {
   assert(artifact.scope.syntheticRecordsOnly === true, 'self-test synthetic-only scope missing');
   assert(artifact.scope.oneGuardedSyntheticImport === true, 'self-test guarded import scope missing');
   assert(artifact.scope.ownerApproval === 'explicit', 'self-test owner approval scope missing');
+  assert(artifact.approvedTraceInputs && artifact.approvedTraceInputs.TRACE_SUPPLIER_STOCK_QTY === '7', 'self-test approved trace inputs missing');
   assert(artifact.forbiddenActionsAcknowledged.includes('token disclosure'), 'self-test forbidden action acknowledgement missing');
 }
 
@@ -180,9 +202,19 @@ try {
     process.env.OWNER_APPROVAL = 'explicit';
     process.env.RUNTIME_APPROVED_BY = 'owner@example.test';
     process.env.RUNTIME_APPROVED_AT = '2026-06-13T00:00:00.000Z';
+    process.env.TRACE_PRODUCT_ID = 'product-synthetic';
+    process.env.TRACE_PRODUCT_SKU_PREFIX = 'CODEX-STOCK-TRACE-';
+    process.env.TRACE_SUPPLIER_ID = 'supplier-synthetic';
+    process.env.TRACE_OWN_WAREHOUSE_ID = 'warehouse-own';
+    process.env.TRACE_SUPPLIER_WAREHOUSE_ID = 'warehouse-supplier';
+    process.env.TRACE_DROPSHIP_WAREHOUSE_ID = 'warehouse-dropship';
+    process.env.TRACE_IMPORT_IDEMPOTENCY_KEY = 'manual:traceability-synthetic';
+    process.env.TRACE_SUPPLIER_STOCK_QTY = '7';
+    process.env.TRACE_SUPPLIER_SKU = 'SUP-SKU-TRACE';
   }
 
   assertApprovalEnv();
+  const approvedTraceInputs = traceInputsFromEnv();
   const rows = serviceRows();
   assertCleanRows(rows);
   const preflight = runJson(['reports/validation/cross-service-preflight-check.js']);
@@ -190,7 +222,7 @@ try {
   assert(preflight.completionGate && preflight.completionGate.status === 'incomplete', 'runtime approval artifact must be generated only while completion gate is incomplete');
   assertApprovalRequestMatchesCurrentHeads(rows);
   const readinessManifest = verifyReadinessManifest(rows);
-  const { artifact, json } = renderArtifact(rows, readinessManifest);
+  const { artifact, json } = renderArtifact(rows, readinessManifest, approvedTraceInputs);
   assertSelfTestContent(artifact);
 
   if (selfTest) {
@@ -212,7 +244,17 @@ try {
     process.env.OWNER_APPROVAL = previousApproval;
     assert(dirtyRowsRejected, 'approval artifact self-test must reject dirty source snapshots');
     assert(missingApprovalRejected, 'approval artifact self-test must reject missing explicit owner approval');
-    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, readinessManifestBound: true }, null, 2));
+    const previousQty = process.env.TRACE_SUPPLIER_STOCK_QTY;
+    process.env.TRACE_SUPPLIER_STOCK_QTY = '';
+    let missingTraceInputRejected = false;
+    try {
+      traceInputsFromEnv();
+    } catch (error) {
+      missingTraceInputRejected = /approved trace inputs/.test(error.message);
+    }
+    process.env.TRACE_SUPPLIER_STOCK_QTY = previousQty;
+    assert(missingTraceInputRejected, 'approval artifact self-test must reject missing approved trace inputs');
+    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, missingTraceInputRejected, readinessManifestBound: true }, null, 2));
   } else {
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
     fs.writeFileSync(outputFile, json);
