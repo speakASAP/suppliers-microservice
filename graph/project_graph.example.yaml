@@ -111,6 +111,9 @@ nodes:
   - id: VAL-TASK-006-adapter-foundation
     path: 12_validation/VAL-TASK-006-adapter-foundation.md
     type: ValidationReport
+  - id: VAL-SUP-FRONTEND-ADMIN
+    path: 12_validation/VAL-SUP-FRONTEND-ADMIN.md
+    type: ValidationReport
 edges:
   - from: BUSINESS-CASE
     type: derives_from
@@ -265,3 +268,6 @@ edges:
   - from: VAL-TASK-006-adapter-foundation
     type: validates
     to: TASK-006
+  - from: VAL-SUP-FRONTEND-ADMIN
+    type: validates
+    to: FEAT-001

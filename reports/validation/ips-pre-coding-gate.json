@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-06-13T05:46:23Z",
+  "created_at": "2026-06-13T06:33:14Z",
   "execution_plans": {
     "execution_plan_count": 6,
     "execution_plan_files": [
@@ -23,7 +23,7 @@
     "00_constitution/CONSTITUTION.md",
     "01_vision/VISION.md"
   ],
-  "root": "/home/ssf/Documents/Github/suppliers-microservice",
+  "root": "/home/ssf/Documents/Github/suppliers-microservice-frontend-deploy",
   "schema_version": "1.0.0",
   "sensitive_data_findings": [],
   "shared_principles_with_dos": {

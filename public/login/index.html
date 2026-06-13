@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in | Alfares Suppliers</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="auth-page">
+  <main class="auth-shell">
+    <section class="auth-panel">
+      <a class="brand" href="/"><span class="brand-mark">AS</span><span>Alfares Suppliers</span></a>
+      <h1>Sign in</h1>
+      <p>Use an existing Auth-issued JWT with supplier admin access. The token is stored only in this browser for protected API calls.</p>
+      <form id="loginForm" class="form-stack">
+        <label>Bearer token<textarea id="tokenInput" rows="7" autocomplete="off" spellcheck="false" placeholder="Paste JWT"></textarea></label>
+        <label>Admin email<input id="emailInput" type="email" placeholder="admin@alfares.cz"></label>
+        <button class="button primary large" type="submit">Open dashboard</button>
+      </form>
+      <p class="form-note">Allowed API roles: global superadmin or internal suppliers admin.</p>
+    </section>
+    <aside class="auth-aside">
+      <h2>Protected by existing service roles</h2>
+      <ul>
+        <li>Supplier data loads through protected APIs.</li>
+        <li>Import and mapping evidence use bearer authorization.</li>
+        <li>Raw credentials are never displayed.</li>
+      </ul>
+    </aside>
+  </main>
+  <script src="/assets/app.js"></script>
+</body>
+</html>

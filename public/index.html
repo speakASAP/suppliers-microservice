@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alfares Suppliers</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body class="landing-page">
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="Alfares Suppliers home"><span class="brand-mark">AS</span><span>Alfares Suppliers</span></a>
+    <nav class="site-nav" aria-label="Main navigation">
+      <a href="#platform">Platform</a>
+      <a href="#integrations">Integrations</a>
+      <a href="#controls">Controls</a>
+      <a href="#security">Security</a>
+    </nav>
+    <div class="header-actions">
+      <a class="button ghost" href="/login/">Sign in</a>
+      <a class="button primary" href="/register/">Register</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero-section" id="platform">
+      <div class="hero-copy">
+        <h1>Alfares Suppliers</h1>
+        <p class="lead">Validation-first supplier imports for product, category, and stock workflows across Catalog, Warehouse, marketplaces, and order operations.</p>
+        <div class="hero-actions">
+          <a class="button primary large" href="/admin/">Open admin</a>
+          <a class="button secondary large" href="/register/">Register interest</a>
+        </div>
+        <dl class="hero-proof" aria-label="Platform proof points">
+          <div><dt>Safe imports</dt><dd>Payload validation before downstream writes</dd></div>
+          <div><dt>Credential-safe</dt><dd>Runtime references only, never decoded in UI</dd></div>
+          <div><dt>Idempotent</dt><dd>Replay-aware import orchestration</dd></div>
+        </dl>
+      </div>
+      <div class="hero-visual" aria-label="Supplier integration flow">
+        <div class="flow-board">
+          <div class="flow-source">
+            <span>REST</span><span>XML</span><span>CSV</span><span>FTP</span>
+          </div>
+          <div class="flow-path">
+            <article><strong>Supplier APIs</strong><small>Connection metadata</small></article>
+            <article><strong>Import validation</strong><small>Schema, idempotency, failures</small></article>
+            <article><strong>Category mapping</strong><small>Supplier categories to Catalog IDs</small></article>
+          </div>
+          <div class="service-ring">
+            <span>Catalog</span>
+            <span>Warehouse</span>
+            <span>FlipFlop</span>
+            <span>Allegro</span>
+            <span>Orders</span>
+            <span>Logging</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="spine-section" id="integrations">
+      <div class="section-heading">
+        <h2>One controlled supplier spine for every downstream service</h2>
+        <p>Suppliers keeps the external API contract, import job history, and category mapping evidence in one place while Catalog and Warehouse keep their own domain truth.</p>
+      </div>
+      <div class="integration-spine">
+        <div class="spine-node input"><strong>Supplier APIs</strong><span>REST / XML / CSV / FTP</span></div>
+        <div class="spine-node"><strong>Validation</strong><span>Payload quality and replay checks</span></div>
+        <div class="spine-node"><strong>Mappings</strong><span>Supplier categories to Catalog IDs</span></div>
+        <div class="spine-node output"><strong>Catalog</strong><span>Product truth</span></div>
+        <div class="spine-node output"><strong>Warehouse</strong><span>Stock truth</span></div>
+      </div>
+    </section>
+
+    <section class="control-section" id="controls">
+      <div class="section-heading compact">
+        <h2>Built for operators who need evidence, not guesswork</h2>
+        <p>Every import can show what ran, what was validated, which mappings were missing, and whether Warehouse mutation was blocked or approved.</p>
+      </div>
+      <div class="control-grid">
+        <article><span class="icon-box">OK</span><h3>Supplier registry</h3><p>Track API type, activity, schedule, last sync status, and safe credential reference presence.</p></article>
+        <article><span class="icon-box">RUN</span><h3>Import jobs</h3><p>Monitor pending, running, completed, and failed runs with idempotency and validation evidence.</p></article>
+        <article><span class="icon-box">MAP</span><h3>Service mapping</h3><p>See how suppliers connect to Catalog, Warehouse, FlipFlop, Allegro, Orders, and Logging.</p></article>
+      </div>
+    </section>
+
+    <section class="security-band" id="security">
+      <div>
+        <h2>Credentials stay out of the interface</h2>
+        <p>The admin surface works with existing JWT roles and shows only safe credential reference status. Supplier credentials remain runtime-managed and excluded from UI responses.</p>
+      </div>
+      <a class="button primary" href="/login/">Sign in securely</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">Alfares Suppliers | supplier.alfares.cz | Catalog and Warehouse boundary aware</footer>
+</body>
+</html>

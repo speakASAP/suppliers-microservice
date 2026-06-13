@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-06-13T05:46:23Z",
+  "created_at": "2026-06-13T06:33:14Z",
   "gate": "deployment_readiness",
   "next_step": "ready_for_deployment_review",
   "pre_coding_gate": {
@@ -11,7 +11,7 @@
     "status": "pass",
     "stderr": ""
   },
-  "root": "/home/ssf/Documents/Github/suppliers-microservice",
+  "root": "/home/ssf/Documents/Github/suppliers-microservice-frontend-deploy",
   "schema_version": "1.0.0",
   "status": "pass",
   "strict_doc_audit": {
@@ -19,7 +19,7 @@
     "score": 100,
     "status": "PASS"
   },
-  "target": null,
+  "target": "SUP-FRONTEND-ADMIN",
   "unresolved_markers": [
     {
       "line": 88,
@@ -98,7 +98,11 @@
     }
   ],
   "validation_reports": {
+    "matching_reports": [
+      "12_validation/VAL-SUP-FRONTEND-ADMIN.md"
+    ],
     "reports": [
+      "12_validation/VAL-SUP-FRONTEND-ADMIN.md",
       "12_validation/VAL-TASK-001-ips-documentation-bootstrap.md",
       "12_validation/VAL-TASK-002-add-new-supplier-api-integration.md",
       "12_validation/VAL-TASK-003-review-category-mapping-completeness.md",
@@ -107,6 +111,6 @@
       "12_validation/VAL-TASK-006-adapter-foundation.md"
     ],
     "status": "pass",
-    "target": null
+    "target": "SUP-FRONTEND-ADMIN"
   }
 }
