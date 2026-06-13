@@ -1,14 +1,13 @@
 {
   "blockers": [
     "TASK-002 supplier-specific API integration remains draft pending owner-supplied supplier contract details",
-    "Goal 5 import-job warehouse-boundary migration is a source artifact pending owner-approved production migration/deployment",
     "Docker build reported existing npm audit findings"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "warehouse-stock-update-boundary",
+  "last_milestone": "warehouse-stock-update-boundary-deployed",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -19,11 +18,13 @@
       "production_deployment": "done",
       "runtime_changes": 0,
       "supplier_contract_credential_safety": "done",
+      "warehouse_stock_boundary_migration_applied": "done",
       "warehouse_stock_mutation": "not_implemented_owner_approval_required",
-      "warehouse_stock_update_boundary": "done"
+      "warehouse_stock_update_boundary": "done",
+      "warehouse_stock_update_boundary_deployed": "done"
     }
   },
-  "next_focus": "Goal 6 - Operational Smoke And Documentation Ingestion; operational follow-up: apply Goal 5 migration and deploy only after owner approval",
+  "next_focus": "Goal 6 - Operational Smoke And Documentation Ingestion; operational follow-up: review npm audit findings and decide whether to push Goal 5 commits to origin",
   "open_task_ids": [],
   "project": "suppliers-microservice",
   "stage": "production",

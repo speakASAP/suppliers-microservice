@@ -76,3 +76,16 @@ Boundary decision: current Suppliers import code has no Warehouse mutation clien
 Validation evidence: python3 scripts/pre_coding_gate.py --root . passed before source edits. npm run build passed. Synthetic compiled-validator check passed for malformed stock candidates, unapproved mutation attempts, and a valid synthetic candidate. Strict documentation audit passed. Deployment-readiness gate passed.
 
 Next unfinished chunk: Goal 6 - Operational Smoke And Documentation Ingestion. Operational follow-up remains: apply the Goal 5 migration and deploy only after owner approval.
+
+
+## 2026-06-13 - Goal 5 Production Migration And Deployment
+
+Approval: owner approved applying the Goal 5 Warehouse stock-boundary migration and deploying the service.
+
+Migration: applied `src/database/migrations/202606130002-import-job-warehouse-stock-boundary.sql` to the live `suppliers` database through the `db-server-postgres` pod. Verified five `import_jobs` evidence columns exist: `warehouseStockValidationStatus`, `warehouseStockValidationErrors`, `warehouseStockUpdatePolicy`, `warehouseStockUpdateAttempted`, and `warehouseStockUpdateApproved`.
+
+Deployment: committed source as `5cb40f0` and ran `./scripts/deploy.sh`. The script built and pushed `localhost:5000/suppliers-microservice:5cb40f0` and `:latest`, applied Kubernetes manifests, and reported rollout success. Because the deployment spec references `:latest`, an explicit `kubectl rollout restart deployment/suppliers-microservice -n statex-apps` was required to pull the new image digest.
+
+Verification: new pod `suppliers-microservice-cd77cfc9f-9lzw8` is ready on image digest `sha256:6042364ab7e965adb497add6e2a9eff712d316f90a246721fdc435511c3aa2a2`. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.
+
+Next unfinished chunk: Goal 6 - Operational Smoke And Documentation Ingestion.
