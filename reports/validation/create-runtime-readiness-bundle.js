@@ -88,6 +88,20 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function verifyBundle(manifestFile) {
+  const result = spawnSync(process.execPath, ['reports/validation/verify-runtime-readiness-bundle.js', manifestFile], {
+    cwd: process.cwd(),
+    env: { ...process.env, CROSS_SERVICE_ROOT: root },
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) {
+    throw new Error('readiness bundle verifier failed: ' + (result.stdout + result.stderr).trim());
+  }
+  const parsed = JSON.parse(result.stdout);
+  assert(parsed.status === 'verified', 'readiness bundle verifier must return verified status');
+  return parsed;
+}
+
 function assertArtifactContainsHeads(filePath, rows) {
   const text = fs.readFileSync(filePath, 'utf8');
   for (const row of rows) {
@@ -130,7 +144,8 @@ function writeBundle(rows) {
     nextRequiredAction: 'Owner approval, deployment, completed deployment evidence, and guarded runtime smoke are still required before completion.',
   };
   fs.writeFileSync(manifestFile, JSON.stringify(manifest, null, 2) + '\n');
-  return { manifest, manifestFile };
+  const verification = verifyBundle(manifestFile);
+  return { manifest, manifestFile, verification };
 }
 
 function assertSelfTestContent() {
@@ -166,8 +181,8 @@ try {
     assertSelfTestContent();
     process.exit(0);
   }
-  const { manifest, manifestFile } = writeBundle(rows);
-  console.log(JSON.stringify({ status: 'written', outputDir, manifestFile, services: Object.keys(manifest.serviceHeads) }, null, 2));
+  const { manifest, manifestFile, verification } = writeBundle(rows);
+  console.log(JSON.stringify({ status: 'written-and-verified', outputDir, manifestFile, services: Object.keys(manifest.serviceHeads), verification: verification.status }, null, 2));
 } catch (error) {
   console.error(JSON.stringify({ status: 'failed', error: error.message }, null, 2));
   process.exit(1);
