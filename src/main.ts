@@ -9,7 +9,6 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const publicPath = join(process.cwd(), 'public');
-  app.useStaticAssets(publicPath);
   app.use((request: Request, response: Response, next: NextFunction) => {
     if (/^\/admin(?:\/.*)?$/.test(request.path)) {
       response.sendFile(join(publicPath, 'admin', 'index.html'));
@@ -17,6 +16,7 @@ async function bootstrap() {
     }
     next();
   });
+  app.useStaticAssets(publicPath);
 
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
