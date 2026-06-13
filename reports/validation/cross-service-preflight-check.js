@@ -190,7 +190,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-completion-audit.md',
-    patterns: ['supplier IDs match `TRACE_SUPPLIER_ID`', 'supplier routes are owned by `TRACE_SUPPLIER_ID`'],
+    patterns: ['supplier IDs match `TRACE_SUPPLIER_ID`', 'supplier routes are owned by `TRACE_SUPPLIER_ID`', 'clean current service heads', 'no dirty Warehouse/Catalog/Suppliers worktree state'],
   },
   {
     service: 'suppliers',

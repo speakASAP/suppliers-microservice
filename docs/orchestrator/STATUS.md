@@ -233,3 +233,13 @@ Validation evidence: `node --check` passed for the runtime runner, deployment te
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. The previous passed runtime report remains valid only for its recorded deployed commits; it is not current-head completion evidence.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then perform owner-approved deployment and guarded runtime evidence regeneration before claiming completion.
+
+## 2026-06-13 - Clean Source Runtime Docs Alignment
+
+Change: committed Suppliers `837aff9072520ed5bccce63c706436df1c58e862` so the live runbook, runtime rollout, runtime evidence template, and preflight source checks all state the same clean-worktree requirement enforced by the guarded runtime evidence tooling. Operators are now told to stop on any non-empty `git status --short`, regenerate deployment evidence from clean heads, and avoid approved smoke from dirty Warehouse, Catalog, or Suppliers worktrees.
+
+Validation evidence: `node reports/validation/cross-service-preflight-check.js`, `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues`, and `git diff --check` passed. Regenerated `/tmp/stock-traceability-runtime-handoff-current.md` and `/tmp/stock-traceability-deployment-evidence-current.template.json`; both recorded Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, Suppliers `837aff9072520ed5bccce63c706436df1c58e862`, and clean source state.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
+
+Next unfinished chunk: owner-approved deployment and guarded runtime evidence regeneration for Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and Suppliers `837aff9072520ed5bccce63c706436df1c58e862`.

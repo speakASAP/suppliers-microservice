@@ -27,11 +27,11 @@ This audit maps the original business objective to current evidence so completio
 | Logistics from supplier/local warehouse to customer are visible. | Warehouse WH-G14/15 exposes local fulfillment, supplier replenishment, and supplier dropship routes with legs; Catalog CAT-G11 forwards logistics. | source-ready | Runtime Warehouse/Catalog/FlipFlop responses must include local plus supplier replenishment and dropship route options and route legs proving warehouse-to-customer plus supplier-to-Alfares and supplier-to-customer movement. |
 | Downstream channel projection can consume the same truth. | Catalog FlipFlop projection forwards `availability.warehouses[]`, `availability.logistics`, and `stockQuantity` as Warehouse `totalAvailable`. | source-ready | Runtime FlipFlop projection smoke must return Warehouse-sourced availability and logistics. |
 | Warehouse remains stock and logistics authority. | Source contracts avoid Catalog stock persistence and Suppliers stock authority; smoke runner asserts Warehouse source fields and optional Suppliers job policy. | source-ready | Runtime evidence must show totals and logistics come from Warehouse, not copied stock truth in Catalog or Suppliers. |
-| Production deployment is safe and ordered. | Runtime rollout plan defines deploy order, mutation boundary, rollback, cleanup, and evidence capture. Runtime smoke now requires `TRACE_CLEANUP_EVIDENCE` whenever approved mutation is enabled. | plan-ready | Owner approval, deployment, and live smoke execution are still required. |
+| Production deployment is safe and ordered. | Runtime rollout plan defines deploy order, mutation boundary, rollback, cleanup, evidence capture, current-head deployment evidence, and clean Warehouse/Catalog/Suppliers worktree gates. Runtime smoke now requires `TRACE_CLEANUP_EVIDENCE` whenever approved mutation is enabled. | plan-ready | Owner approval, clean current-head deployment evidence, deployment, and live smoke execution are still required. |
 
 ## Completion Decision
 
-Current status is **not complete**. Source and plan evidence are strong enough to proceed to owner-approved deployment, but the full objective requires a passing read-only fixture check plus runtime evidence from the deployed Warehouse, Catalog, and Suppliers services. The final runtime evidence must be recorded in `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md` using `docs/cross-service/stock-traceability-runtime-evidence-template.md`.
+Current status is **not complete**. Source and plan evidence are strong enough to proceed to owner-approved deployment, but the full objective requires a passing read-only fixture check plus runtime evidence from the deployed Warehouse, Catalog, and Suppliers services. The final runtime evidence must be recorded in `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md` using `docs/cross-service/stock-traceability-runtime-evidence-template.md`, with deployment evidence generated from clean current service heads.
 
 ## Evidence That Would Complete The Goal
 
@@ -47,6 +47,7 @@ The goal can be marked complete only after the runtime smoke report proves:
 8. Suppliers import evidence preserves Warehouse authority through an approved `synthetic-trace` import when supplier stock mutation is used.
 9. Warehouse total availability, summed Warehouse origins, Catalog availability total, Catalog coverage total, and FlipFlop stock quantity all match with Warehouse as source.
 10. Cleanup or archival evidence is recorded for synthetic records through `TRACE_CLEANUP_EVIDENCE`.
+11. Deployment evidence was generated from clean current Warehouse, Catalog, and Suppliers heads, and the guarded runner accepted clean worktrees before the runtime bundle was generated.
 
 ## Non-Completion Evidence
 
@@ -56,10 +57,11 @@ The following are not sufficient by themselves:
 - synthetic source-only trace scripts;
 - plan-only smoke output;
 - successful deployment without cross-service smoke;
-- Warehouse-only, Catalog-only, or Suppliers-only checks.
+- Warehouse-only, Catalog-only, or Suppliers-only checks;
+- runtime evidence generated while any service worktree has uncommitted source beside the recorded deployment commit.
 
 
-Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle. The bundle must include deployment evidence generated from current service heads with `generatedFromCurrentHeads: true` and the completion-verifier reminder.
+Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle. The bundle must include deployment evidence generated from clean current service heads with `generatedFromCurrentHeads: true`, the completion-verifier reminder, and no dirty Warehouse/Catalog/Suppliers worktree state at runtime evidence generation.
 
 
 Runtime handoff checklist: generate the operator handoff with `RUNTIME_HANDOFF_OUTPUT=/tmp/stock-traceability-runtime-handoff.md node reports/validation/create-runtime-handoff-checklist.js`. The checklist records current service HEADs, completion gate state, required operator inputs, ordered deployment commands, and the final completion verifier command.
