@@ -249,7 +249,7 @@ export class ImportsService {
     candidates: NormalizedSupplierImportItem[],
     options: WarehouseStockBoundaryOptions,
   ): Promise<WarehouseReconciliationResult> {
-    const boundary = validateWarehouseStockUpdateBoundary(candidates, options);
+    const boundary = validateWarehouseStockUpdateBoundary(candidates, { ...options, expectedSupplierId: supplierId });
     const errors = boundary.errors.map((item) => ({ sku: "N/A", error: item.field + ": " + item.error }));
 
     if (!boundary.valid) {

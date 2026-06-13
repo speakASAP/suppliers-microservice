@@ -14,6 +14,7 @@ export interface NormalizedWarehouseStockCandidate {
   supplierSku: string;
   productId: string;
   warehouseId: string;
+  supplierId?: string;
   stockQuantity: number;
   observedAt?: string;
 }
@@ -40,6 +41,7 @@ export interface WarehouseStockBoundaryOptions {
   idempotencyKey: string;
   approvedForMutation?: boolean;
   mutationAttempted?: boolean;
+  expectedSupplierId?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -128,6 +130,14 @@ export function validateWarehouseStockUpdateBoundary(
 
     if (!isNonNegativeInteger(item.stockQuantity)) {
       errors.push({ index, field: "stockQuantity", error: "stockQuantity must be a non-negative integer" });
+    }
+
+    if (item.supplierId !== undefined) {
+      if (!hasNonEmptyString(item.supplierId)) {
+        errors.push({ index, field: "supplierId", error: "supplierId must be a non-empty string when provided" });
+      } else if (hasNonEmptyString(options.expectedSupplierId) && String(item.supplierId).trim() !== String(options.expectedSupplierId).trim()) {
+        errors.push({ index, field: "supplierId", error: "Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation" });
+      }
     }
 
     if (item.observedAt !== undefined) {

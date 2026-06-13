@@ -67,6 +67,7 @@ async function runValidScenario() {
   assert(first.items[0].replayKey === second.items[0].replayKey, 'replay key must be deterministic');
   assert(first.items[0].supplierSku === 'SUP-REST-001', 'supplierSku must be preserved');
   assert(first.items[0].stockQuantity === 8, 'stockQuantity must be preserved');
+  assert(first.items[0].supplierId === context.supplierId, 'REST adapter must stamp import supplierId');
 
   const adapterValidation = validateSupplierAdapterResult(first);
   assert(adapterValidation.valid, 'REST adapter output must pass adapter validation');
@@ -79,6 +80,7 @@ async function runValidScenario() {
     deterministicReplay: first.items[0].replayKey === second.items[0].replayKey,
     deterministicFingerprint: first.sourceFingerprint === second.sourceFingerprint,
     credentialRefsResolved: Boolean(calls[0].options.headers['X-API-Key'] && calls[0].options.headers.Authorization),
+    supplierIdStamped: first.items[0].supplierId === context.supplierId,
   };
 }
 

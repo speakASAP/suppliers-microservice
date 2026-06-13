@@ -34,6 +34,7 @@ export interface NormalizedSupplierImportItem {
   replayKey: string;
   productId?: string;
   warehouseId?: string;
+  supplierId?: string;
   observedAt?: string;
 }
 

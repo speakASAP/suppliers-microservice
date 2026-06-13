@@ -106,6 +106,7 @@ export class ProductionRestJsonSupplierAdapter implements SupplierImportAdapter 
       replayKey: this.buildReplayKey(context.idempotencyKey, sourceRecordId),
       productId: this.optionalString(item.productId),
       warehouseId: this.optionalString(item.warehouseId),
+      supplierId: this.optionalString(item.supplierId) || context.supplierId,
       observedAt: this.optionalString(item.observedAt),
     };
   }

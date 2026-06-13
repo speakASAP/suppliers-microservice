@@ -67,6 +67,7 @@ function createHarness(options = {}) {
           supplierSku: 'SUP-SKU-SYNTHETIC',
           productId: 'product-synthetic',
           warehouseId: 'warehouse-supplier',
+          supplierId: job.supplierId,
           stockQuantity: 7,
           observedAt: '2026-06-13T10:00:00.000Z',
         },
@@ -76,6 +77,7 @@ function createHarness(options = {}) {
           supplierSku: 'SUP-SKU-SYNTHETIC',
           productId: 'product-synthetic',
           warehouseId: 'warehouse-dropship',
+          supplierId: job.supplierId,
           stockQuantity: 7,
           observedAt: '2026-06-13T10:00:00.000Z',
         },
@@ -107,6 +109,7 @@ function assertDuplicateWarehouseCandidateRejected() {
       supplierSku: 'SUP-SKU-DUP-1',
       productId: 'product-synthetic',
       warehouseId: 'warehouse-supplier',
+      supplierId: 'supplier-synthetic',
       stockQuantity: 4,
       observedAt: '2026-06-13T10:00:00.000Z',
     },
@@ -114,6 +117,7 @@ function assertDuplicateWarehouseCandidateRejected() {
       supplierSku: 'SUP-SKU-DUP-2',
       productId: 'product-synthetic',
       warehouseId: 'warehouse-supplier',
+      supplierId: 'supplier-synthetic',
       stockQuantity: 6,
       observedAt: '2026-06-13T10:05:00.000Z',
     },
@@ -123,9 +127,32 @@ function assertDuplicateWarehouseCandidateRejected() {
     idempotencyKey: 'manual:duplicate-candidate-check',
     approvedForMutation: true,
     mutationAttempted: true,
+    expectedSupplierId: 'supplier-synthetic',
   });
   assert(result.valid === false, 'duplicate Warehouse stock candidates must be rejected');
   assert(result.errors.some((error) => error.error.includes('Duplicate Warehouse stock candidate')), 'duplicate candidate rejection must explain the duplicate origin');
+}
+
+function assertMismatchedCandidateSupplierRejected() {
+  const result = validateWarehouseStockUpdateBoundary([
+    {
+      supplierSku: 'SUP-SKU-MISMATCH',
+      productId: 'product-synthetic',
+      warehouseId: 'warehouse-supplier',
+      supplierId: 'different-supplier',
+      stockQuantity: 4,
+      observedAt: '2026-06-13T10:00:00.000Z',
+    },
+  ], {
+    actor: 'suppliers-microservice',
+    reason: 'supplier-import',
+    idempotencyKey: 'manual:supplier-mismatch-check',
+    approvedForMutation: true,
+    mutationAttempted: true,
+    expectedSupplierId: 'supplier-synthetic',
+  });
+  assert(result.valid === false, 'mismatched supplier candidate must be rejected before Warehouse mutation');
+  assert(result.errors.some((error) => error.error.includes('Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation')), 'supplier mismatch rejection must identify supplierId ownership drift');
 }
 
 async function assertSyntheticTraceAdapter() {
@@ -138,6 +165,7 @@ async function assertSyntheticTraceAdapter() {
   assert(result.adapterKey === 'synthetic-trace', 'synthetic trace adapter key must be stable');
   assert(result.items.length === 2, 'synthetic trace adapter must emit supplier and dropship items');
   assert(result.items.every((item) => item.productId === 'product-synthetic'), 'synthetic trace adapter must preserve product ID');
+  assert(result.items.every((item) => item.supplierId === 'supplier-synthetic'), 'synthetic trace adapter must stamp import supplier ID');
   assert(result.items.some((item) => item.warehouseId === 'warehouse-supplier'), 'synthetic trace adapter must preserve supplier warehouse ID');
   assert(result.items.some((item) => item.warehouseId === 'warehouse-dropship'), 'synthetic trace adapter must preserve dropship warehouse ID');
   assert(result.items.every((item) => item.stockQuantity === 7), 'synthetic trace adapter must preserve stock quantity');
@@ -152,6 +180,7 @@ async function assertSyntheticTraceAdapter() {
 
 (async () => {
   assertDuplicateWarehouseCandidateRejected();
+  assertMismatchedCandidateSupplierRejected();
   await assertSyntheticTraceAdapter();
   const validateOnly = await runScenario({});
   const validateOnlyCompletion = validateOnly.updates.at(-1);
@@ -200,6 +229,7 @@ async function assertSyntheticTraceAdapter() {
   console.log(JSON.stringify({
     status: 'passed',
     duplicateWarehouseCandidateRejected: true,
+    mismatchedCandidateSupplierRejected: true,
     syntheticAdapter: 'passed',
     validateOnly: {
       catalogLookups: validateOnly.catalogLookups.length,

@@ -100,7 +100,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'src/imports/import-validation.ts',
-    patterns: ['seenWarehouseCandidates', 'Duplicate Warehouse stock candidate', 'productId', 'warehouseId'],
+    patterns: ['seenWarehouseCandidates', 'Duplicate Warehouse stock candidate', 'productId', 'warehouseId', 'expectedSupplierId', 'Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation'],
   },
   {
     service: 'suppliers',
@@ -110,7 +110,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'src/imports/adapters/supplier-import-adapter.ts',
-    patterns: ['SupplierAdapterRunSupplier', 'apiCredentials', 'supplier?: SupplierAdapterRunSupplier'],
+    patterns: ['SupplierAdapterRunSupplier', 'apiCredentials', 'supplier?: SupplierAdapterRunSupplier', 'supplierId?: string'],
   },
   {
     service: 'suppliers',
@@ -120,12 +120,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'src/imports/adapters/synthetic-trace-supplier-adapter.ts',
-    patterns: ['synthetic-trace', 'trace:<productId>:<warehouseId>:<quantity>[:supplierSku]', 'trace:<productId>:<supplierWarehouseId>:<dropshipWarehouseId>:<quantity>[:supplierSku]'],
+    patterns: ['synthetic-trace', 'trace:<productId>:<warehouseId>:<quantity>[:supplierSku]', 'trace:<productId>:<supplierWarehouseId>:<dropshipWarehouseId>:<quantity>[:supplierSku]', 'supplierId: context.supplierId'],
   },
   {
     service: 'suppliers',
     file: 'src/imports/adapters/production-rest-json-supplier-adapter.ts',
-    patterns: ['PRODUCTION-REST-JSON-V1', 'maxRedirects: 0', 'apiCredentials', 'sourceFingerprint'],
+    patterns: ['PRODUCTION-REST-JSON-V1', 'maxRedirects: 0', 'apiCredentials', 'sourceFingerprint', 'supplierId: this.optionalString(item.supplierId) || context.supplierId'],
   },
   {
     service: 'suppliers',
@@ -216,7 +216,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/synthetic-approved-import-run-check.js',
-    patterns: ['duplicateWarehouseCandidateRejected', 'Duplicate Warehouse stock candidate', 'approved mutation must verify each unique Catalog product before Warehouse mutation', 'approved mutation must record passed Catalog product validation', 'unknown Catalog product must record failed Catalog product validation', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
+    patterns: ['duplicateWarehouseCandidateRejected', 'mismatchedCandidateSupplierRejected', 'Duplicate Warehouse stock candidate', 'Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation', 'approved mutation must verify each unique Catalog product before Warehouse mutation', 'approved mutation must record passed Catalog product validation', 'unknown Catalog product must record failed Catalog product validation', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
   },
 ];
 

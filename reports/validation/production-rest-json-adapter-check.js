@@ -69,6 +69,7 @@ const httpService = {
   assert(adapterValidation.totalItems === 2, "REST adapter should normalize two items");
   assert(validateSupplierImportPayload(first.items).valid, "REST adapter output must pass supplier payload validation");
   assert(first.items[0].replayKey === expectedReplayKey(context.idempotencyKey, "rest-record-001"), "explicit sourceRecordId replay key must be deterministic");
+  assert(first.items[0].supplierId === context.supplierId, "REST adapter must stamp import supplierId when supplier item omits it");
   assert(first.items[1].sourceRecordId === "SYN-SKU-REST-002", "sourceRecordId must default to supplierSku");
   assert(first.items[1].replayKey === second.items[1].replayKey, "defaulted replay key must be deterministic");
   assert(first.sourceFingerprint === second.sourceFingerprint, "source fingerprint must be deterministic");
@@ -94,6 +95,7 @@ const httpService = {
     deterministicReplay: first.items[0].replayKey === second.items[0].replayKey,
     invalidPayloadBlocked: invalidBlocked,
     credentialRefsResolvedAtRuntime: true,
+    supplierIdStamped: first.items[0].supplierId === context.supplierId,
   }, null, 2));
 })().catch((error) => {
   console.error(error);

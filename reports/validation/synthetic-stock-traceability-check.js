@@ -100,6 +100,7 @@ const supplierCandidate = {
   supplierSku: "SUP-SKU-SYNTHETIC",
   productId: catalogProduct.id,
   warehouseId: "warehouse-supplier",
+  supplierId,
   stockQuantity: 7,
   observedAt: "2026-06-13T10:00:00.000Z",
 };
@@ -110,6 +111,7 @@ const policy = {
   idempotencyKey,
   approvedForMutation: true,
   mutationAttempted: true,
+  expectedSupplierId: supplierId,
 };
 
 const boundary = validateWarehouseStockUpdateBoundary([supplierCandidate], policy);

@@ -37,6 +37,7 @@ export class SyntheticTraceSupplierAdapter implements SupplierImportAdapter {
         supplierSku: item.supplierSku,
         productId: item.productId,
         warehouseId: item.warehouseId,
+        supplierId: context.supplierId,
         stockQuantity: item.stockQuantity,
         observedAt: item.observedAt,
       })),
