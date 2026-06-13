@@ -27,11 +27,24 @@ function readJson(filePath, label) {
   }
 }
 
+function repoPathForService(service) {
+  const repo = deploymentRepos[service];
+  assert(repo, `Unknown deployment service: ${service}`);
+  const repoPath = path.join(crossServiceRoot, repo);
+  assert(fs.existsSync(repoPath), `Repository not found for ${service}: ${repoPath}`);
+  return repoPath;
+}
+
 function currentHeadForService(service) {
   return execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: path.join(crossServiceRoot, deploymentRepos[service]),
+    cwd: repoPathForService(service),
     encoding: 'utf8',
   }).trim();
+}
+
+function assertCleanWorktreeForService(service) {
+  const status = execFileSync('git', ['status', '--short'], { cwd: repoPathForService(service), encoding: 'utf8' }).trim();
+  assert(!status, `${deploymentRepos[service]} worktree must be clean before runtime evidence bundle can prove completion`);
 }
 
 function fileEvidence(filePath) {
@@ -135,6 +148,7 @@ function verifyBundle({ manifestFile, reportFile }) {
     const manifestSha = manifest.serviceHeads?.[service];
     assert(deploymentSha === manifestSha, `${service} deployment evidence commit must match manifest service head`);
     assert(deploymentSha === currentHeadForService(service), `${service} deployment evidence commit must match current ${deploymentRepos[service]} HEAD`);
+    assertCleanWorktreeForService(service);
     assert(report.includes(deploymentSha), `${service} deployment commit must be present in runtime report`);
   }
   for (const artifact of ['fixture', 'smoke', 'deployment', 'report']) {

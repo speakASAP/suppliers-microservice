@@ -155,7 +155,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-bundle.js',
-    patterns: ['verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-report.js', 'deployment evidence commit must match manifest service head', 'fixture and smoke artifacts must use the same TRACE_PRODUCT_ID', 'smoke artifact must include the fixture dropship warehouse origin for TRACE_SUPPLIER_ID', 'fixture supplier warehouse origin must belong to TRACE_SUPPLIER_ID', 'Runtime complete', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'missingCatalogOwnRouteRejected', 'missingProjectionOwnRouteRejected', 'deploymentManifestMismatchRejected', 'missingCurrentHeadDeploymentMarkerRejected'],
+    patterns: ['verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-report.js', 'deployment evidence commit must match manifest service head', 'assertCleanWorktreeForService', 'runtime evidence bundle can prove completion', 'fixture and smoke artifacts must use the same TRACE_PRODUCT_ID', 'smoke artifact must include the fixture dropship warehouse origin for TRACE_SUPPLIER_ID', 'fixture supplier warehouse origin must belong to TRACE_SUPPLIER_ID', 'Runtime complete', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'missingCatalogOwnRouteRejected', 'missingProjectionOwnRouteRejected', 'deploymentManifestMismatchRejected', 'missingCurrentHeadDeploymentMarkerRejected'],
   },
   {
     service: 'suppliers',
