@@ -246,7 +246,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-runtime-approval-request.js',
-    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'RUNTIME_APPROVAL_REQUEST_OUTPUT', 'Approve exactly these three actions', 'runtime approval request requires clean Warehouse, Catalog, and Suppliers worktrees', 'dirtyRowsRejected', 'approval request self-test must reject dirty source snapshots', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'This approval request is not completion evidence', 'verify-stock-traceability-completion.js'],
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'RUNTIME_APPROVAL_REQUEST_OUTPUT', 'Approve exactly these three actions', 'runtime approval request requires clean Warehouse, Catalog, and Suppliers worktrees', 'dirtyRowsRejected', 'approval request self-test must reject dirty source snapshots', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'stock-traceability-runtime-readiness-manifest.json', 'RUNTIME_READINESS_MANIFEST_FILE', 'verify-runtime-approval-artifact.js', 'This approval request is not completion evidence', 'verify-stock-traceability-completion.js'],
   },
   {
     service: 'suppliers',
