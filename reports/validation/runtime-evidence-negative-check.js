@@ -277,6 +277,14 @@ const cases = [
     "sourceFingerprint=trace:product-synthetic:warehouse-supplier:warehouse-dropship",
     "sourceFingerprint=trace:product-synthetic:warehouse-other:warehouse-dropship"
   )),
+  runReportTextCase("mismatched-fixture-command-product-evidence", (report) => report.replace(
+    "TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check",
+    "TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check"
+  )),
+  runReportTextCase("mismatched-fixture-command-warehouse-evidence", (report) => report.replace(
+    "TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check",
+    "TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-other-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check"
+  )),
   runCase('bad-sku-prefix', (smoke) => {
     smoke.catalogProduct.sku = 'REAL-SKU-001';
   }),

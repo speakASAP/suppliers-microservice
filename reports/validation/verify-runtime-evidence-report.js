@@ -130,6 +130,19 @@ function assertReportIncludesTraceWarehouseIds(row, commandEvidence, label) {
   }
 }
 
+function assertFixtureCommandMatchesSmoke(fixtureCommandEvidence, smokeCommandEvidence) {
+  assert(fixtureCommandEvidence.includes('--fixture-check'), 'fixture check command must include --fixture-check');
+  assert(!fixtureCommandEvidence.includes('TRACE_RUN_SUPPLIERS_IMPORT=true'), 'fixture check command must not enable Suppliers import');
+  assert(!fixtureCommandEvidence.includes('SMOKE_ALLOW_MUTATION=true'), 'fixture check command must not enable mutation');
+  for (const key of ['TRACE_PRODUCT_ID', 'TRACE_PRODUCT_SKU_PREFIX', 'TRACE_OWN_WAREHOUSE_ID', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'TRACE_DROPSHIP_WAREHOUSE_ID']) {
+    const fixtureValue = commandEnvValue(fixtureCommandEvidence, key);
+    const smokeValue = commandEnvValue(smokeCommandEvidence, key);
+    assert(fixtureValue, 'redacted fixture command must include ' + key);
+    assert(smokeValue, 'redacted smoke command must include ' + key);
+    assert(fixtureValue === smokeValue, 'redacted fixture command ' + key + ' must match redacted smoke command');
+  }
+}
+
 function hasRouteLegEvidence(row) {
   return row.includes('routeLegs=')
     && /local_fulfillment\[available=[1-9]\d*;reservable=yes;/.test(row)
@@ -172,8 +185,10 @@ function verify(report) {
   assert(!report.includes('missing-runtime'), 'runtime report contains missing-runtime assertions');
   assert(!report.includes('pending-runtime'), 'runtime report contains pending-runtime assertions');
   assert(!report.includes('Runtime incomplete'), 'runtime report is marked incomplete');
+  const fixtureCommandEvidence = sectionText(report, 'Fixture Check Command Evidence');
   const smokeCommandEvidence = sectionText(report, 'Smoke Command Evidence');
   assert(smokeCommandEvidence.includes('runtime-stock-traceability-smoke.js'), 'smoke command evidence section must include the runtime smoke command');
+  assertFixtureCommandMatchesSmoke(fixtureCommandEvidence, smokeCommandEvidence);
   const traceProductId = commandEnvValue(smokeCommandEvidence, 'TRACE_PRODUCT_ID');
   const supplierWarehouseId = commandEnvValue(smokeCommandEvidence, 'TRACE_SUPPLIER_WAREHOUSE_ID');
   const dropshipWarehouseId = commandEnvValue(smokeCommandEvidence, 'TRACE_DROPSHIP_WAREHOUSE_ID');
@@ -198,7 +213,6 @@ function verify(report) {
   }
 
   assert(report.includes('## Fixture Check Command Evidence'), 'fixture check command evidence section is missing');
-  assert(report.includes('--fixture-check'), 'fixture check command must include --fixture-check');
   assert(report.includes('status=fixture-ready'), 'fixture check assertion must include fixture-ready status');
   assert(report.includes('fixtureCheck=yes'), 'fixture check assertion must prove fixtureCheck mode');
   assert(report.includes('mutationEnabled=no'), 'fixture check assertion must prove mutation was disabled');
