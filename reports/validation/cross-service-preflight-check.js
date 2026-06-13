@@ -39,6 +39,21 @@ const checks = [
   },
   {
     service: 'warehouse',
+    file: 'src/suppliers/supplier-reconciliation.service.ts',
+    patterns: ['is supplier-managed but is not linked to a supplier', 'belongs to supplier', 'supplier-reconciliation'],
+  },
+  {
+    service: 'warehouse',
+    file: 'test/supplier-reconciliation.service.spec.ts',
+    patterns: ['rejects supplier-managed warehouses that are not linked to a supplier', 'rejects supplier reconciliation when the warehouse belongs to another supplier'],
+  },
+  {
+    service: 'warehouse',
+    file: 'docs/contracts/supplier-reconciliation-contract.md',
+    patterns: ['Supplier-managed warehouses must have a Warehouse-owned `supplierId`', 'must match the request supplier'],
+  },
+  {
+    service: 'warehouse',
     file: 'test/warehouses.service.spec.ts',
     patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', "responsibility: 'supplier'", "responsibility: 'warehouse'"],
   },
@@ -71,6 +86,11 @@ const checks = [
     service: 'suppliers',
     file: 'src/imports/imports.service.ts',
     patterns: ['apply_with_owner_approval', 'warehouseStockUpdateApproved', 'supplier-reconciliations', 'requireForSupplier'],
+  },
+  {
+    service: 'suppliers',
+    file: 'src/imports/import-validation.ts',
+    patterns: ['seenWarehouseCandidates', 'Duplicate Warehouse stock candidate', 'productId', 'warehouseId'],
   },
   {
     service: 'suppliers',
@@ -166,6 +186,11 @@ const checks = [
     service: 'suppliers',
     file: 'reports/validation/synthetic-production-rest-json-adapter-check.js',
     patterns: ['SYN_REST_API_KEY', 'SYN_REST_TOKEN', 'deterministicFingerprint'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/synthetic-approved-import-run-check.js',
+    patterns: ['duplicateWarehouseCandidateRejected', 'Duplicate Warehouse stock candidate', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
   },
 ];
 

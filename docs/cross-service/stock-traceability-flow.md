@@ -25,7 +25,7 @@ This document defines how one sellable good can be traced across Suppliers, Ware
 
 1. Catalog owns the product record and exposes the Catalog product ID.
 2. A supplier adapter, after future owner-supplied supplier contract approval, normalizes supplier stock into a Suppliers stock candidate with supplierSku, productId, warehouseId, stockQuantity, and observedAt.
-3. Suppliers validates the candidate and blocks malformed or unapproved mutation attempts.
+3. Suppliers validates the candidate and blocks malformed, duplicate, or unapproved mutation attempts. One import may contain only one Warehouse stock candidate for a given `productId` and `warehouseId`; duplicates are rejected before approved mutation so a supplier feed cannot send competing quantities for the same product-origin pair.
 4. If a run is explicitly approved for mutation, Suppliers calls Warehouse `POST /api/supplier-reconciliations` with supplierId, warehouseId, productId, quantity, externalReference, actor, and observedAt.
 5. Warehouse applies the reconciliation only to supplier replenishment and dropship warehouses, preserves movement/reconciliation evidence, and remains stock authority.
 6. Warehouse batch availability returns total quantities plus per-warehouse rows with warehouseCode, warehouseName, warehouseType, and supplierId.

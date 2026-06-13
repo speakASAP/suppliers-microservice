@@ -106,6 +106,7 @@ export function validateWarehouseStockUpdateBoundary(
   }
 
   const errors: ImportValidationError[] = [];
+  const seenWarehouseCandidates = new Map<string, number>();
 
   payload.forEach((item, index) => {
     if (!isRecord(item)) {
@@ -133,6 +134,20 @@ export function validateWarehouseStockUpdateBoundary(
       const observedAt = hasNonEmptyString(item.observedAt) ? new Date(String(item.observedAt)) : null;
       if (!observedAt || Number.isNaN(observedAt.getTime())) {
         errors.push({ index, field: "observedAt", error: "observedAt must be a valid date string when provided" });
+      }
+    }
+
+    if (hasNonEmptyString(item.productId) && hasNonEmptyString(item.warehouseId)) {
+      const candidateKey = String(item.productId).trim() + ":" + String(item.warehouseId).trim();
+      const firstIndex = seenWarehouseCandidates.get(candidateKey);
+      if (firstIndex !== undefined) {
+        errors.push({
+          index,
+          field: "warehouseId",
+          error: `Duplicate Warehouse stock candidate for productId and warehouseId already seen at index ${firstIndex}`,
+        });
+      } else {
+        seenWarehouseCandidates.set(candidateKey, index);
       }
     }
 

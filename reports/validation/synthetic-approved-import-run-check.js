@@ -1,4 +1,5 @@
 const { ImportsService } = require('../../dist/imports/imports.service.js');
+const { validateWarehouseStockUpdateBoundary } = require('../../dist/imports/import-validation.js');
 const { SyntheticTraceSupplierAdapter } = require('../../dist/imports/adapters/synthetic-trace-supplier-adapter.js');
 
 function assert(condition, message) {
@@ -76,6 +77,34 @@ async function runScenario(options) {
   return harness;
 }
 
+
+function assertDuplicateWarehouseCandidateRejected() {
+  const result = validateWarehouseStockUpdateBoundary([
+    {
+      supplierSku: 'SUP-SKU-DUP-1',
+      productId: 'product-synthetic',
+      warehouseId: 'warehouse-supplier',
+      stockQuantity: 4,
+      observedAt: '2026-06-13T10:00:00.000Z',
+    },
+    {
+      supplierSku: 'SUP-SKU-DUP-2',
+      productId: 'product-synthetic',
+      warehouseId: 'warehouse-supplier',
+      stockQuantity: 6,
+      observedAt: '2026-06-13T10:05:00.000Z',
+    },
+  ], {
+    actor: 'suppliers-microservice',
+    reason: 'supplier-import',
+    idempotencyKey: 'manual:duplicate-candidate-check',
+    approvedForMutation: true,
+    mutationAttempted: true,
+  });
+  assert(result.valid === false, 'duplicate Warehouse stock candidates must be rejected');
+  assert(result.errors.some((error) => error.error.includes('Duplicate Warehouse stock candidate')), 'duplicate candidate rejection must explain the duplicate origin');
+}
+
 async function assertSyntheticTraceAdapter() {
   const adapter = new SyntheticTraceSupplierAdapter();
   const result = await adapter.fetchNormalizedItems({
@@ -99,6 +128,7 @@ async function assertSyntheticTraceAdapter() {
 }
 
 (async () => {
+  assertDuplicateWarehouseCandidateRejected();
   await assertSyntheticTraceAdapter();
   const validateOnly = await runScenario({});
   const validateOnlyCompletion = validateOnly.updates.at(-1);
@@ -128,6 +158,7 @@ async function assertSyntheticTraceAdapter() {
 
   console.log(JSON.stringify({
     status: 'passed',
+    duplicateWarehouseCandidateRejected: true,
     syntheticAdapter: 'passed',
     validateOnly: {
       warehouseCalls: validateOnly.posts.length,
