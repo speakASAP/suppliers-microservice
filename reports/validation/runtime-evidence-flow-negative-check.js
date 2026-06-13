@@ -30,12 +30,9 @@ function git(repoPath, args) {
 function createCleanCrossServiceRoot() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-root-'));
   for (const repo of Object.values(deploymentRepos)) {
+    const sourcePath = path.join(crossServiceRoot, repo);
     const repoPath = path.join(root, repo);
-    fs.mkdirSync(repoPath, { recursive: true });
-    git(repoPath, ['init']);
-    fs.writeFileSync(path.join(repoPath, 'README.md'), repo + '\n');
-    git(repoPath, ['add', 'README.md']);
-    git(repoPath, ['-c', 'user.email=traceability@example.test', '-c', 'user.name=Traceability Check', 'commit', '-m', 'Initial traceability fixture']);
+    execFileSync('git', ['clone', '--quiet', sourcePath, repoPath], { encoding: 'utf8' });
   }
   return root;
 }
