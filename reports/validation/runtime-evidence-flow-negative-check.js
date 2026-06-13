@@ -249,7 +249,7 @@ const cases = [
     }),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
-  }, 'readinessManifest catalog head must match approval serviceHeads'),
+  }, 'catalog head must match approval serviceHeads'),
   runCase('approved-smoke-missing-deployment-evidence', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
