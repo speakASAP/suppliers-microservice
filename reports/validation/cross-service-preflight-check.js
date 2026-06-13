@@ -180,12 +180,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-live-runbook.md',
-    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs'],
+    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs', 'All three repositories must be clean before generating deployment evidence', 'rejects dirty Warehouse, Catalog, or Suppliers worktrees'],
   },
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-runtime-evidence-template.md',
-    patterns: ['supplier ID matching `TRACE_SUPPLIER_ID`', 'supplier routes owned by `TRACE_SUPPLIER_ID`', 'not owned by the same `TRACE_SUPPLIER_ID`'],
+    patterns: ['supplier ID matching `TRACE_SUPPLIER_ID`', 'supplier routes owned by `TRACE_SUPPLIER_ID`', 'not owned by the same `TRACE_SUPPLIER_ID`', 'generator refuses dirty service worktrees', 'clean Warehouse, Catalog, and Suppliers worktrees'],
   },
   {
     service: 'suppliers',

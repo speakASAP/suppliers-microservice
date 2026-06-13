@@ -41,7 +41,7 @@ If the live run fails, use `status: failed-runtime`, keep `completeness_level: p
 
 ## Deployment Evidence
 
-When using the generator, provide deployment evidence as JSON in this shape. Start from `node reports/validation/create-deployment-evidence-template.js` to capture current commit SHAs, the `generatedFromCurrentHeads` marker, and the completion-verifier reminder, then replace all TODO evidence fields after deployment. The guarded runner rejects approved smoke when deployment evidence is missing that current-head marker/reminder or when any deployment commit SHA differs from the current remote repository HEAD for the matching service:
+When using the generator, provide deployment evidence as JSON in this shape. Start from `node reports/validation/create-deployment-evidence-template.js` to capture clean current commit SHAs, the `generatedFromCurrentHeads` marker, and the completion-verifier reminder, then replace all TODO evidence fields after deployment. The generator refuses dirty service worktrees. The guarded runner rejects approved smoke when deployment evidence is missing that current-head marker/reminder, when any deployment commit SHA differs from the current remote repository HEAD for the matching service, or when Warehouse, Catalog, or Suppliers has uncommitted source beside the recorded deployment commit:
 
 ```json
 {
@@ -158,7 +158,7 @@ Run this command after generating the final report:
 node reports/validation/verify-runtime-evidence-report.js
 ```
 
-The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any named runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values or `TODO` placeholders, if protected endpoint evidence does not include `401` or `403`, if the redacted fixture command does not include `--fixture-check`, if fixture evidence does not prove `fixture-ready`, mutation disabled, and supplier import not triggered, if the redacted smoke command does not include the approved import, expected job, owner approval, mutation allowance, cleanup, and token-redaction fields, or if the completion decision is not `Runtime complete`.
+The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any named runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values or `TODO` placeholders, if protected endpoint evidence does not include `401` or `403`, if the redacted fixture command does not include `--fixture-check`, if fixture evidence does not prove `fixture-ready`, mutation disabled, and supplier import not triggered, if the redacted smoke command does not include the approved import, expected job, owner approval, mutation allowance, cleanup, and token-redaction fields, or if the completion decision is not `Runtime complete`. The guarded runner must also have accepted clean Warehouse, Catalog, and Suppliers worktrees before generating the final bundle.
 
 The negative validation command proves unsafe evidence cannot pass:
 

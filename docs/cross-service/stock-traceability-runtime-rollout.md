@@ -39,7 +39,7 @@ Approved mutation scope must be limited to synthetic traceability records:
 
 The concrete operator command sequence is maintained in `docs/cross-service/stock-traceability-live-runbook.md`.
 
-1. Record pre-deploy commit SHA and dirty state for Warehouse, Catalog, and Suppliers.
+1. Record pre-deploy commit SHA and verify clean `git status --short` output for Warehouse, Catalog, and Suppliers; do not generate deployment evidence or run approved smoke from a dirty worktree.
 2. Deploy Warehouse first so origin metadata and batch logistics are available.
 3. Smoke Warehouse health and protected endpoint auth behavior.
 4. Deploy Catalog second so it can consume the new Warehouse contracts.
@@ -67,7 +67,7 @@ The approved supplier must be active and must use supplier `code` value `synthet
 
 When `SMOKE_ALLOW_MUTATION=true`, `TRACE_CLEANUP_EVIDENCE` is mandatory. It may point to completed cleanup evidence or to an explicit owner-approved deferral such as `deferred:<ticket-or-runbook>`. Hard deletes or compensating stock changes remain separate approved actions.
 
-For read-only rehearsal, keep `SMOKE_ALLOW_MUTATION` and `TRACE_RUN_SUPPLIERS_IMPORT` unset and run `node reports/validation/runtime-stock-traceability-smoke.js --plan-only`. For live fixture readiness without mutation, set service URLs, tokens, `TRACE_PRODUCT_ID`, and optional expected warehouse IDs, then run `node reports/validation/runtime-stock-traceability-smoke.js --fixture-check`. When the guarded runner is started with `RUN_APPROVED_RUNTIME_SMOKE=true`, it validates owner approval, mutation allowance, cleanup evidence, and complete deployment evidence before any live fixture or import request.
+For read-only rehearsal, keep `SMOKE_ALLOW_MUTATION` and `TRACE_RUN_SUPPLIERS_IMPORT` unset and run `node reports/validation/runtime-stock-traceability-smoke.js --plan-only`. For live fixture readiness without mutation, set service URLs, tokens, `TRACE_PRODUCT_ID`, and optional expected warehouse IDs, then run `node reports/validation/runtime-stock-traceability-smoke.js --fixture-check`. When the guarded runner is started with `RUN_APPROVED_RUNTIME_SMOKE=true`, it validates owner approval, mutation allowance, cleanup evidence, clean Warehouse/Catalog/Suppliers worktrees, and complete deployment evidence before any live fixture or import request.
 
 
 The runtime smoke is complete only when current production responses prove all assertions below:
