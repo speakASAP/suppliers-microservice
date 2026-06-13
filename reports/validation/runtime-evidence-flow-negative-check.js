@@ -154,6 +154,7 @@ const cases = [
   runPassCase('manifest-bundle-self-test-rejects-non-reservable-supplier-route', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'nonReservableSupplierRouteRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mismatched-supplier-job-fingerprint', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mismatchedSupplierJobFingerprintRejected'),
   runPassCase('manifest-bundle-self-test-rejects-missing-supplier-job-catalog-validation', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'missingSupplierJobCatalogValidationRejected'),
+  runPassCase('manifest-bundle-self-test-rejects-mismatched-stock-authority', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mismatchedStockAuthorityRejected'),
   runPassCase('manifest-bundle-self-test-rejects-missing-projection-own-route', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'missingProjectionOwnRouteRejected'),
   runCase('approved-smoke-missing-own-warehouse-id', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
