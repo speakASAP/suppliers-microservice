@@ -178,9 +178,9 @@ Approval: owner approved deploying Warehouse, Catalog, and Suppliers source, cre
 
 Deployment evidence: Warehouse commit 6992122d86f7cf0926b7702185f000982395aa0b, Catalog commit 890f55a35b107e2e4038281fa5c4de99232d7343, and Suppliers commit a6fc69d220e04aa055345c2ee1606bad21cc5a06 were deployed and health/access checks were recorded in /tmp/stock-traceability-deployment-evidence.json. A temporary Suppliers WAREHOUSE_SERVICE_TOKEN was installed only for the approved smoke and removed after the runtime evidence passed; Suppliers health was verified healthy after cleanup.
 
-Runtime evidence: reports/validation/run-runtime-evidence-flow.js completed with RUN_APPROVED_RUNTIME_SMOKE=true for synthetic product c0de0000-0000-4000-8000-000000000011, supplier c0de0000-0000-4000-8000-000000000012, own warehouse c0de0000-0000-4000-8000-000000000013, supplier warehouse c0de0000-0000-4000-8000-000000000014, and dropship warehouse c0de0000-0000-4000-8000-000000000015. The approved Suppliers import completed with idempotency key manual:traceability-20260613-012, Warehouse authority, mutation attempted and approved, and updatedProducts=2.
+Runtime evidence: reports/validation/run-runtime-evidence-flow.js completed with RUN_APPROVED_RUNTIME_SMOKE=true for synthetic product c0de0000-0000-4000-8000-000000000011, supplier c0de0000-0000-4000-8000-000000000012, own warehouse c0de0000-0000-4000-8000-000000000013, supplier warehouse c0de0000-0000-4000-8000-000000000014, and dropship warehouse c0de0000-0000-4000-8000-000000000015. This is historical evidence for those recorded deployed commits only; it predates the current Catalog identity and Warehouse authority evidence requirements.
 
-Validation evidence: verify-runtime-evidence-report.js passed with 12 assertion rows; verify-runtime-evidence-manifest.js passed with 4 artifacts; verify-runtime-evidence-bundle.js passed across 3 services; verify-stock-traceability-completion.js returned complete. Runtime report docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md is status passed-runtime and completeness runtime-complete.
+Validation evidence: at the time, verify-runtime-evidence-report.js passed with 12 assertion rows; verify-runtime-evidence-manifest.js passed with 4 artifacts; verify-runtime-evidence-bundle.js passed across 3 services; verify-stock-traceability-completion.js returned complete for that older evidence bundle. Current source now marks docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md as failed-runtime/partial because it is stale and does not prove the newer Catalog identity and Warehouse authority assertion.
 
 Next unfinished chunk: TASK-002 supplier-specific API integration remains blocked pending owner-supplied supplier API contract details.
 
@@ -188,7 +188,7 @@ Next unfinished chunk: TASK-002 supplier-specific API integration remains blocke
 
 Change: hardened the Suppliers runtime traceability validators so current and future runtime evidence must prove the configured own warehouse route, supplier replenishment route, and dropship route are present not only in Warehouse logistics but also in Catalog availability and FlipFlop supplier projection. The completion verifier now reports passed-runtime reports without a matching verified bundle as incomplete instead of throwing, and its default live-report path uses the guarded runtime evidence manifest location when no explicit report path is provided.
 
-Validation evidence: node --check reports/validation/verify-stock-traceability-completion.js passed. verify-stock-traceability-completion.js --self-test passed. verify-runtime-evidence-bundle.js --self-test passed and rejected missing Catalog own-route and missing FlipFlop own-route evidence. runtime-evidence-flow-negative-check.js passed. cross-service-preflight-check.js passed with liveRuntimeReport=verified-passed-runtime and completionGate=incomplete because the saved runtime manifest still references Suppliers commit a6fc69d220e04aa055345c2ee1606bad21cc5a06 and does not cover the current hardening changeset. git diff --check passed.
+Validation evidence: node --check reports/validation/verify-stock-traceability-completion.js passed. verify-stock-traceability-completion.js --self-test passed. verify-runtime-evidence-bundle.js --self-test passed and rejected missing Catalog own-route and missing FlipFlop own-route evidence. runtime-evidence-flow-negative-check.js passed. cross-service-preflight-check.js passed at that checkpoint with liveRuntimeReport=verified-passed-runtime and completionGate=incomplete because the saved runtime manifest still referenced Suppliers commit a6fc69d220e04aa055345c2ee1606bad21cc5a06 and did not cover the hardening changeset. The checked-in report has since been downgraded to failed-runtime/partial, so current preflight reports liveRuntimeReport=not-passed-runtime. git diff --check passed.
 
 Boundary decision: no deployment, live fixture creation, production supplier import, Warehouse mutation, runtime token inspection, or cleanup mutation was performed in this hardening chunk. The previous runtime report remains evidence for its recorded deployed commits only; current-head completion remains unproven until a new approved guarded runtime evidence flow is executed against the current source/deployment state.
 
@@ -362,7 +362,7 @@ Validation evidence: `npm run build`, `node reports/validation/synthetic-approve
 
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
-Next unfinished chunk: run full Suppliers validation, commit the persisted Catalog validation evidence change, regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
 
 ## 2026-06-13 - Warehouse Reservability Contract Alignment
 
@@ -385,3 +385,13 @@ Next unfinished chunk: regenerate handoff and deployment evidence for latest cle
 - 2026-06-13: Updated runtime handoff and evidence template text so operator artifacts explicitly require positive reservable routes and Suppliers import Catalog/Warehouse authority evidence.
 
 - 2026-06-13: Updated deployment evidence template and handoff wording with service-specific health and protected endpoint 401/403 guidance for Warehouse, Catalog, and Suppliers.
+
+## 2026-06-13 - Stale Runtime Evidence Downgraded
+
+Change: marked the checked-in live runtime report as stale historical evidence instead of current completion evidence. The report now uses `failed-runtime` and `partial`, records `stale-runtime` assertion rows, and explicitly says fresh guarded runtime evidence must include the `Suppliers import preserves Catalog identity and Warehouse authority.` assertion with Catalog product validation, checked product IDs, approved trace source fingerprint, Warehouse authority, owner-approved mutation, and applied update count.
+
+Validation evidence: `node reports/validation/cross-service-preflight-check.js` passed with liveRuntimeReport `not-passed-runtime`; `node reports/validation/verify-stock-traceability-completion.js` exited incomplete with reason `runtime report is not passed-runtime/runtime-complete`; runtime bundle self-test, runtime evidence flow negative checks, strict doc audit, and whitespace diff check passed before commit `702370a`. Fresh deployment evidence and runtime handoff templates were generated under /tmp from clean Warehouse `f9a73c0`, Catalog `e454e7d`, and Suppliers `702370a`.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: keep source/status artifacts aligned with the incomplete completion gate, then request owner-approved deployment and guarded runtime evidence regeneration for the latest clean heads.
