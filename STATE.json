@@ -1,12 +1,13 @@
 {
   "blockers": [
-    "No active production supplier row, private endpoint, or runtime credential references have been supplied for onboarding"
+    "No active production supplier row, private endpoint, or runtime credential references have been supplied for onboarding",
+    "Approved live traceability fixture IDs, service tokens, deployment evidence, and cleanup evidence are required before guarded runtime mutation smoke"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "production-rest-json-supplier-adapter",
+  "last_milestone": "cross-service-runtime-source-hardening",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -39,10 +40,12 @@
       "production_rest_json_supplier_contract": "done_PRODUCTION_REST_JSON_V1",
       "production_rest_json_supplier_adapter": "source_validated_no_real_supplier_onboarded",
       "production_supplier_onboarding": "pending_owner_supplied_metadata_and_runtime_secret_refs",
-      "production_rest_json_supplier_adapter_deployed": "done_sha256_eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34"
+      "production_rest_json_supplier_adapter_deployed": "done_sha256_eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34",
+      "cross_service_runtime_source_hardening": "done_non_mutating_validation_passed",
+      "cross_service_runtime_completion": "pending_owner_approved_fixture_tokens_deployment_cleanup_evidence"
     }
   },
-  "next_focus": "Owner-approved supplier onboarding/runtime smoke using PRODUCTION-REST-JSON-V1, or supplier-specific adapter if a non-generic supplier contract is provided",
+  "next_focus": "Owner-approved guarded runtime evidence flow with approved synthetic fixture IDs, service tokens, deployment evidence, cleanup evidence, and RUN_APPROVED_RUNTIME_SMOKE=true",
   "open_task_ids": [
     "TASK-002"
   ],

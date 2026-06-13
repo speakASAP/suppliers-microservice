@@ -50,7 +50,7 @@ const checks = [
   {
     service: 'catalog',
     file: 'src/warehouse-availability/warehouse-availability.service.ts',
-    patterns: ['warehouses/logistics/batch', 'mixed_stock', 'warehouse_logistics_route_missing'],
+    patterns: ['warehouses/logistics/batch', 'indexWarehouseLogisticsPlans', 'resolveConsistentLogisticsPlan', 'Ignoring stale Warehouse logistics plan', 'mixed_stock', 'warehouse_logistics_route_missing'],
   },
   {
     service: 'catalog',
@@ -60,7 +60,7 @@ const checks = [
   {
     service: 'catalog',
     file: 'src/warehouse-availability/warehouse-availability.service.spec.ts',
-    patterns: ['supplier_replenishment', 'supplier_dropship', 'alfares_receiving_or_handoff', 'to: \'customer\'', 'responsibility: \'supplier\'', 'responsibility: \'warehouse\''],
+    patterns: ['supplier_replenishment', 'supplier_dropship', 'alfares_receiving_or_handoff', "to: 'customer'", "responsibility: 'supplier'", "responsibility: 'warehouse'", 'does not attach stale Warehouse logistics', 'ignores duplicate and unrequested Warehouse logistics plans'],
   },
   {
     service: 'catalog',

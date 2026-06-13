@@ -10,11 +10,11 @@ Completed goals: Goal 1 - Intent Preservation System, complete on 2026-06-12. Go
 
 Active goal: none. Latest completed source goal: Goal 7 - Warehouse Reconciliation Client.
 
-Next recommended goal: owner-approved runtime deployment/smoke for Warehouse WH-G11, Catalog CAT-G10, and Suppliers SUP-G7, or Warehouse operator inventory topology/read model. TASK-006 supplier-specific adapter remains blocked pending owner-supplied supplier API contract details.
+Next recommended goal: owner-approved guarded runtime evidence flow for Warehouse, Catalog, and Suppliers stock traceability using approved synthetic fixture IDs, service tokens, deployment evidence, and cleanup evidence. TASK-006 supplier-specific adapter remains blocked pending owner-supplied supplier API contract details.
 
 Known blockers: no real supplier identity, private endpoint, credential shape, or production payload contract exists. A real supplier adapter remains blocked until owner-supplied contract details are supplied. No npm audit findings remain after the Nest major dependency upgrade.
 
-Cross-service completion audit: `docs/cross-service/stock-traceability-completion-audit.md` maps original requirements to source evidence and runtime proof still needed. Current status remains source-complete/runtime-pending.
+Cross-service completion audit: `docs/cross-service/stock-traceability-completion-audit.md` maps original requirements to source evidence and runtime proof still needed. Current status remains source-complete/runtime-pending. On 2026-06-13 the source-side runtime evidence hardening passed Warehouse, Catalog, and Suppliers non-mutating validation, including Catalog stale/duplicate/unrequested Warehouse logistics guard coverage and Suppliers preflight alignment.
 
 Cross-service runtime rollout plan: `docs/cross-service/stock-traceability-runtime-rollout.md` and `reports/validation/runtime-stock-traceability-smoke.js` were added on 2026-06-13. Plan-only validation passed; production deployment and mutation remain approval-gated.
 

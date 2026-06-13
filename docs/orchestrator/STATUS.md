@@ -160,3 +160,14 @@ Boundary decision: no real supplier row, private endpoint, decoded credential, r
 Next unfinished chunk: owner-approved supplier onboarding/runtime smoke using the production REST JSON contract, or a supplier-code-specific adapter if a supplier provides a non-generic contract.
 
 Deployment evidence: committed production REST JSON adapter as `1043871`, pushed to `origin/main`, ran `./scripts/deploy.sh`, and explicitly restarted the deployment because the manifest references mutable `latest`. Running pod `suppliers-microservice-6d5fdf4f5-k6lp7` is ready on image digest `sha256:eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34`. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.
+
+
+## 2026-06-13 - Cross-Service Runtime Evidence Source Hardening
+
+Change: validated the current cross-service traceability source slice and aligned Suppliers preflight with Catalog logistics consistency guards. Catalog now ignores stale, duplicate, or unrequested Warehouse logistics plans before joining route evidence to Catalog availability and coverage. Warehouse contract docs record the batch logistics request constraints needed for deterministic Catalog joins. Suppliers preflight now verifies the Catalog guard surfaces before runtime evidence can proceed.
+
+Validation evidence: Warehouse focused tests passed for warehouse DTO/service traceability coverage, Warehouse build passed, and Warehouse git diff check passed. Catalog focused warehouse-availability and FlipFlop projection tests passed, Catalog build passed, and Catalog git diff check passed. Suppliers pre-coding gate passed, build passed, cross-service preflight passed, runtime smoke plan-only passed, runtime report self-tests and negative checks passed, synthetic approved import, REST JSON adapter, synthetic REST adapter, and synthetic stock traceability checks passed, strict documentation audit passed, deployment readiness gate passed, and Suppliers git diff check passed.
+
+Boundary decision: no deployment, live fixture creation, production supplier import, Warehouse mutation, runtime token inspection, or final runtime-complete claim was performed. The completion gate remains incomplete until owner-approved live fixture IDs, service tokens, deployment evidence, cleanup evidence, and a guarded approved runtime smoke are supplied and executed.
+
+Next unfinished chunk: owner-approved guarded runtime evidence flow using `RUN_APPROVED_RUNTIME_SMOKE=true` with complete deployment evidence, approved synthetic fixture IDs, service tokens, and cleanup evidence.
