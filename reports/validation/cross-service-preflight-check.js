@@ -100,7 +100,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'src/imports/import-validation.ts',
-    patterns: ['seenWarehouseCandidates', 'Duplicate Warehouse stock candidate', 'productId', 'warehouseId', 'expectedSupplierId', 'Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation'],
+    patterns: ['seenWarehouseCandidates', 'Duplicate Warehouse stock candidate', 'productId', 'warehouseId', 'expectedSupplierId', 'Warehouse stock candidate supplierId is required and must match the import supplier before Warehouse mutation', 'Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation'],
   },
   {
     service: 'suppliers',
@@ -263,7 +263,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/synthetic-approved-import-run-check.js',
-    patterns: ['duplicateWarehouseCandidateRejected', 'mismatchedCandidateSupplierRejected', 'Duplicate Warehouse stock candidate', 'Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation', 'approved mutation must verify each unique Catalog product before Warehouse mutation', 'approved mutation must record passed Catalog product validation', 'unknown Catalog product must record failed Catalog product validation', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
+    patterns: ['duplicateWarehouseCandidateRejected', 'missingCandidateSupplierRejected', 'mismatchedCandidateSupplierRejected', 'Duplicate Warehouse stock candidate', 'Warehouse stock candidate supplierId is required and must match the import supplier before Warehouse mutation', 'Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation', 'approved mutation must verify each unique Catalog product before Warehouse mutation', 'approved mutation must record passed Catalog product validation', 'unknown Catalog product must record failed Catalog product validation', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
   },
   {
     service: 'suppliers',

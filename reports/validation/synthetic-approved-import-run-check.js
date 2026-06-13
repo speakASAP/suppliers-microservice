@@ -133,6 +133,27 @@ function assertDuplicateWarehouseCandidateRejected() {
   assert(result.errors.some((error) => error.error.includes('Duplicate Warehouse stock candidate')), 'duplicate candidate rejection must explain the duplicate origin');
 }
 
+function assertMissingCandidateSupplierRejected() {
+  const result = validateWarehouseStockUpdateBoundary([
+    {
+      supplierSku: 'SUP-SKU-MISSING-SUPPLIER',
+      productId: 'product-synthetic',
+      warehouseId: 'warehouse-supplier',
+      stockQuantity: 4,
+      observedAt: '2026-06-13T10:00:00.000Z',
+    },
+  ], {
+    actor: 'suppliers-microservice',
+    reason: 'supplier-import',
+    idempotencyKey: 'manual:supplier-missing-check',
+    approvedForMutation: true,
+    mutationAttempted: true,
+    expectedSupplierId: 'supplier-synthetic',
+  });
+  assert(result.valid === false, 'missing supplierId candidate must be rejected before Warehouse mutation');
+  assert(result.errors.some((error) => error.error.includes('Warehouse stock candidate supplierId is required and must match the import supplier before Warehouse mutation')), 'missing supplierId rejection must identify supplier ownership requirement');
+}
+
 function assertMismatchedCandidateSupplierRejected() {
   const result = validateWarehouseStockUpdateBoundary([
     {
@@ -180,6 +201,7 @@ async function assertSyntheticTraceAdapter() {
 
 (async () => {
   assertDuplicateWarehouseCandidateRejected();
+  assertMissingCandidateSupplierRejected();
   assertMismatchedCandidateSupplierRejected();
   await assertSyntheticTraceAdapter();
   const validateOnly = await runScenario({});
@@ -229,6 +251,7 @@ async function assertSyntheticTraceAdapter() {
   console.log(JSON.stringify({
     status: 'passed',
     duplicateWarehouseCandidateRejected: true,
+    missingCandidateSupplierRejected: true,
     mismatchedCandidateSupplierRejected: true,
     syntheticAdapter: 'passed',
     validateOnly: {

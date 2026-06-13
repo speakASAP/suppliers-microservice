@@ -1,5 +1,13 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Supplier Stock Candidate Ownership Gate
+
+Change: tightened Suppliers Warehouse stock-boundary validation so every candidate must carry a non-empty supplierId matching the import supplier whenever the import is validated for Warehouse mutation. This prevents supplier-managed virtual stock from entering the Warehouse reconciliation path without explicit supplier ownership on the candidate itself.
+
+Validation evidence: npm run build passed, node reports/validation/synthetic-approved-import-run-check.js passed, node reports/validation/cross-service-preflight-check.js passed, python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues passed, and git diff --check passed.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
 ## 2026-06-13 - FlipFlop Supplier Ownership Preflight Gate
 
 Change: aligned Suppliers cross-service preflight with Catalog's FlipFlop supplier-route ownership gate. Preflight now requires the FlipFlop projection path to reject supplier replenishment and dropship routes unless Warehouse logistics includes a non-empty supplierId.
