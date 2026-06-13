@@ -409,7 +409,7 @@ function writeReadinessBundle(dir, serviceHeads) {
   fs.writeFileSync(files.approvalRequest, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + heads + '\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n');
   fs.writeFileSync(files.deploymentTemplate, JSON.stringify({ generatedFromCurrentHeads: true, heads: serviceHeads }, null, 2) + '\n');
   fs.writeFileSync(files.handoff, 'STOCK-TRACEABILITY-RUNTIME-HANDOFF\ncreate-runtime-readiness-bundle.js\n' + heads + '\n');
-  fs.writeFileSync(files.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE'] }, null, 2) + '\n');
+  fs.writeFileSync(files.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['TRACE_SUPPLIER_ID', 'TRACE_OWN_WAREHOUSE_ID', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'TRACE_IMPORT_IDEMPOTENCY_KEY', 'TRACE_SUPPLIER_STOCK_QTY', 'TRACE_SUPPLIER_SKU', 'TRACE_CLEANUP_EVIDENCE', 'DEPLOYMENT_EVIDENCE_FILE', 'RUNTIME_APPROVAL_ARTIFACT_FILE'] }, null, 2) + '\n');
   const artifacts = Object.fromEntries(Object.entries(files).map(([key, file]) => [key, { file, ...fileEvidence(file) }]));
   const manifest = {
     status: 'ready-for-owner-approval',

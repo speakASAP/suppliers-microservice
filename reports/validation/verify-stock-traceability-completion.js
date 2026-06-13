@@ -195,7 +195,7 @@ function runSelfTest() {
   fs.writeFileSync(readinessFiles.approvalRequest, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + headsText + '\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n');
   fs.writeFileSync(readinessFiles.deploymentTemplate, JSON.stringify({ generatedFromCurrentHeads: true, heads: Object.fromEntries(Object.entries(services).map(([service, item]) => [service, item.commitSha])) }, null, 2) + '\n');
   fs.writeFileSync(readinessFiles.handoff, 'STOCK-TRACEABILITY-RUNTIME-HANDOFF\ncreate-runtime-readiness-bundle.js\n' + headsText + '\n');
-  fs.writeFileSync(readinessFiles.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE'] }, null, 2) + '\n');
+  fs.writeFileSync(readinessFiles.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['TRACE_SUPPLIER_ID', 'TRACE_OWN_WAREHOUSE_ID', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'TRACE_IMPORT_IDEMPOTENCY_KEY', 'TRACE_SUPPLIER_STOCK_QTY', 'TRACE_SUPPLIER_SKU', 'TRACE_CLEANUP_EVIDENCE', 'DEPLOYMENT_EVIDENCE_FILE', 'RUNTIME_APPROVAL_ARTIFACT_FILE'] }, null, 2) + '\n');
   const crypto = require('crypto');
   const artifact = (file) => {
     const buffer = fs.readFileSync(file);

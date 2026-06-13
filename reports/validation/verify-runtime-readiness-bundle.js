@@ -11,6 +11,19 @@ const root = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
 const defaultManifest = '/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json';
 const manifestFile = args.find((arg) => !arg.startsWith('--')) || process.env.RUNTIME_READINESS_MANIFEST || defaultManifest;
 
+const requiredApprovedSmokeEnv = [
+  'TRACE_SUPPLIER_ID',
+  'TRACE_OWN_WAREHOUSE_ID',
+  'TRACE_SUPPLIER_WAREHOUSE_ID',
+  'TRACE_DROPSHIP_WAREHOUSE_ID',
+  'TRACE_IMPORT_IDEMPOTENCY_KEY',
+  'TRACE_SUPPLIER_STOCK_QTY',
+  'TRACE_SUPPLIER_SKU',
+  'TRACE_CLEANUP_EVIDENCE',
+  'DEPLOYMENT_EVIDENCE_FILE',
+  'RUNTIME_APPROVAL_ARTIFACT_FILE',
+];
+
 const services = {
   warehouse: 'warehouse-microservice',
   catalog: 'catalog-microservice',
@@ -120,8 +133,8 @@ function verifyReadinessManifest(filePath, serviceRoot = root) {
   const plan = JSON.parse(planText);
   assert(plan.status === 'plan-only', 'readiness plan artifact must be plan-only');
   assert(Array.isArray(plan.requiredApprovedSmokeEnv), 'readiness plan artifact must list required approved-smoke env vars');
-  assert(plan.requiredApprovedSmokeEnv.includes('RUNTIME_APPROVAL_ARTIFACT_FILE'), 'readiness plan artifact must require RUNTIME_APPROVAL_ARTIFACT_FILE');
-  assert(plan.requiredApprovedSmokeEnv.includes('DEPLOYMENT_EVIDENCE_FILE'), 'readiness plan artifact must require DEPLOYMENT_EVIDENCE_FILE');
+  const missingPlanEnv = requiredApprovedSmokeEnv.filter((name) => !plan.requiredApprovedSmokeEnv.includes(name));
+  assert(missingPlanEnv.length === 0, 'readiness plan artifact must require approved-smoke env vars: ' + missingPlanEnv.join(', '));
   assert(String(manifest.nextRequiredAction || '').includes('Owner approval'), 'readiness manifest must state owner approval remains required');
 
   return { manifest, rows };
@@ -149,7 +162,7 @@ function writeSelfTestBundle(serviceRoot) {
   fs.writeFileSync(files.approvalRequest, `STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n${heads}\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n`);
   fs.writeFileSync(files.deploymentTemplate, JSON.stringify({ generatedFromCurrentHeads: true, heads: Object.fromEntries(rows.map((row) => [row.name, row.head])) }, null, 2) + '\n');
   fs.writeFileSync(files.handoff, `STOCK-TRACEABILITY-RUNTIME-HANDOFF\ncreate-runtime-readiness-bundle.js\n${heads}\n`);
-  fs.writeFileSync(files.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE'] }, null, 2) + '\n');
+  fs.writeFileSync(files.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv }, null, 2) + '\n');
   const artifacts = Object.fromEntries(Object.entries(files).map(([key, file]) => [key, { file, ...sha256File(file) }]));
   const manifest = {
     status: 'ready-for-owner-approval',
