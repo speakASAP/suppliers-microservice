@@ -121,7 +121,7 @@ function traceInputsFromEnv() {
   assert(missing.length === 0, 'runtime approval artifact requires approved trace inputs: ' + missing.join(', '));
   assert(envValue('TRACE_PRODUCT_SKU_PREFIX') === 'CODEX-STOCK-TRACE-', 'TRACE_PRODUCT_SKU_PREFIX must be CODEX-STOCK-TRACE- for runtime approval');
   assert(/^\d+$/.test(envValue('TRACE_SUPPLIER_STOCK_QTY')) && Number(envValue('TRACE_SUPPLIER_STOCK_QTY')) > 0, 'TRACE_SUPPLIER_STOCK_QTY must be a positive integer string');
-  assert(!/TODO/i.test(envValue('TRACE_CLEANUP_EVIDENCE')), 'TRACE_CLEANUP_EVIDENCE must be completed or explicitly deferred and must not contain TODO');
+  assert(!/TODO|placeholder/i.test(envValue('TRACE_CLEANUP_EVIDENCE')), 'TRACE_CLEANUP_EVIDENCE must be completed or explicitly deferred and must not contain TODO or placeholder');
   return Object.fromEntries(requiredTraceInputEnv.map((name) => [name, envValue(name)]));
 }
 
@@ -277,7 +277,17 @@ try {
     }
     process.env.TRACE_SUPPLIER_STOCK_QTY = previousQty;
     assert(missingTraceInputRejected, 'approval artifact self-test must reject missing approved trace inputs');
-    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, missingTraceInputRejected, readinessManifestBound: true }, null, 2));
+    const previousCleanupEvidence = process.env.TRACE_CLEANUP_EVIDENCE;
+    process.env.TRACE_CLEANUP_EVIDENCE = 'placeholder cleanup evidence after run';
+    let placeholderCleanupEvidenceRejected = false;
+    try {
+      traceInputsFromEnv();
+    } catch (error) {
+      placeholderCleanupEvidenceRejected = /TODO or placeholder/.test(error.message);
+    }
+    process.env.TRACE_CLEANUP_EVIDENCE = previousCleanupEvidence;
+    assert(placeholderCleanupEvidenceRejected, 'approval artifact self-test must reject placeholder cleanup evidence');
+    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, missingTraceInputRejected, placeholderCleanupEvidenceRejected, readinessManifestBound: true }, null, 2));
   } else {
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
     fs.writeFileSync(outputFile, json);

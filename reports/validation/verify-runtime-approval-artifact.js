@@ -85,7 +85,7 @@ function assertTraceInputs(artifact) {
   assert(missing.length === 0, 'approval artifact approvedTraceInputs missing: ' + missing.join(', '));
   assert(inputs.TRACE_PRODUCT_SKU_PREFIX === 'CODEX-STOCK-TRACE-', 'approval artifact approvedTraceInputs.TRACE_PRODUCT_SKU_PREFIX must be CODEX-STOCK-TRACE-');
   assert(/^\d+$/.test(inputs.TRACE_SUPPLIER_STOCK_QTY) && Number(inputs.TRACE_SUPPLIER_STOCK_QTY) > 0, 'approval artifact approvedTraceInputs.TRACE_SUPPLIER_STOCK_QTY must be a positive integer string');
-  assert(!/TODO/i.test(inputs.TRACE_CLEANUP_EVIDENCE), 'approval artifact approvedTraceInputs.TRACE_CLEANUP_EVIDENCE must be completed or explicitly deferred and must not contain TODO');
+  assert(!/TODO|placeholder/i.test(inputs.TRACE_CLEANUP_EVIDENCE), 'approval artifact approvedTraceInputs.TRACE_CLEANUP_EVIDENCE must be completed or explicitly deferred and must not contain TODO or placeholder');
   assert(!Object.values(inputs).some((value) => /Bearer\s+|TOKEN=|api[_-]?key|secret|password/i.test(String(value))), 'approval artifact approvedTraceInputs must not contain secrets');
 }
 
@@ -316,6 +316,17 @@ function runSelfTest() {
   }
   assert(missingTraceInputRejected, 'self-test must reject approval artifacts without exact approved trace inputs');
 
+  const placeholderCleanupEvidence = validArtifactForRoot(root);
+  placeholderCleanupEvidence.approvedTraceInputs.TRACE_CLEANUP_EVIDENCE = 'placeholder cleanup evidence after run';
+  const placeholderCleanupEvidenceFile = writeArtifact(path.join(dir, 'placeholder-cleanup-evidence'), placeholderCleanupEvidence);
+  let placeholderCleanupEvidenceRejected = false;
+  try {
+    validateApprovalArtifact(placeholderCleanupEvidenceFile);
+  } catch (error) {
+    placeholderCleanupEvidenceRejected = /TODO or placeholder/.test(error.message);
+  }
+  assert(placeholderCleanupEvidenceRejected, 'self-test must reject approval artifacts with placeholder cleanup evidence');
+
   const missingRequest = validArtifactForRoot(root, path.join(dir, 'missing-request-source'));
   delete missingRequest.approvalRequest;
   const missingRequestFile = writeArtifact(path.join(dir, 'missing-request'), missingRequest);
@@ -384,6 +395,7 @@ function runSelfTest() {
     mismatchedReadinessApprovalRequestRejected,
     missingReadinessManifestRejected,
     missingTraceInputRejected,
+    placeholderCleanupEvidenceRejected,
   }, null, 2));
 }
 
