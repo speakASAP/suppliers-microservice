@@ -19,7 +19,7 @@ export class ImportsController {
   ) {
     const start = await this.importsService.createOrReuseJob(supplierId, options);
     if (start.shouldRun) {
-      void this.importsService.runImport(start.job.id, supplierId);
+      void this.importsService.runImport(start.job.id, supplierId, options);
     }
 
     return {

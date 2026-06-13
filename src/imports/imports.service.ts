@@ -7,14 +7,13 @@ import { firstValueFrom } from "rxjs";
 import { ImportJob } from "./import-job.entity";
 import { RunImportDto, ImportTriggerType } from "./dto/import-run.dto";
 import {
-  NormalizedWarehouseStockCandidate,
   validateSupplierImportPayload,
   validateWarehouseStockUpdateBoundary,
   WarehouseStockBoundaryOptions,
   WarehouseStockBoundaryPolicy,
 } from "./import-validation";
 import { SupplierAdapterRegistry, SupplierAdapterNotFoundError } from "./adapters/supplier-adapter-registry";
-import { validateSupplierAdapterResult } from "./adapters/supplier-import-adapter";
+import { NormalizedSupplierImportItem, validateSupplierAdapterResult } from "./adapters/supplier-import-adapter";
 import { Supplier } from "../suppliers/supplier.entity";
 
 export interface ImportJobStart {
@@ -157,7 +156,7 @@ export class ImportsService {
       const warehouseReconciliation = await this.reconcileWarehouseStockCandidates(
         supplierId,
         job,
-        normalizedSupplierPayload as NormalizedWarehouseStockCandidate[],
+        normalizedSupplierPayload as NormalizedSupplierImportItem[],
         {
           actor: "suppliers-microservice",
           reason: "supplier-import",
@@ -215,7 +214,7 @@ export class ImportsService {
   async reconcileWarehouseStockCandidates(
     supplierId: string,
     job: Pick<ImportJob, "idempotencyKey">,
-    candidates: NormalizedWarehouseStockCandidate[],
+    candidates: NormalizedSupplierImportItem[],
     options: WarehouseStockBoundaryOptions,
   ): Promise<WarehouseReconciliationResult> {
     const boundary = validateWarehouseStockUpdateBoundary(candidates, options);
@@ -335,7 +334,7 @@ export class ImportsService {
     return triggerType + ":" + digest;
   }
 
-  private buildWarehouseExternalReference(idempotencyKey: string, candidate: NormalizedWarehouseStockCandidate): string {
+  private buildWarehouseExternalReference(idempotencyKey: string, candidate: NormalizedSupplierImportItem): string {
     const seed = [idempotencyKey, candidate.supplierSku, candidate.productId, candidate.warehouseId].join(":");
     return "supplier-import:" + createHash("sha256").update(seed).digest("hex").slice(0, 48);
   }

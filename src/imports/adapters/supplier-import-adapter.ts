@@ -1,5 +1,3 @@
-import { NormalizedWarehouseStockCandidate } from "../import-validation";
-
 export type SupplierAdapterSourceType = "rest" | "xml" | "csv" | "ftp" | "synthetic";
 
 export interface SupplierAdapterMetadata {
@@ -15,9 +13,14 @@ export interface SupplierAdapterRunContext {
   sourceFingerprint?: string;
 }
 
-export interface NormalizedSupplierImportItem extends NormalizedWarehouseStockCandidate {
+export interface NormalizedSupplierImportItem {
+  supplierSku: string;
+  stockQuantity: number;
   sourceRecordId: string;
   replayKey: string;
+  productId?: string;
+  warehouseId?: string;
+  observedAt?: string;
 }
 
 export interface SupplierAdapterResult {
