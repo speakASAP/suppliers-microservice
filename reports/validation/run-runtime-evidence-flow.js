@@ -396,7 +396,7 @@ try {
     console.log(JSON.stringify({
       status: 'fixture-ready',
       fixtureFile,
-      next: 'Set RUN_APPROVED_RUNTIME_SMOKE=true with owner approval and deployment evidence to continue.',
+      next: 'Set RUN_APPROVED_RUNTIME_SMOKE=true with owner approval, RUNTIME_APPROVAL_ARTIFACT_FILE, and deployment evidence to continue.',
     }, null, 2));
     process.exit(0);
   }

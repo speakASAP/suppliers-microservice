@@ -113,7 +113,7 @@ node reports/validation/run-runtime-evidence-flow.js
 '
 ```
 
-The expected result is `status: "fixture-ready"` and a `next` message requiring `RUN_APPROVED_RUNTIME_SMOKE=true` with owner approval and deployment evidence.
+The expected result is `status: "fixture-ready"` and a `next` message requiring `RUN_APPROVED_RUNTIME_SMOKE=true` with owner approval, `RUNTIME_APPROVAL_ARTIFACT_FILE`, and deployment evidence.
 
 ## Deploy In Order
 
