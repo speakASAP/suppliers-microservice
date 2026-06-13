@@ -69,10 +69,10 @@ function readJsonFile(filePath) {
   }
 }
 
-function isIsoDate(value) {
-  if (typeof value !== 'string' || !value.trim()) return false;
-  const parsed = Date.parse(value);
-  return Number.isFinite(parsed);
+function isCanonicalIsoUtcTimestamp(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
 }
 
 function hasText(value) {
@@ -159,7 +159,7 @@ function validateApprovalArtifact(filePath) {
   assert(artifact.approvalRequestId === 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'approval artifact must reference STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST');
   assert(hasText(artifact.approvedBy), 'approval artifact approvedBy is required');
   assert(!/TODO|placeholder/i.test(artifact.approvedBy), 'approval artifact approvedBy must identify the approver and must not contain TODO or placeholder');
-  assert(isIsoDate(artifact.approvedAt), 'approval artifact approvedAt must be an ISO timestamp');
+  assert(isCanonicalIsoUtcTimestamp(artifact.approvedAt), 'approval artifact approvedAt must be a canonical UTC ISO timestamp');
   assert(artifact.approvedForCurrentCleanHeads === true, 'approval artifact must set approvedForCurrentCleanHeads=true');
 
   assertApprovalRequestBinding(artifact, path.dirname(filePath));
@@ -306,6 +306,17 @@ function runSelfTest() {
   }
   assert(placeholderApproverRejected, 'self-test must reject approval artifacts with placeholder approver evidence');
 
+  const nonCanonicalApprovedAt = validArtifactForRoot(root);
+  nonCanonicalApprovedAt.approvedAt = 'June 13 2026';
+  const nonCanonicalApprovedAtFile = writeArtifact(path.join(dir, 'non-canonical-approved-at'), nonCanonicalApprovedAt);
+  let nonCanonicalApprovedAtRejected = false;
+  try {
+    validateApprovalArtifact(nonCanonicalApprovedAtFile);
+  } catch (error) {
+    nonCanonicalApprovedAtRejected = /canonical UTC ISO timestamp/.test(error.message);
+  }
+  assert(nonCanonicalApprovedAtRejected, 'self-test must reject approval artifacts with non-canonical approval timestamps');
+
   const missingForbidden = validArtifactForRoot(root);
   missingForbidden.forbiddenActionsAcknowledged = missingForbidden.forbiddenActionsAcknowledged.filter((item) => item !== 'hard deletes');
   const missingForbiddenFile = writeArtifact(path.join(dir, 'missing-forbidden'), missingForbidden);
@@ -401,6 +412,7 @@ function runSelfTest() {
     status: 'passed',
     mismatchedApprovalHeadRejected,
     placeholderApproverRejected,
+    nonCanonicalApprovedAtRejected,
     missingForbiddenActionRejected,
     dirtyApprovalRootRejected,
     missingApprovalRequestRejected,

@@ -111,10 +111,19 @@ function approvalRequestBinding(rows, readinessManifest) {
   };
 }
 
+function isCanonicalIsoUtcTimestamp(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
+}
+
 function assertApprovalEnv() {
   assert(process.env.OWNER_APPROVAL === 'explicit', 'OWNER_APPROVAL=explicit is required to generate runtime approval artifact');
   assert(envValue('RUNTIME_APPROVED_BY'), 'RUNTIME_APPROVED_BY is required to generate runtime approval artifact');
   assert(!/TODO|placeholder/i.test(envValue('RUNTIME_APPROVED_BY')), 'RUNTIME_APPROVED_BY must identify the approver and must not contain TODO or placeholder');
+  if (envValue('RUNTIME_APPROVED_AT')) {
+    assert(isCanonicalIsoUtcTimestamp(envValue('RUNTIME_APPROVED_AT')), 'RUNTIME_APPROVED_AT must be a canonical UTC ISO timestamp');
+  }
 }
 
 function traceInputsFromEnv() {
@@ -275,9 +284,19 @@ try {
       placeholderApproverRejected = /TODO or placeholder/.test(error.message);
     }
     process.env.RUNTIME_APPROVED_BY = previousApprovedBy;
+    const previousApprovedAt = process.env.RUNTIME_APPROVED_AT;
+    process.env.RUNTIME_APPROVED_AT = 'June 13 2026';
+    let nonCanonicalApprovedAtRejected = false;
+    try {
+      assertApprovalEnv();
+    } catch (error) {
+      nonCanonicalApprovedAtRejected = /canonical UTC ISO timestamp/.test(error.message);
+    }
+    process.env.RUNTIME_APPROVED_AT = previousApprovedAt;
     assert(dirtyRowsRejected, 'approval artifact self-test must reject dirty source snapshots');
     assert(missingApprovalRejected, 'approval artifact self-test must reject missing explicit owner approval');
     assert(placeholderApproverRejected, 'approval artifact self-test must reject placeholder approver evidence');
+    assert(nonCanonicalApprovedAtRejected, 'approval artifact self-test must reject non-canonical approval timestamps');
     const previousQty = process.env.TRACE_SUPPLIER_STOCK_QTY;
     process.env.TRACE_SUPPLIER_STOCK_QTY = '';
     let missingTraceInputRejected = false;
@@ -298,7 +317,7 @@ try {
     }
     process.env.TRACE_CLEANUP_EVIDENCE = previousCleanupEvidence;
     assert(placeholderCleanupEvidenceRejected, 'approval artifact self-test must reject placeholder cleanup evidence');
-    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, placeholderApproverRejected, missingTraceInputRejected, placeholderCleanupEvidenceRejected, readinessManifestBound: true }, null, 2));
+    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, placeholderApproverRejected, nonCanonicalApprovedAtRejected, missingTraceInputRejected, placeholderCleanupEvidenceRejected, readinessManifestBound: true }, null, 2));
   } else {
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
     fs.writeFileSync(outputFile, json);
