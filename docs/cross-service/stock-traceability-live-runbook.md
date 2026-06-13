@@ -31,6 +31,7 @@ Prepare these values before deploying:
 | `TRACE_PRODUCT_ID` | Approved synthetic Catalog product ID with a `CODEX-STOCK-TRACE-` SKU prefix. |
 | `TRACE_PRODUCT_SKU_PREFIX` | Required synthetic SKU prefix. Use `CODEX-STOCK-TRACE-` unless the owner approves another isolated prefix. |
 | `TRACE_SUPPLIER_ID` | Active Suppliers supplier ID whose code is `synthetic-trace`. |
+| `TRACE_OWN_WAREHOUSE_ID` | Alfares-owned Warehouse location used for local physical stock and local fulfillment route evidence. |
 | `TRACE_SUPPLIER_WAREHOUSE_ID` | Warehouse supplier replenishment location linked to `TRACE_SUPPLIER_ID`. |
 | `TRACE_DROPSHIP_WAREHOUSE_ID` | Warehouse dropship location linked to `TRACE_SUPPLIER_ID`. |
 | `TRACE_IMPORT_IDEMPOTENCY_KEY` | Stable replay key for this approved smoke, for example `manual:traceability-20260613-001`. |
@@ -205,6 +206,7 @@ The guarded runner must finish with `status: "runtime-complete"` and produce the
 
 The captured smoke artifact must include:
 
+- Fixture and approved smoke commands use the same trace product, SKU prefix, own warehouse, supplier replenishment warehouse, and dropship warehouse IDs;
 - health for Warehouse, Catalog, and Suppliers;
 - Catalog product ID and SKU;
 - Warehouse own and supplier-managed topology rows;
@@ -212,7 +214,7 @@ The captured smoke artifact must include:
 - Warehouse logistics routes and route legs containing local fulfillment plus supplier replenishment and dropship;
 - Catalog availability and FlipFlop projection with Warehouse source, origin rows, logistics routes, and route legs;
 - Catalog coverage and audit with `covered` and `mixed_stock`;
-- Suppliers import job with approved trace source fingerprint, Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
+- Suppliers import job with approved trace source fingerprint matching the approved trace product and supplier warehouse IDs, Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
 - cleanup or cleanup-deferral evidence.
 
 ## Failure Handling
