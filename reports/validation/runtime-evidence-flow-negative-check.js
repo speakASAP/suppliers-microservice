@@ -318,14 +318,18 @@ const cases = [
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'generated from current service heads'),
   (() => {
-    const dirtyRoot = createDirtyCrossServiceRoot();
+    const dirtyRoot = createCleanCrossServiceRoot();
+    const deploymentEvidenceFile = writeDeploymentEvidence({}, null, dirtyRoot);
+    const approvalArtifactFile = writeRuntimeApprovalArtifact(dirtyRoot);
+    fs.writeFileSync(path.join(dirtyRoot, deploymentRepos.catalog, 'dirty.txt'), 'uncommitted catalog change\n');
     return runCase('approved-smoke-dirty-service-worktree', {
       CROSS_SERVICE_ROOT: dirtyRoot,
       RUN_APPROVED_RUNTIME_SMOKE: 'true',
       TRACE_SUPPLIER_ID: 'supplier-synthetic',
       TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
       TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
-      DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({}, null, dirtyRoot),
+      DEPLOYMENT_EVIDENCE_FILE: deploymentEvidenceFile,
+      RUNTIME_APPROVAL_ARTIFACT_FILE: approvalArtifactFile,
       OWNER_APPROVAL: 'explicit',
       SMOKE_ALLOW_MUTATION: 'true',
     }, 'catalog-microservice worktree must be clean');
