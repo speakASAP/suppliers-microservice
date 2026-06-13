@@ -206,7 +206,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-completion-audit.md',
-    patterns: ['supplier IDs match `TRACE_SUPPLIER_ID`', 'supplier routes are owned by `TRACE_SUPPLIER_ID`', 'sourceFingerprint` matches the approved trace import request', 'clean current service heads', 'no dirty Warehouse/Catalog/Suppliers worktree state'],
+    patterns: ['supplier IDs match `TRACE_SUPPLIER_ID`', 'supplier routes are owned by `TRACE_SUPPLIER_ID`', 'stamps stock candidates with the import supplier ID', 'rejects supplier identity drift before Warehouse mutation', 'Runtime Suppliers import job must belong to `TRACE_SUPPLIER_ID`', 'checked Catalog product IDs including `TRACE_PRODUCT_ID`', 'source fingerprint matching the approved trace import request', 'Warehouse authority', 'positive applied update count', 'clean current service heads', 'no dirty Warehouse/Catalog/Suppliers worktree state'],
   },
   {
     service: 'suppliers',
