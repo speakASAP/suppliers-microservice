@@ -121,6 +121,8 @@ function verify(report) {
     const line = report.split('\n').find((row) => row.startsWith(`| ${service} |`));
     assert(line, `${service} deployment evidence row is missing`);
     assert(!line.includes('| - |'), `${service} deployment evidence row contains missing values`);
+    assert(/401|403/.test(line), `${service} protected endpoint evidence must include 401 or 403`);
+    assert(line.includes('./scripts/deploy.sh'), `${service} deployment evidence must include deploy command`);
   }
 
   return { status: 'passed', assertionRows: passedAssertionCount };

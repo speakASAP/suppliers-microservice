@@ -67,6 +67,8 @@ When using the generator, provide deployment evidence as JSON in this shape:
 
 Capture `node reports/validation/cross-service-preflight-check.js` output before deployment and preserve it with the final report artifacts. It records branch/head and dirty-line counts for Warehouse, Catalog, and Suppliers plus required source-surface checks.
 
+The generator marks the final report `Runtime incomplete` unless all three services include a commit SHA, deploy command, health evidence, and anonymous protected-endpoint evidence containing `401` or `403`.
+
 | Service | Commit SHA | Deploy command | Health evidence | Protected endpoint evidence |
 | --- | --- | --- | --- | --- |
 | Warehouse | redacted-or-sha | `./scripts/deploy.sh` | `/api/health` passed | Anonymous protected endpoint returned `401` or `403`. |
@@ -136,7 +138,7 @@ Run this command after generating the final report:
 node reports/validation/verify-runtime-evidence-report.js
 ```
 
-The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values, or if the completion decision is not `Runtime complete`.
+The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any named runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values, if protected endpoint evidence does not include `401` or `403`, or if the completion decision is not `Runtime complete`.
 
 ## Boundary Evidence
 

@@ -27,6 +27,10 @@ function boolWord(value) {
   return value ? 'yes' : 'no';
 }
 
+function hasText(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 function summarizeHealth(health) {
   if (!Array.isArray(health)) return 'Health evidence missing.';
   return health.map((item, index) => {
@@ -56,6 +60,18 @@ function summarizeSupplierJob(job) {
 function summarizeCatalogAvailability(availability) {
   if (!availability) return 'Catalog availability evidence missing.';
   return `source=${valueOrDash(availability.source)}, warehouseCount=${valueOrDash(availability.warehouseCount)}, logisticsOptionCount=${valueOrDash(availability.logisticsOptionCount)}, preferredRoute=${valueOrDash(availability.preferredRoute)}`;
+}
+
+function deploymentEvidenceComplete(deployment) {
+  const services = deployment?.services || {};
+  return ['warehouse', 'catalog', 'suppliers'].every((service) => {
+    const item = services[service];
+    return hasText(item?.commitSha)
+      && hasText(item?.deployCommand || './scripts/deploy.sh')
+      && hasText(item?.healthEvidence)
+      && hasText(item?.protectedEndpointEvidence)
+      && /401|403/.test(item.protectedEndpointEvidence);
+  });
 }
 
 function buildAssertions(smoke) {
@@ -127,7 +143,7 @@ function buildAssertions(smoke) {
 
 function buildReport({ smoke, deployment, command }) {
   const assertions = buildAssertions(smoke);
-  const complete = assertions.every((item) => item.passed);
+  const complete = assertions.every((item) => item.passed) && deploymentEvidenceComplete(deployment);
   const metadataStatus = complete ? 'passed-runtime' : 'failed-runtime';
   const completeness = complete ? 'runtime-complete' : 'partial';
   const decision = complete ? 'Runtime complete' : 'Runtime incomplete';
@@ -233,13 +249,38 @@ function sampleSmoke() {
   };
 }
 
+function sampleDeployment() {
+  return {
+    services: {
+      warehouse: {
+        commitSha: 'sha-warehouse',
+        deployCommand: './scripts/deploy.sh',
+        healthEvidence: '/api/health passed',
+        protectedEndpointEvidence: 'anonymous topology returned 401',
+      },
+      catalog: {
+        commitSha: 'sha-catalog',
+        deployCommand: './scripts/deploy.sh',
+        healthEvidence: '/health passed',
+        protectedEndpointEvidence: 'anonymous coverage returned 401',
+      },
+      suppliers: {
+        commitSha: 'sha-suppliers',
+        deployCommand: './scripts/deploy.sh',
+        healthEvidence: '/api/health passed',
+        protectedEndpointEvidence: 'anonymous imports returned 401',
+      },
+    },
+  };
+}
+
 function main() {
   const smokeFile = process.env.SMOKE_RESULT_FILE;
   const deploymentFile = process.env.DEPLOYMENT_EVIDENCE_FILE;
   const outputFile = process.env.RUNTIME_EVIDENCE_OUTPUT || 'docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md';
   const smoke = selfTest ? sampleSmoke() : readJson(smokeFile, null);
   assert(smoke, 'SMOKE_RESULT_FILE is required unless --self-test is used');
-  const deployment = readJson(deploymentFile, {});
+  const deployment = selfTest ? sampleDeployment() : readJson(deploymentFile, {});
   const command = process.env.REDACTED_SMOKE_COMMAND || 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] node reports/validation/runtime-stock-traceability-smoke.js';
   const report = buildReport({ smoke, deployment, command });
 

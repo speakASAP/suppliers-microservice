@@ -80,12 +80,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/generate-runtime-evidence-report.js',
-    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', "source === 'warehouse'"],
+    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'deploymentEvidenceComplete', '401|403', "source === 'warehouse'"],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-report.js',
-    patterns: ['REQUIRED_ASSERTIONS', 'source=warehouse', 'logisticsOptionCount', 'missing-runtime'],
+    patterns: ['REQUIRED_ASSERTIONS', 'source=warehouse', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
   },
   {
     service: 'suppliers',
