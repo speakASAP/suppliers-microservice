@@ -77,6 +77,14 @@ function assertContainsHeads(label, text, rows) {
   }
 }
 
+function assertNoCredentialValues(label, text) {
+  const bearerValue = /Bearer\s+(?!\[REDACTED\]|<[^>]+>|REDACTED\b)[A-Za-z0-9._~+/-]+=*/i;
+  const assignedSecret = /\b(?:CATALOG_TOKEN|WAREHOUSE_TOKEN|SUPPLIERS_TOKEN|SERVICE_TOKEN|api[_-]?key|secret|password)\b\s*[:=]\s*["']?(?!\[REDACTED\]|<[^>]+>|REDACTED\b|$)[^\s"',}]+/i;
+  assert(!bearerValue.test(text), `${label} must not contain bearer credential values`);
+  assert(!assignedSecret.test(text), `${label} must not contain credential assignment values`);
+  assert(!/catalog-token-synthetic|warehouse-token-synthetic|suppliers-token-synthetic/i.test(text), `${label} must not contain synthetic token values`);
+}
+
 function verifyReadinessManifest(filePath, serviceRoot = root) {
   assert(fs.existsSync(filePath), `readiness manifest is missing: ${filePath}`);
   const rows = currentServiceRows(serviceRoot);
@@ -97,6 +105,10 @@ function verifyReadinessManifest(filePath, serviceRoot = root) {
   assertContainsHeads('approval request', approvalRequest, rows);
   assertContainsHeads('deployment template', deploymentTemplate, rows);
   assertContainsHeads('runtime handoff', handoff, rows);
+  assertNoCredentialValues('approval request', approvalRequest);
+  assertNoCredentialValues('deployment template', deploymentTemplate);
+  assertNoCredentialValues('runtime handoff', handoff);
+  assertNoCredentialValues('runtime plan', planText);
   assert(approvalRequest.includes('STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST'), 'approval request artifact must include approval request id');
   assert(deploymentTemplate.includes('generatedFromCurrentHeads'), 'deployment template artifact must include generatedFromCurrentHeads marker');
   assert(handoff.includes('STOCK-TRACEABILITY-RUNTIME-HANDOFF'), 'handoff artifact must include handoff id');
@@ -165,6 +177,19 @@ function runSelfTest() {
   }
   assert(tamperedHashRejected, 'readiness verifier self-test must reject tampered artifacts');
 
+  const { manifestPath: credentialManifestPath, files: credentialFiles } = writeSelfTestBundle(serviceRoot);
+  fs.appendFileSync(credentialFiles.approvalRequest, 'CATALOG_TOKEN=real-secret-value\n');
+  const credentialManifest = readJson(credentialManifestPath);
+  credentialManifest.artifacts.approvalRequest = { file: credentialFiles.approvalRequest, ...sha256File(credentialFiles.approvalRequest) };
+  fs.writeFileSync(credentialManifestPath, JSON.stringify(credentialManifest, null, 2) + '\n');
+  let credentialLeakRejected = false;
+  try {
+    verifyReadinessManifest(credentialManifestPath, serviceRoot);
+  } catch (error) {
+    credentialLeakRejected = /credential assignment values/.test(error.message);
+  }
+  assert(credentialLeakRejected, 'readiness verifier self-test must reject credential values in readiness artifacts');
+
   const { manifestPath: staleManifestPath } = writeSelfTestBundle(serviceRoot);
   fs.writeFileSync(path.join(serviceRoot, services.catalog, 'dirty.txt'), 'dirty\n');
   let dirtyWorktreeRejected = false;
@@ -187,7 +212,7 @@ function runSelfTest() {
   }
   assert(staleHeadRejected, 'readiness verifier self-test must reject stale service heads');
 
-  console.log(JSON.stringify({ status: 'passed', artifacts: Object.keys(files), tamperedHashRejected, dirtyWorktreeRejected, staleHeadRejected }, null, 2));
+  console.log(JSON.stringify({ status: 'passed', artifacts: Object.keys(files), tamperedHashRejected, credentialLeakRejected, dirtyWorktreeRejected, staleHeadRejected }, null, 2));
 }
 
 try {

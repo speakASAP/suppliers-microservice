@@ -175,7 +175,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-readiness-bundle.js',
-    patterns: ['RUNTIME_READINESS_MANIFEST', 'stock-traceability-runtime-readiness-manifest.json', 'ready-for-owner-approval', 'incomplete-runtime-pending', 'sha256 mismatch', 'byte count mismatch', 'readiness manifest serviceHeads', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE', 'tamperedHashRejected', 'dirtyWorktreeRejected', 'staleHeadRejected'],
+    patterns: ['RUNTIME_READINESS_MANIFEST', 'stock-traceability-runtime-readiness-manifest.json', 'ready-for-owner-approval', 'incomplete-runtime-pending', 'sha256 mismatch', 'byte count mismatch', 'readiness manifest serviceHeads', 'assertNoCredentialValues', 'credentialLeakRejected', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE', 'tamperedHashRejected', 'dirtyWorktreeRejected', 'staleHeadRejected'],
   },
   {
     service: 'suppliers',
