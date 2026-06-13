@@ -158,6 +158,7 @@ function validateApprovalArtifact(filePath) {
   assert(artifact.status === 'approved', 'approval artifact status must be approved');
   assert(artifact.approvalRequestId === 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'approval artifact must reference STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST');
   assert(hasText(artifact.approvedBy), 'approval artifact approvedBy is required');
+  assert(!/TODO|placeholder/i.test(artifact.approvedBy), 'approval artifact approvedBy must identify the approver and must not contain TODO or placeholder');
   assert(isIsoDate(artifact.approvedAt), 'approval artifact approvedAt must be an ISO timestamp');
   assert(artifact.approvedForCurrentCleanHeads === true, 'approval artifact must set approvedForCurrentCleanHeads=true');
 
@@ -294,6 +295,17 @@ function runSelfTest() {
   }
   assert(mismatchedApprovalHeadRejected, 'self-test must reject approval artifacts for stale service heads');
 
+  const placeholderApprover = validArtifactForRoot(root);
+  placeholderApprover.approvedBy = 'placeholder owner approval';
+  const placeholderApproverFile = writeArtifact(path.join(dir, 'placeholder-approver'), placeholderApprover);
+  let placeholderApproverRejected = false;
+  try {
+    validateApprovalArtifact(placeholderApproverFile);
+  } catch (error) {
+    placeholderApproverRejected = /approvedBy must identify/.test(error.message);
+  }
+  assert(placeholderApproverRejected, 'self-test must reject approval artifacts with placeholder approver evidence');
+
   const missingForbidden = validArtifactForRoot(root);
   missingForbidden.forbiddenActionsAcknowledged = missingForbidden.forbiddenActionsAcknowledged.filter((item) => item !== 'hard deletes');
   const missingForbiddenFile = writeArtifact(path.join(dir, 'missing-forbidden'), missingForbidden);
@@ -388,6 +400,7 @@ function runSelfTest() {
   console.log(JSON.stringify({
     status: 'passed',
     mismatchedApprovalHeadRejected,
+    placeholderApproverRejected,
     missingForbiddenActionRejected,
     dirtyApprovalRootRejected,
     missingApprovalRequestRejected,

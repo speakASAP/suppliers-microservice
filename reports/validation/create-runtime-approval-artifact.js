@@ -114,6 +114,7 @@ function approvalRequestBinding(rows, readinessManifest) {
 function assertApprovalEnv() {
   assert(process.env.OWNER_APPROVAL === 'explicit', 'OWNER_APPROVAL=explicit is required to generate runtime approval artifact');
   assert(envValue('RUNTIME_APPROVED_BY'), 'RUNTIME_APPROVED_BY is required to generate runtime approval artifact');
+  assert(!/TODO|placeholder/i.test(envValue('RUNTIME_APPROVED_BY')), 'RUNTIME_APPROVED_BY must identify the approver and must not contain TODO or placeholder');
 }
 
 function traceInputsFromEnv() {
@@ -265,8 +266,18 @@ try {
       missingApprovalRejected = /OWNER_APPROVAL=explicit/.test(error.message);
     }
     process.env.OWNER_APPROVAL = previousApproval;
+    const previousApprovedBy = process.env.RUNTIME_APPROVED_BY;
+    process.env.RUNTIME_APPROVED_BY = 'placeholder owner approval';
+    let placeholderApproverRejected = false;
+    try {
+      assertApprovalEnv();
+    } catch (error) {
+      placeholderApproverRejected = /TODO or placeholder/.test(error.message);
+    }
+    process.env.RUNTIME_APPROVED_BY = previousApprovedBy;
     assert(dirtyRowsRejected, 'approval artifact self-test must reject dirty source snapshots');
     assert(missingApprovalRejected, 'approval artifact self-test must reject missing explicit owner approval');
+    assert(placeholderApproverRejected, 'approval artifact self-test must reject placeholder approver evidence');
     const previousQty = process.env.TRACE_SUPPLIER_STOCK_QTY;
     process.env.TRACE_SUPPLIER_STOCK_QTY = '';
     let missingTraceInputRejected = false;
@@ -287,7 +298,7 @@ try {
     }
     process.env.TRACE_CLEANUP_EVIDENCE = previousCleanupEvidence;
     assert(placeholderCleanupEvidenceRejected, 'approval artifact self-test must reject placeholder cleanup evidence');
-    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, missingTraceInputRejected, placeholderCleanupEvidenceRejected, readinessManifestBound: true }, null, 2));
+    console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingApprovalRejected, placeholderApproverRejected, missingTraceInputRejected, placeholderCleanupEvidenceRejected, readinessManifestBound: true }, null, 2));
   } else {
     fs.mkdirSync(path.dirname(outputFile), { recursive: true });
     fs.writeFileSync(outputFile, json);
