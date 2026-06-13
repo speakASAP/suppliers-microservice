@@ -223,3 +223,13 @@ Validation evidence: `node --check reports/validation/runtime-evidence-flow-nega
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. The previous passed runtime report remains valid only for its recorded deployed commits; it is not current-head completion evidence.
 
 Next unfinished chunk: perform owner-approved deployment and guarded runtime evidence regeneration for the latest clean Warehouse, Catalog, and Suppliers heads, then require `verify-stock-traceability-completion.js` to return complete before closing this goal.
+
+## 2026-06-13 - Clean Source Runtime Evidence Gate
+
+Change: committed Suppliers `5edaae3` so deployment evidence and approved runtime evidence now require clean Warehouse, Catalog, and Suppliers worktrees. `create-deployment-evidence-template.js` refuses to generate current-head evidence from a dirty service repository, and `run-runtime-evidence-flow.js` rejects approved runtime evidence if any service worktree has uncommitted source beside the deployment commit.
+
+Validation evidence: `node --check` passed for the runtime runner, deployment template generator, flow negative suite, and cross-service preflight. `create-deployment-evidence-template.js --self-test`, `runtime-evidence-flow-negative-check.js`, `cross-service-preflight-check.js`, and `git diff --check` passed before commit. After commit, deployment evidence template generation passed from clean Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and Suppliers `5edaae3`; the negative suite included `approved-smoke-dirty-service-worktree`; preflight passed with completionGate `incomplete`; `verify-stock-traceability-completion.js` exited 2 because the saved runtime manifest still references an older Suppliers head.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. The previous passed runtime report remains valid only for its recorded deployed commits; it is not current-head completion evidence.
+
+Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then perform owner-approved deployment and guarded runtime evidence regeneration before claiming completion.
