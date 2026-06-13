@@ -85,14 +85,27 @@ function runJson(commandArgs) {
   return JSON.parse(result.stdout);
 }
 
-function assertApprovalRequestMatchesCurrentHeads(rows) {
-  if (selfTest) return;
+function approvalRequestBinding(rows) {
+  if (selfTest) {
+    return {
+      id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+      file: '/tmp/self-test-runtime-approval-request.md',
+      sha256: '0'.repeat(64),
+      serviceHeads: Object.fromEntries(rows.map((row) => [row.name, row.head])),
+    };
+  }
   assert(fs.existsSync(approvalRequestFile), 'RUNTIME_APPROVAL_REQUEST_FILE does not exist: ' + approvalRequestFile);
   const markdown = fs.readFileSync(approvalRequestFile, 'utf8');
   assert(markdown.includes('STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST'), 'approval request file must be the generated stock traceability request');
   for (const row of rows) {
     assert(markdown.includes(row.head), 'approval request file does not contain current ' + row.name + ' head ' + row.head);
   }
+  return {
+    id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    file: approvalRequestFile,
+    sha256: sha256File(approvalRequestFile),
+    serviceHeads: Object.fromEntries(rows.map((row) => [row.name, row.head])),
+  };
 }
 
 function assertApprovalEnv() {
@@ -147,7 +160,7 @@ function assertNoSecrets(value) {
   assert(!/Bearer\s+|CATALOG_TOKEN|WAREHOUSE_TOKEN|SUPPLIERS_TOKEN|SERVICE_TOKEN|api[_-]?key|secret|password/i.test(value), 'runtime approval artifact must not contain token or credential values');
 }
 
-function renderArtifact(rows, readinessManifest, approvedTraceInputs) {
+function renderArtifact(rows, readinessManifest, approvalRequest, approvedTraceInputs) {
   const serviceHeads = Object.fromEntries(rows.map((row) => [row.name, row.head]));
   const approvedBy = envValue('RUNTIME_APPROVED_BY');
   const approvedAt = envValue('RUNTIME_APPROVED_AT') || new Date().toISOString();
@@ -155,6 +168,7 @@ function renderArtifact(rows, readinessManifest, approvedTraceInputs) {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
     approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvalRequest,
     approvedBy,
     approvedAt,
     approvedForCurrentCleanHeads: true,
@@ -190,6 +204,8 @@ function assertSelfTestContent(artifact) {
   assert(artifact.id === 'STOCK-TRACEABILITY-RUNTIME-APPROVAL', 'self-test id mismatch');
   assert(artifact.status === 'approved', 'self-test status mismatch');
   assert(artifact.approvalRequestId === 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'self-test approval request id mismatch');
+  assert(artifact.approvalRequest && artifact.approvalRequest.id === 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'self-test approval request binding missing');
+  assert(artifact.approvalRequest && /^[0-9a-f]{64}$/i.test(artifact.approvalRequest.sha256 || ''), 'self-test approval request hash missing');
   assert(artifact.approvedForCurrentCleanHeads === true, 'self-test current head marker missing');
   assert(artifact.readinessManifest && artifact.readinessManifest.status === 'verified', 'self-test readiness manifest binding missing');
   assert(artifact.scope.syntheticRecordsOnly === true, 'self-test synthetic-only scope missing');
@@ -223,9 +239,9 @@ try {
   const preflight = runJson(['reports/validation/cross-service-preflight-check.js']);
   assert(preflight.status === 'passed', 'runtime approval artifact requires passing cross-service preflight');
   assert(preflight.completionGate && preflight.completionGate.status === 'incomplete', 'runtime approval artifact must be generated only while completion gate is incomplete');
-  assertApprovalRequestMatchesCurrentHeads(rows);
+  const approvalRequest = approvalRequestBinding(rows);
   const readinessManifest = verifyReadinessManifest(rows);
-  const { artifact, json } = renderArtifact(rows, readinessManifest, approvedTraceInputs);
+  const { artifact, json } = renderArtifact(rows, readinessManifest, approvalRequest, approvedTraceInputs);
   assertSelfTestContent(artifact);
 
   if (selfTest) {

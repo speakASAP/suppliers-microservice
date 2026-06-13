@@ -96,6 +96,22 @@ function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root =
   return filePath;
 }
 
+function fileSha256(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function writeApprovalRequestForApproval(dir, serviceHeads) {
+  const filePath = path.join(dir, 'runtime-approval-request.md');
+  const heads = Object.entries(serviceHeads).map(([service, head]) => service + ':' + head).join('\n');
+  fs.writeFileSync(filePath, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + heads + '\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n');
+  return {
+    id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    file: filePath,
+    sha256: fileSha256(filePath),
+    serviceHeads: { ...serviceHeads },
+  };
+}
+
 function writeReadinessManifestForApproval(dir, serviceHeads, root = crossServiceRoot) {
   const bundleDir = path.join(dir, 'readiness');
   const result = spawnSync(process.execPath, ['reports/validation/create-runtime-readiness-bundle.js'], {
@@ -112,9 +128,9 @@ function writeReadinessManifestForApproval(dir, serviceHeads, root = crossServic
   const filePath = path.join(bundleDir, 'stock-traceability-runtime-readiness-manifest.json');
   return {
     file: filePath,
-    sha256: crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex'),
+    sha256: fileSha256(filePath),
     status: 'verified',
-    serviceHeads,
+    serviceHeads: { ...serviceHeads },
   };
 }
 
@@ -129,10 +145,11 @@ function writeRuntimeApprovalArtifact(root = crossServiceRoot, mutateApproval = 
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
     approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvalRequest: writeApprovalRequestForApproval(dir, serviceHeads),
     approvedBy: 'owner@example.test',
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
-    serviceHeads,
+    serviceHeads: { ...serviceHeads },
     readinessManifest: writeReadinessManifestForApproval(dir, serviceHeads, root),
     approvedTraceInputs: {
       TRACE_PRODUCT_ID: baseEnv.TRACE_PRODUCT_ID,
@@ -271,7 +288,7 @@ const cases = [
     }),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
-  }, 'catalog head must match approval serviceHeads'),
+  }, 'head must match'),
   runCase('approved-smoke-trace-inputs-differ-from-approval', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',

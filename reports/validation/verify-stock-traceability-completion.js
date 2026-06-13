@@ -180,7 +180,7 @@ function runSelfTest() {
     DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
     RUNTIME_EVIDENCE_OUTPUT: reportFile,
     REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
-    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   runNodeJson(['reports/validation/run-runtime-evidence-flow.js', '--manifest-self-test'], { CROSS_SERVICE_ROOT: selfTestRoot });
   const readinessDir = path.join(dir, 'readiness');
@@ -216,11 +216,24 @@ function runSelfTest() {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
     approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvalRequest: { id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', ...artifact(readinessFiles.approvalRequest), serviceHeads },
     approvedBy: 'owner@example.test',
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
     serviceHeads,
     readinessManifest: { file: readinessManifestFile, ...artifact(readinessManifestFile), status: 'verified', serviceHeads },
+    approvedTraceInputs: {
+      TRACE_PRODUCT_ID: 'product-synthetic',
+      TRACE_PRODUCT_SKU_PREFIX: 'CODEX-STOCK-TRACE-',
+      TRACE_SUPPLIER_ID: 'supplier-synthetic',
+      TRACE_OWN_WAREHOUSE_ID: 'warehouse-own',
+      TRACE_SUPPLIER_WAREHOUSE_ID: 'warehouse-supplier',
+      TRACE_DROPSHIP_WAREHOUSE_ID: 'warehouse-dropship',
+      TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+      TRACE_SUPPLIER_STOCK_QTY: '7',
+      TRACE_SUPPLIER_SKU: 'SUP-SKU-TRACE',
+      TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    },
     scope: { syntheticSkuPrefix: 'CODEX-STOCK-TRACE-', syntheticRecordsOnly: true, oneGuardedSyntheticImport: true, runApprovedRuntimeSmoke: true, ownerApproval: 'explicit', smokeAllowMutation: true },
     forbiddenActionsAcknowledged: ['real supplier imports', 'production payload ingestion', 'customer data capture', 'hard deletes', 'compensating stock changes', 'token disclosure'],
   });
@@ -238,7 +251,7 @@ function runSelfTest() {
   } else {
     process.env.CROSS_SERVICE_ROOT = previousRoot;
   }
-  assert(complete.status === 'complete', 'completion verifier must accept complete verified bundle');
+  assert(complete.status === 'complete', 'completion verifier must accept complete verified bundle: ' + JSON.stringify(complete));
   return { status: "passed", incompleteStatus: incomplete.status, missingManifestStatus: missingManifest.status, completeStatus: complete.status, completeVerifiedBundleAccepted: true };
 }
 

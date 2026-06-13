@@ -424,11 +424,18 @@ function writeReadinessBundle(dir, serviceHeads) {
   return { file: manifestFile, ...fileEvidence(manifestFile), status: 'verified', serviceHeads };
 }
 
+function writeApprovalRequest(filePath, serviceHeads) {
+  const heads = Object.entries(serviceHeads).map(([service, head]) => service + ':' + head).join('\n');
+  fs.writeFileSync(filePath, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + heads + '\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n');
+  return { id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', file: filePath, ...fileEvidence(filePath), serviceHeads };
+}
+
 function writeApprovalArtifact(filePath, readinessManifest, serviceHeads) {
   writeJson(filePath, {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
     approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvalRequest: writeApprovalRequest(path.join(path.dirname(filePath), 'stock-traceability-runtime-approval-request.md'), serviceHeads),
     approvedBy: 'owner@example.test',
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
@@ -785,16 +792,21 @@ function runSelfTest() {
   mismatchedCommandProductSmoke.supplierJob.catalogProductIdsChecked = ['product-other'];
   writeJson(mismatchedCommandProductFixtureFile, mismatchedCommandProductFixture);
   writeJson(mismatchedCommandProductSmokeFile, mismatchedCommandProductSmoke);
+  const mismatchedCommandProductApprovalFile = path.join(dir, 'approval-command-product.json');
+  writeApprovalArtifact(mismatchedCommandProductApprovalFile, readinessManifest, serviceHeads);
+  const mismatchedCommandProductApproval = readJson(mismatchedCommandProductApprovalFile, 'mismatched command product approval');
+  mismatchedCommandProductApproval.approvedTraceInputs.TRACE_PRODUCT_ID = 'product-other';
+  writeJson(mismatchedCommandProductApprovalFile, mismatchedCommandProductApproval);
   runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
     FIXTURE_CHECK_RESULT_FILE: mismatchedCommandProductFixtureFile,
     SMOKE_RESULT_FILE: mismatchedCommandProductSmokeFile,
     DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
     RUNTIME_EVIDENCE_OUTPUT: mismatchedCommandProductReportFile,
     REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
-    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + mismatchedCommandProductApprovalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   const mismatchedCommandProductManifestFile = path.join(dir, 'manifest-mismatched-command-product.json');
-  writeManifest(mismatchedCommandProductManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: approvalFile, report: mismatchedCommandProductReportFile }, serviceHeads);
+  writeManifest(mismatchedCommandProductManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: mismatchedCommandProductApprovalFile, report: mismatchedCommandProductReportFile }, serviceHeads);
   let mismatchedCommandProductRejected = false;
   try {
     verifyBundle({ manifestFile: mismatchedCommandProductManifestFile, reportFile: mismatchedCommandProductReportFile });
@@ -804,16 +816,21 @@ function runSelfTest() {
   assert(mismatchedCommandProductRejected, 'bundle verifier must reject report command product IDs that do not match hashed fixture and smoke artifacts');
 
   const mismatchedCommandIdempotencyReportFile = path.join(dir, 'report-mismatched-command-idempotency.md');
+  const mismatchedCommandIdempotencyApprovalFile = path.join(dir, 'approval-command-idempotency.json');
+  writeApprovalArtifact(mismatchedCommandIdempotencyApprovalFile, readinessManifest, serviceHeads);
+  const mismatchedCommandIdempotencyApproval = readJson(mismatchedCommandIdempotencyApprovalFile, 'mismatched command idempotency approval');
+  mismatchedCommandIdempotencyApproval.approvedTraceInputs.TRACE_IMPORT_IDEMPOTENCY_KEY = 'manual:traceability-other';
+  writeJson(mismatchedCommandIdempotencyApprovalFile, mismatchedCommandIdempotencyApproval);
   runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
     FIXTURE_CHECK_RESULT_FILE: fixtureFile,
     SMOKE_RESULT_FILE: smokeFile,
     DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
     RUNTIME_EVIDENCE_OUTPUT: mismatchedCommandIdempotencyReportFile,
     REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
-    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-other TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-other TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + mismatchedCommandIdempotencyApprovalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   const mismatchedCommandIdempotencyManifestFile = path.join(dir, 'manifest-mismatched-command-idempotency.json');
-  writeManifest(mismatchedCommandIdempotencyManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: approvalFile, report: mismatchedCommandIdempotencyReportFile }, serviceHeads);
+  writeManifest(mismatchedCommandIdempotencyManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: mismatchedCommandIdempotencyApprovalFile, report: mismatchedCommandIdempotencyReportFile }, serviceHeads);
   let mismatchedCommandIdempotencyRejected = false;
   try {
     verifyBundle({ manifestFile: mismatchedCommandIdempotencyManifestFile, reportFile: mismatchedCommandIdempotencyReportFile });

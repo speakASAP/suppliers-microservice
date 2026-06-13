@@ -97,6 +97,24 @@ function sha256File(filePath) {
   return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
 }
 
+function assertApprovalRequestBinding(artifact, artifactDir) {
+  const request = artifact.approvalRequest;
+  assert(request && typeof request === 'object', 'approval artifact approvalRequest binding is required');
+  assert(request.id === 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'approval artifact approvalRequest.id must be STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST');
+  assert(hasText(request.file), 'approval artifact approvalRequest.file is required');
+  assert(/^[0-9a-f]{64}$/i.test(request.sha256 || ''), 'approval artifact approvalRequest.sha256 must be a 64-character hex digest');
+  const requestFile = path.isAbsolute(request.file) ? request.file : path.join(artifactDir, request.file);
+  assert(fs.existsSync(requestFile), 'approval artifact approvalRequest.file does not exist: ' + request.file);
+  assert(sha256File(requestFile) === request.sha256, 'approval artifact approvalRequest.sha256 must match approval request file');
+  const requestText = fs.readFileSync(requestFile, 'utf8');
+  assertNoSecrets(requestText);
+  assert(requestText.includes('STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST'), 'approval artifact approvalRequest file must include request id');
+  for (const service of ['warehouse', 'catalog', 'suppliers']) {
+    assert(request.serviceHeads && request.serviceHeads[service] === artifact.serviceHeads?.[service], `approval artifact approvalRequest ${service} head must match approval serviceHeads`);
+    assert(requestText.includes(artifact.serviceHeads?.[service] || ''), `approval artifact approvalRequest file must include ${service} service head`);
+  }
+}
+
 function assertReadinessManifestBinding(artifact, artifactDir) {
   const readiness = artifact.readinessManifest;
   assert(readiness && typeof readiness === 'object', 'approval artifact readinessManifest binding is required');
@@ -141,6 +159,7 @@ function validateApprovalArtifact(filePath) {
   assert(isIsoDate(artifact.approvedAt), 'approval artifact approvedAt must be an ISO timestamp');
   assert(artifact.approvedForCurrentCleanHeads === true, 'approval artifact must set approvedForCurrentCleanHeads=true');
 
+  assertApprovalRequestBinding(artifact, path.dirname(filePath));
   assertReadinessManifestBinding(artifact, path.dirname(filePath));
 
   const scope = artifact.scope || {};
@@ -192,10 +211,11 @@ function validArtifactForRoot(root, dir = fs.mkdtempSync(path.join(os.tmpdir(), 
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
     approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvalRequest: writeApprovalRequest(dir, serviceHeads),
     approvedBy: 'owner@example.test',
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
-    serviceHeads,
+    serviceHeads: { ...serviceHeads },
     readinessManifest: writeReadinessManifest(dir, serviceHeads),
     approvedTraceInputs: {
       TRACE_PRODUCT_ID: 'product-synthetic',
@@ -223,6 +243,14 @@ function validArtifactForRoot(root, dir = fs.mkdtempSync(path.join(os.tmpdir(), 
   return artifact;
 }
 
+function writeApprovalRequest(dir, serviceHeads) {
+  fs.mkdirSync(dir, { recursive: true });
+  const filePath = path.join(dir, 'runtime-approval-request.md');
+  const heads = Object.entries(serviceHeads).map(([service, head]) => service + ':' + head).join('\n');
+  fs.writeFileSync(filePath, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + heads + '\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n');
+  return { id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', file: filePath, sha256: sha256File(filePath), serviceHeads: { ...serviceHeads } };
+}
+
 function writeArtifact(dir, artifact) {
   fs.mkdirSync(dir, { recursive: true });
   const filePath = path.join(dir, 'runtime-approval.json');
@@ -238,7 +266,7 @@ function writeReadinessManifest(dir, serviceHeads) {
     serviceHeads,
     artifacts: {},
   }, null, 2));
-  return { file: filePath, sha256: sha256File(filePath), status: 'verified', serviceHeads };
+  return { file: filePath, sha256: sha256File(filePath), status: 'verified', serviceHeads: { ...serviceHeads } };
 }
 
 function runSelfTest() {
@@ -259,7 +287,7 @@ function runSelfTest() {
   try {
     validateApprovalArtifact(mismatchedFile);
   } catch (error) {
-    mismatchedApprovalHeadRejected = /catalog .*head must match/.test(error.message);
+    mismatchedApprovalHeadRejected = /head must match/.test(error.message);
   }
   assert(mismatchedApprovalHeadRejected, 'self-test must reject approval artifacts for stale service heads');
 
@@ -284,6 +312,28 @@ function runSelfTest() {
     missingTraceInputRejected = /approvedTraceInputs missing/.test(error.message);
   }
   assert(missingTraceInputRejected, 'self-test must reject approval artifacts without exact approved trace inputs');
+
+  const missingRequest = validArtifactForRoot(root, path.join(dir, 'missing-request-source'));
+  delete missingRequest.approvalRequest;
+  const missingRequestFile = writeArtifact(path.join(dir, 'missing-request'), missingRequest);
+  let missingApprovalRequestRejected = false;
+  try {
+    validateApprovalArtifact(missingRequestFile);
+  } catch (error) {
+    missingApprovalRequestRejected = /approvalRequest binding is required/.test(error.message);
+  }
+  assert(missingApprovalRequestRejected, 'self-test must reject approval artifacts without approval request binding');
+
+  const tamperedRequest = validArtifactForRoot(root, path.join(dir, 'tampered-request-source'));
+  fs.appendFileSync(tamperedRequest.approvalRequest.file, 'tampered\n');
+  const tamperedRequestFile = writeArtifact(path.join(dir, 'tampered-request'), tamperedRequest);
+  let tamperedApprovalRequestRejected = false;
+  try {
+    validateApprovalArtifact(tamperedRequestFile);
+  } catch (error) {
+    tamperedApprovalRequestRejected = /approvalRequest.sha256 must match/.test(error.message);
+  }
+  assert(tamperedApprovalRequestRejected, 'self-test must reject approval artifacts with tampered approval request binding');
 
   const missingReadiness = validArtifactForRoot(root, path.join(dir, 'missing-readiness-source'));
   delete missingReadiness.readinessManifest;
@@ -311,6 +361,8 @@ function runSelfTest() {
     mismatchedApprovalHeadRejected,
     missingForbiddenActionRejected,
     dirtyApprovalRootRejected,
+    missingApprovalRequestRejected,
+    tamperedApprovalRequestRejected,
     missingReadinessManifestRejected,
     missingTraceInputRejected,
   }, null, 2));
