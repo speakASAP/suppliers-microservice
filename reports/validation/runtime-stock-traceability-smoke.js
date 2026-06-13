@@ -4,6 +4,7 @@ const DEFAULT_IMPORT_POLL_MS = Number(process.env.TRACE_IMPORT_POLL_MS || 15000)
 const args = new Set(process.argv.slice(2));
 const planOnly = args.has('--plan-only') || process.env.SMOKE_PLAN_ONLY === 'true';
 const configOnly = args.has('--config-only') || process.env.SMOKE_CONFIG_ONLY === 'true';
+const fixtureCheck = args.has('--fixture-check') || process.env.SMOKE_FIXTURE_CHECK === 'true';
 const approvedMutation = process.env.OWNER_APPROVAL === 'explicit' && process.env.SMOKE_ALLOW_MUTATION === 'true';
 
 function assert(condition, message) {
@@ -117,6 +118,51 @@ function summarizeTopology(topology) {
   };
 }
 
+function summarizeLogisticsLegs(options) {
+  if (!Array.isArray(options)) return [];
+  return options.map((option) => ({
+    routeType: option.routeType,
+    warehouseId: option.warehouseId,
+    supplierId: option.supplierId || null,
+    legs: Array.isArray(option.legs) ? option.legs.map((leg) => ({
+      sequence: leg.sequence,
+      from: leg.from,
+      to: leg.to,
+      responsibility: leg.responsibility,
+    })) : [],
+  }));
+}
+
+function hasLocalCustomerLeg(options) {
+  return Array.isArray(options) && options.some((option) => option.routeType === 'local_fulfillment'
+    && Array.isArray(option.legs)
+    && option.legs.some((leg) => leg.responsibility === 'warehouse' && leg.to === 'customer'));
+}
+
+function hasSupplierDropshipCustomerPath(options) {
+  return Array.isArray(options) && options.some((option) => option.routeType === 'supplier_dropship'
+    && Array.isArray(option.legs)
+    && option.legs.some((leg) => leg.responsibility === 'supplier' && leg.to === 'customer'));
+}
+
+function hasSupplierReplenishmentPath(options) {
+  return Array.isArray(options) && options.some((option) => {
+    const legs = Array.isArray(option.legs) ? option.legs : [];
+    return option.routeType === 'supplier_replenishment'
+      && legs.some((leg) => leg.responsibility === 'supplier' && String(leg.to || '').includes('alfares'))
+      && legs.some((leg) => leg.responsibility === 'warehouse' && leg.to === 'customer');
+  });
+}
+
+function hasRequiredLogisticsLegs(options) {
+  return hasLocalCustomerLeg(options) && hasSupplierReplenishmentPath(options) && hasSupplierDropshipCustomerPath(options);
+}
+
+function assertConfiguredWarehouseId(label, configuredId, rows, matcher) {
+  if (!configuredId) return;
+  assert(rows.some((row) => row.warehouseId === configuredId && matcher(row)), `expected ${label} fixture warehouse ${configuredId} in runtime evidence`);
+}
+
 async function readSupplierJob({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey }) {
   const supplierJobs = await requestJson('Suppliers import jobs', `${suppliersUrl}/api/imports?supplierId=${encodeURIComponent(supplierId)}`, {
     method: 'GET',
@@ -156,11 +202,11 @@ const stages = [
   'Verify service health endpoints for Warehouse, Catalog, and Suppliers.',
   'Verify protected endpoint auth rejection without tokens where safe.',
   'Read or create approved synthetic Catalog product.',
-  'Read or create approved own and supplier/dropship Warehouse locations.',
-  'Apply approved supplier/dropship stock reconciliation only when OWNER_APPROVAL=explicit and SMOKE_ALLOW_MUTATION=true.',
+  'Read or create approved own, supplier replenishment, and dropship Warehouse locations.',
+  'Apply approved supplier replenishment and dropship stock reconciliation only when OWNER_APPROVAL=explicit and SMOKE_ALLOW_MUTATION=true.',
   'Read Warehouse topology, availability, and logistics for the product.',
   'Read Catalog availability, coverage, coverage audit, and FlipFlop projection.',
-  'Assert local plus supplier/dropship origins, Warehouse-owned logistics routes, covered mixed_stock classification, and Warehouse stock authority.',
+  'Assert local plus supplier replenishment and dropship origins, Warehouse-owned logistics routes and route legs, covered mixed_stock classification, and Warehouse stock authority.',
   'Record cleanup or cleanup deferral evidence.',
 ];
 
@@ -180,7 +226,8 @@ if (planOnly) {
     optionalRuntimeEnv: [
       'TRACE_RUN_SUPPLIERS_IMPORT=true',
       'TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE-',
-      'TRACE_SUPPLIER_WAREHOUSE_ID',
+      'TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id>',
+      'TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id>',
       'TRACE_SUPPLIER_STOCK_QTY=7',
       'TRACE_SUPPLIER_SKU=SUP-SKU-TRACE',
       'TRACE_CLEANUP_EVIDENCE=deferred:<ticket-or-runbook>',
@@ -190,7 +237,7 @@ if (planOnly) {
       'TRACE_IMPORT_IDEMPOTENCY_KEY',
       'TRACE_EXPECT_SUPPLIERS_JOB=true',
       'TRACE_OWN_WAREHOUSE_ID',
-      'TRACE_SUPPLIER_WAREHOUSE_ID',
+      'SMOKE_FIXTURE_CHECK=true',
       'OWNER_APPROVAL=explicit',
       'SMOKE_ALLOW_MUTATION=true',
       'TRACE_IMPORT_POLL_MS=15000',
@@ -214,20 +261,27 @@ if (planOnly) {
   const runSuppliersImport = optionalBoolean('TRACE_RUN_SUPPLIERS_IMPORT', approvedMutation);
   const expectSuppliersJob = optionalBoolean('TRACE_EXPECT_SUPPLIERS_JOB', approvedMutation);
   const supplierId = optionalEnv('TRACE_SUPPLIER_ID', '');
+  const ownWarehouseId = optionalEnv('TRACE_OWN_WAREHOUSE_ID', '');
   const supplierWarehouseId = optionalEnv('TRACE_SUPPLIER_WAREHOUSE_ID', '');
+  const dropshipWarehouseId = optionalEnv('TRACE_DROPSHIP_WAREHOUSE_ID', '');
   const supplierStockQty = optionalEnv('TRACE_SUPPLIER_STOCK_QTY', '7');
   const supplierSku = optionalEnv('TRACE_SUPPLIER_SKU', 'SUP-SKU-TRACE');
   const cleanupEvidence = optionalEnv('TRACE_CLEANUP_EVIDENCE', '');
   const importIdempotencyKey = optionalEnv('TRACE_IMPORT_IDEMPOTENCY_KEY', `manual:trace:${productId}`);
-  const sourceFingerprint = `trace:${productId}:${supplierWarehouseId}:${supplierStockQty}:${supplierSku}`;
+  const sourceFingerprint = `trace:${productId}:${supplierWarehouseId}:${dropshipWarehouseId}:${supplierStockQty}:${supplierSku}`;
 
   if (approvedMutation) {
     assert(cleanupEvidence, 'TRACE_CLEANUP_EVIDENCE is required when approved mutation is enabled');
+  }
+  if (fixtureCheck) {
+    assert(!approvedMutation, '--fixture-check must be read-only; unset OWNER_APPROVAL or SMOKE_ALLOW_MUTATION');
+    assert(!runSuppliersImport, '--fixture-check must not run Suppliers import; unset TRACE_RUN_SUPPLIERS_IMPORT');
   }
   if (runSuppliersImport) {
     assert(approvedMutation, 'TRACE_RUN_SUPPLIERS_IMPORT requires OWNER_APPROVAL=explicit and SMOKE_ALLOW_MUTATION=true');
     assert(supplierId, 'TRACE_SUPPLIER_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
     assert(supplierWarehouseId, 'TRACE_SUPPLIER_WAREHOUSE_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
+    assert(dropshipWarehouseId, 'TRACE_DROPSHIP_WAREHOUSE_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
     assert(Number.isInteger(Number(supplierStockQty)) && Number(supplierStockQty) >= 0, 'TRACE_SUPPLIER_STOCK_QTY must be a non-negative integer');
   }
   if (expectSuppliersJob) {
@@ -243,6 +297,7 @@ if (planOnly) {
         enabled: runSuppliersImport,
         supplierId,
         supplierWarehouseId,
+        dropshipWarehouseId,
         sourceFingerprint,
       },
       suppliersJobExpected: expectSuppliersJob,
@@ -335,8 +390,10 @@ if (planOnly) {
   const coverageAuditItems = catalogCoverageAudit.data?.items || [];
   const coverageAuditItem = coverageAuditItems.find((item) => item.productId === productId);
   const projectionItem = flipflopProjection.data?.items?.[0];
-  const catalogRouteTypes = (catalogItem?.logistics?.options || []).map((option) => option.routeType);
-  const projectionRouteTypes = (projectionItem?.availability?.logistics?.options || []).map((option) => option.routeType);
+  const catalogLogisticsOptions = catalogItem?.logistics?.options || [];
+  const projectionLogisticsOptions = projectionItem?.availability?.logistics?.options || [];
+  const catalogRouteTypes = catalogLogisticsOptions.map((option) => option.routeType);
+  const projectionRouteTypes = projectionLogisticsOptions.map((option) => option.routeType);
   const warehouseTotalAvailable = Number(warehouseAvailability.data?.[0]?.totalAvailable ?? 0);
   const warehouseOriginAvailable = warehouseRows.reduce((sum, row) => sum + Number(row.available ?? 0), 0);
   const catalogAvailabilityTotal = Number(catalogItem?.totalAvailable ?? 0);
@@ -347,16 +404,25 @@ if (planOnly) {
   assert(catalogProductData?.sku, 'expected Catalog product identity to include SKU');
   assert(catalogProductData.sku.startsWith(traceProductSkuPrefix), `expected Catalog product SKU to start with ${traceProductSkuPrefix}`);
   assert((topologyData?.groups?.own || []).length > 0, 'expected Warehouse topology to include own warehouses');
-  assert([...(topologyData?.groups?.supplier || []), ...(topologyData?.groups?.dropship || [])].length > 0, 'expected Warehouse topology to include supplier-managed warehouses');
+  assert((topologyData?.groups?.supplier || []).length > 0, 'expected Warehouse topology to include supplier replenishment warehouses');
+  assert((topologyData?.groups?.dropship || []).length > 0, 'expected Warehouse topology to include supplier dropship warehouses');
   assert(warehouseRows.some((row) => row.warehouseType === 'own' && Number(row.available) > 0), 'expected own Warehouse stock row');
-  assert(warehouseRows.some((row) => ['supplier', 'dropship'].includes(row.warehouseType) && row.supplierId && Number(row.available) > 0), 'expected supplier/dropship Warehouse stock row');
+  assert(warehouseRows.some((row) => row.warehouseType === 'supplier' && row.supplierId && Number(row.available) > 0), 'expected supplier replenishment Warehouse stock row');
+  assert(warehouseRows.some((row) => row.warehouseType === 'dropship' && row.supplierId && Number(row.available) > 0), 'expected supplier dropship Warehouse stock row');
+  assertConfiguredWarehouseId('own', ownWarehouseId, warehouseRows, (row) => row.warehouseType === 'own' && Number(row.available) > 0);
+  assertConfiguredWarehouseId('supplier replenishment', supplierWarehouseId, warehouseRows, (row) => row.warehouseType === 'supplier' && row.supplierId && Number(row.available) > 0);
+  assertConfiguredWarehouseId('supplier dropship', dropshipWarehouseId, warehouseRows, (row) => row.warehouseType === 'dropship' && row.supplierId && Number(row.available) > 0);
   assert(logisticsOptions.some((option) => option.routeType === 'local_fulfillment'), 'expected local fulfillment route');
-  assert(logisticsOptions.some((option) => ['supplier_replenishment', 'supplier_dropship'].includes(option.routeType)), 'expected supplier route');
+  assert(logisticsOptions.some((option) => option.routeType === 'supplier_replenishment'), 'expected supplier replenishment route');
+  assert(logisticsOptions.some((option) => option.routeType === 'supplier_dropship'), 'expected supplier dropship route');
+  assert(hasRequiredLogisticsLegs(logisticsOptions), 'expected Warehouse logistics legs to prove local fulfillment, supplier replenishment, and supplier dropship paths');
   assert(catalogItem?.source === 'warehouse', 'expected Catalog availability source warehouse');
   assert(catalogItem?.warehouses?.length >= 2, 'expected Catalog to forward origin rows');
   assert(catalogItem?.logistics?.options?.length >= 2, 'expected Catalog to forward logistics options');
   assert(catalogRouteTypes.includes('local_fulfillment'), 'expected Catalog availability to forward local fulfillment route');
-  assert(catalogRouteTypes.some((route) => ['supplier_replenishment', 'supplier_dropship'].includes(route)), 'expected Catalog availability to forward supplier route');
+  assert(catalogRouteTypes.includes('supplier_replenishment'), 'expected Catalog availability to forward supplier replenishment route');
+  assert(catalogRouteTypes.includes('supplier_dropship'), 'expected Catalog availability to forward supplier dropship route');
+  assert(hasRequiredLogisticsLegs(catalogLogisticsOptions), 'expected Catalog availability to forward local, supplier replenishment, and dropship logistics legs');
   assert(coverageItem?.coverageStatus === 'covered', 'expected Catalog coverage status covered');
   assert(coverageItem?.stockOrigin === 'mixed_stock', 'expected Catalog coverage stockOrigin mixed_stock');
   assert(coverageAuditItem?.coverageStatus === 'covered', 'expected Catalog coverage audit to include covered product');
@@ -364,14 +430,17 @@ if (planOnly) {
   assert(projectionItem?.availability?.source === 'warehouse', 'expected FlipFlop projection availability source warehouse');
   assert(projectionItem?.availability?.logistics?.options?.length >= 2, 'expected FlipFlop projection logistics options');
   assert(projectionRouteTypes.includes('local_fulfillment'), 'expected FlipFlop projection to forward local fulfillment route');
-  assert(projectionRouteTypes.some((route) => ['supplier_replenishment', 'supplier_dropship'].includes(route)), 'expected FlipFlop projection to forward supplier route');
+  assert(projectionRouteTypes.includes('supplier_replenishment'), 'expected FlipFlop projection to forward supplier replenishment route');
+  assert(projectionRouteTypes.includes('supplier_dropship'), 'expected FlipFlop projection to forward supplier dropship route');
+  assert(hasRequiredLogisticsLegs(projectionLogisticsOptions), 'expected FlipFlop projection to forward local, supplier replenishment, and dropship logistics legs');
   assert(warehouseTotalAvailable === warehouseOriginAvailable, 'expected Warehouse totalAvailable to equal summed Warehouse origin availability');
   assert(catalogAvailabilityTotal === warehouseTotalAvailable, 'expected Catalog availability totalAvailable to match Warehouse totalAvailable');
   assert(catalogCoverageTotal === warehouseTotalAvailable, 'expected Catalog coverage totalAvailable to match Warehouse totalAvailable');
   assert(projectionStockQuantity === warehouseTotalAvailable, 'expected FlipFlop stockQuantity to match Warehouse totalAvailable');
 
   console.log(JSON.stringify({
-    status: 'passed',
+    status: fixtureCheck ? 'fixture-ready' : 'passed',
+    fixtureCheck,
     mutationEnabled: approvedMutation,
     tokens: {
       catalog: redact(catalogToken),
@@ -384,6 +453,8 @@ if (planOnly) {
     supplierImport: {
       triggered: runSuppliersImport,
       supplierId: supplierId || null,
+      supplierWarehouseId: supplierWarehouseId || null,
+      dropshipWarehouseId: dropshipWarehouseId || null,
       sourceFingerprint: runSuppliersImport ? sourceFingerprint : null,
     },
     cleanupEvidence: cleanupEvidence || null,
@@ -400,6 +471,7 @@ if (planOnly) {
       available: row.available,
     })),
     logisticsRoutes: logisticsOptions.map((option) => option.routeType),
+    logisticsLegs: summarizeLogisticsLegs(logisticsOptions),
     stockAuthority: {
       source: 'warehouse',
       warehouseTotalAvailable,
@@ -414,6 +486,7 @@ if (planOnly) {
       logisticsOptionCount: catalogItem.logistics?.options?.length || 0,
       preferredRoute: catalogItem.logistics?.preferredRoute || null,
       routeTypes: catalogRouteTypes,
+      routeLegs: summarizeLogisticsLegs(catalogLogisticsOptions),
       warehouseTypes: (catalogItem.warehouses || []).map((row) => row.warehouseType),
     },
     coverage: summarizeCoverage(coverageItem),
@@ -430,6 +503,7 @@ if (planOnly) {
       stockQuantity: projectionItem.stockQuantity,
       routeCount: projectionItem.availability?.logistics?.options?.length || 0,
       routeTypes: projectionRouteTypes,
+      routeLegs: summarizeLogisticsLegs(projectionLogisticsOptions),
     },
   }, null, 2));
 })().catch((error) => {

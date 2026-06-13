@@ -11,7 +11,7 @@ Metadata:
 
 ## Purpose
 
-This rollout plan defines the approval-gated runtime proof for tracing one Catalog good through Alfares-owned stock, supplier/dropship virtual stock, Warehouse logistics routes, Catalog coverage, and downstream channel projection.
+This rollout plan defines the approval-gated runtime proof for tracing one Catalog good through Alfares-owned stock, supplier and dropship virtual stock, Warehouse logistics routes, Catalog coverage, and downstream channel projection.
 
 ## Required Source Baseline
 
@@ -31,7 +31,7 @@ Approved mutation scope must be limited to synthetic traceability records:
 
 - one synthetic Catalog product with a `CODEX-STOCK-TRACE-` SKU prefix;
 - one existing or synthetic Alfares-owned Warehouse location;
-- one existing or synthetic supplier/dropship Warehouse location;
+- one existing or synthetic supplier and dropship Warehouse location;
 - one synthetic Suppliers import job for a supplier whose `code` resolves to the `synthetic-trace` adapter;
 - cleanup or archival instructions recorded before mutation starts.
 
@@ -58,15 +58,16 @@ When owner-approved mutation is allowed, run the smoke with a synthetic Supplier
 - `SMOKE_ALLOW_MUTATION=true`
 - `TRACE_RUN_SUPPLIERS_IMPORT=true`
 - `TRACE_SUPPLIER_ID=<active supplier id>`
-- `TRACE_SUPPLIER_WAREHOUSE_ID=<supplier or dropship warehouse id>`
+- `TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id>`
+- `TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id>`
 - `TRACE_IMPORT_IDEMPOTENCY_KEY=<stable replay key>`
 - `TRACE_CLEANUP_EVIDENCE=<cleanup result or deferred cleanup reference>`
 
-The approved supplier must be active and must use supplier `code` value `synthetic-trace`, which maps to the registered synthetic adapter. The smoke sends `sourceFingerprint` as `trace:<TRACE_PRODUCT_ID>:<TRACE_SUPPLIER_WAREHOUSE_ID>:<TRACE_SUPPLIER_STOCK_QTY>:<TRACE_SUPPLIER_SKU>`, waits for the async import job to complete, and verifies the Warehouse policy fields before checking Catalog and Warehouse read models.
+The approved supplier must be active and must use supplier `code` value `synthetic-trace`, which maps to the registered synthetic adapter. The smoke sends `sourceFingerprint` as `trace:<TRACE_PRODUCT_ID>:<TRACE_SUPPLIER_WAREHOUSE_ID>:<TRACE_DROPSHIP_WAREHOUSE_ID>:<TRACE_SUPPLIER_STOCK_QTY>:<TRACE_SUPPLIER_SKU>`, waits for the async import job to complete, and verifies the Warehouse policy fields before checking Catalog and Warehouse read models.
 
 When `SMOKE_ALLOW_MUTATION=true`, `TRACE_CLEANUP_EVIDENCE` is mandatory. It may point to completed cleanup evidence or to an explicit owner-approved deferral such as `deferred:<ticket-or-runbook>`. Hard deletes or compensating stock changes remain separate approved actions.
 
-For read-only rehearsal, keep `SMOKE_ALLOW_MUTATION` unset and run `node reports/validation/runtime-stock-traceability-smoke.js --plan-only`.
+For read-only rehearsal, keep `SMOKE_ALLOW_MUTATION` and `TRACE_RUN_SUPPLIERS_IMPORT` unset and run `node reports/validation/runtime-stock-traceability-smoke.js --plan-only`. For live fixture readiness without mutation, set service URLs, tokens, `TRACE_PRODUCT_ID`, and optional expected warehouse IDs, then run `node reports/validation/runtime-stock-traceability-smoke.js --fixture-check`. When the guarded runner is started with `RUN_APPROVED_RUNTIME_SMOKE=true`, it validates owner approval, mutation allowance, cleanup evidence, and complete deployment evidence before any live fixture or import request.
 
 
 The runtime smoke is complete only when current production responses prove all assertions below:
@@ -76,9 +77,9 @@ The runtime smoke is complete only when current production responses prove all a
 | Catalog product identity exists. | Catalog product read returns the synthetic product ID and SKU. |
 | Own Warehouse stock exists. | Warehouse topology exposes own warehouses and Warehouse availability returns a row with `warehouseType: own`, positive `available`, and no supplier ID. |
 | Supplier/dropship stock exists. | Warehouse topology exposes supplier-managed warehouses and availability returns a row with `warehouseType: supplier` or `dropship`, positive `available`, and supplier ID. |
-| Logistics are Warehouse-owned. | Warehouse logistics returns `local_fulfillment` plus `supplier_replenishment` or `supplier_dropship` route options. |
+| Logistics are Warehouse-owned. | Warehouse logistics returns `local_fulfillment` plus `supplier_replenishment` or `supplier_dropship` route options with route legs. |
 | Catalog forwards stock origins. | Catalog availability returns `source: warehouse` and both origin rows. |
-| Catalog forwards logistics. | Catalog availability or FlipFlop projection returns `availability.logistics.preferredRoute` and route options. |
+| Catalog forwards logistics. | Catalog availability or FlipFlop projection returns `availability.logistics.preferredRoute`, route options, and route legs. |
 | Catalog coverage classifies the product. | Catalog coverage returns `coverageStatus: covered` and `stockOrigin: mixed_stock` for the synthetic mixed-source product. |
 | Coverage audit finds active goods. | Catalog coverage audit returns the synthetic product on its page or an approved filtered page. |
 | Suppliers mutation boundary is preserved. | With `TRACE_EXPECT_SUPPLIERS_JOB=true`, smoke reads Suppliers import jobs and verifies approved Warehouse mutation policy, idempotency key, Warehouse authority, and applied update count. |
@@ -98,7 +99,7 @@ Record these artifacts after the approved runtime smoke:
 
 - service commit SHAs and deployment image tags;
 - exact smoke command with secret values redacted;
-- Warehouse topology, availability, and logistics response summary;
+- Warehouse topology, availability, logistics route, and logistics leg response summary;
 - service health summary;
 - Catalog product identity summary;
 - Catalog availability, coverage, coverage audit page/matched product, and FlipFlop projection summary;
@@ -112,3 +113,6 @@ Record these artifacts after the approved runtime smoke:
 - No customer order, payment, or shipment is created.
 - No Catalog stock persistence is introduced.
 - No Suppliers stock authority is introduced.
+
+
+Runtime handoff checklist: generate the operator handoff with `RUNTIME_HANDOFF_OUTPUT=/tmp/stock-traceability-runtime-handoff.md node reports/validation/create-runtime-handoff-checklist.js`. The checklist records current service HEADs, completion gate state, required operator inputs, ordered deployment commands, and the final completion verifier command.

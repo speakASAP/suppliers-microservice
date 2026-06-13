@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawnSync } = require('child_process');
 
 const root = process.env.CROSS_SERVICE_ROOT || path.resolve(__dirname, '../../..');
 
@@ -28,6 +28,11 @@ const checks = [
     patterns: ['warehouseType', 'supplierId'],
   },
   {
+    service: 'warehouse',
+    file: 'test/warehouses.service.spec.ts',
+    patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', 'responsibility: \'supplier\'', 'responsibility: \'warehouse\''],
+  },
+  {
     service: 'catalog',
     file: 'src/warehouse-availability/warehouse-availability.controller.ts',
     patterns: ['coverage/audit', 'coverage'],
@@ -41,6 +46,16 @@ const checks = [
     service: 'catalog',
     file: 'src/flipflop-projection/flipflop-projection.service.ts',
     patterns: ['availability.warehouses', 'availability.logistics'],
+  },
+  {
+    service: 'catalog',
+    file: 'src/warehouse-availability/warehouse-availability.service.spec.ts',
+    patterns: ['supplier_replenishment', 'supplier_dropship', 'alfares_receiving_or_handoff', 'to: \'customer\'', 'responsibility: \'supplier\'', 'responsibility: \'warehouse\''],
+  },
+  {
+    service: 'catalog',
+    file: 'src/flipflop-projection/flipflop-projection.service.spec.ts',
+    patterns: ['availability:', 'logistics:', 'legs:', 'OWN-PRG', 'to: "customer"', 'responsibility: "warehouse"'],
   },
   {
     service: 'suppliers',
@@ -65,7 +80,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'src/imports/adapters/synthetic-trace-supplier-adapter.ts',
-    patterns: ['synthetic-trace', 'trace:<productId>:<warehouseId>:<quantity>[:supplierSku]'],
+    patterns: ['synthetic-trace', 'trace:<productId>:<warehouseId>:<quantity>[:supplierSku]', 'trace:<productId>:<supplierWarehouseId>:<dropshipWarehouseId>:<quantity>[:supplierSku]'],
   },
   {
     service: 'suppliers',
@@ -74,23 +89,63 @@ const checks = [
   },
   {
     service: 'suppliers',
+    file: 'reports/validation/synthetic-stock-traceability-check.js',
+    patterns: ['hasLocalCustomerLeg', 'hasSupplierCustomerPath', 'routeLegs', 'supplier_dropship', 'responsibility: "supplier"', 'responsibility: "warehouse"'],
+  },
+  {
+    service: 'suppliers',
     file: 'reports/validation/runtime-stock-traceability-smoke.js',
-    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-', 'readHealth', "service, endpoint", 'catalogRouteTypes', 'projectionRouteTypes', 'stockAuthority', 'warehouseTotalAvailable', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
+    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'fixtureCheck', 'readHealth', "service, endpoint", 'catalogRouteTypes', 'projectionRouteTypes', 'summarizeLogisticsLegs', 'hasRequiredLogisticsLegs', 'stockAuthority', 'warehouseTotalAvailable', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/generate-runtime-evidence-report.js',
-    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'hasLocalAndSupplierRoute', 'deploymentEvidenceComplete', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
+    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'summarizeFixtureCheck', 'fixtureCheckComplete', 'FIXTURE_CHECK_RESULT_FILE', 'hasAllRequiredRouteTypes', 'hasRequiredRouteLegs', 'summarizeRouteLegs', 'deploymentEvidenceComplete', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/create-deployment-evidence-template.js',
+    patterns: ['DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT', 'warehouse-microservice', 'catalog-microservice', 'suppliers-microservice', 'protectedEndpointEvidencePlaceholder', 'TODO'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/run-runtime-evidence-flow.js',
+    patterns: ['--fixture-check', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'fixture-ready', 'validateApprovedSmokeConfig', 'validateDeploymentEvidenceFile', 'currentHeadForService', 'commitSha must match current', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'FIXTURE_CHECK_RESULT_FILE', 'generate-runtime-evidence-report.js', 'verify-runtime-evidence-report.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'RUNTIME_EVIDENCE_MANIFEST', 'stock-traceability-runtime-evidence-manifest.json', 'sha256', '--manifest-self-test'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/create-runtime-handoff-checklist.js',
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-HANDOFF', 'completionGate', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'verify-stock-traceability-completion.js', 'run-runtime-evidence-flow.js'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/verify-stock-traceability-completion.js',
+    patterns: ['runtime report is not passed-runtime/runtime-complete', 'manifest path is required', 'verify-runtime-evidence-bundle.js', 'complete verified bundle'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/verify-runtime-evidence-bundle.js',
+    patterns: ['verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-report.js', 'deployment evidence commit must match manifest service head', 'fixture and smoke artifacts must use the same TRACE_PRODUCT_ID', 'smoke artifact must include the fixture dropship warehouse origin', 'Runtime complete', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'deploymentManifestMismatchRejected'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/verify-runtime-evidence-manifest.js',
+    patterns: ['runtime-complete-evidence-bundle', 'sha256 mismatch', 'tamperedHashRejected', 'currentHeadForService', 'fixture', 'smoke', 'deployment', 'report'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-report.js',
-    patterns: ['REQUIRED_ASSERTIONS', 'Warehouse remains stock authority across totals', 'warehouseTotalAvailable=', 'catalogCoverageTotal=', 'deployment evidence must include a commit SHA', 'warehouse:', 'catalog:', 'suppliers:', 'source=warehouse', 'expectedSkuPrefix=CODEX-STOCK-TRACE-', 'routeTypes=local_fulfillment', 'supplier_dropship', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
+    patterns: ['REQUIRED_ASSERTIONS', 'Read-only live fixture check passed before mutation', 'Warehouse remains stock authority across totals', 'warehouseTotalAvailable=', 'catalogCoverageTotal=', 'deployment evidence must include a commit SHA', 'TRACE_RUN_SUPPLIERS_IMPORT=true', 'TRACE_EXPECT_SUPPLIERS_JOB=true', 'TRACE_DROPSHIP_WAREHOUSE_ID=', '--fixture-check', 'fixture-ready', 'mutationEnabled=no', 'TRACE_CLEANUP_EVIDENCE=', 'warehouse:', 'catalog:', 'suppliers:', 'source=warehouse', 'expectedSkuPrefix=CODEX-STOCK-TRACE-', 'routeTypes=local_fulfillment', 'routeLegs=', 'customer:warehouse', 'supplier_dropship', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/runtime-evidence-flow-negative-check.js',
+    patterns: ['approved-smoke-missing-deployment-evidence', 'approved-smoke-missing-owner-approval', 'approved-smoke-missing-mutation-allowance', 'approved-smoke-invalid-deployment-evidence', 'approved-smoke-deployment-sha-not-current-head', 'approved-smoke-missing-protected-endpoint-evidence', 'approved-smoke-health-evidence-still-placeholder', 'approved-smoke-template-not-complete-evidence', 'RUN_APPROVED_RUNTIME_SMOKE', 'DEPLOYMENT_EVIDENCE_FILE', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', '--manifest-self-test'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-evidence-negative-check.js',
-    patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'failed-runtime'],
+    patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'missing-logistics-leg-evidence', 'missing-fixture-check-evidence', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'deployment-health-evidence-placeholder', 'invalid-smoke-command-import-disabled', 'failed-runtime'],
   },
   {
     service: 'suppliers',
@@ -146,15 +201,71 @@ function runCheck(check) {
   };
 }
 
+
+function checkCompletionGate() {
+  const result = spawnSync(process.execPath, ['reports/validation/verify-stock-traceability-completion.js'], {
+    cwd: services.suppliers,
+    env: { ...process.env },
+    encoding: 'utf8',
+  });
+  const output = `${result.stdout || ''}${result.stderr || ''}`.trim();
+  let parsed = null;
+  try {
+    parsed = output ? JSON.parse(output) : null;
+  } catch (_error) {
+    parsed = { status: 'failed', raw: output };
+  }
+  if (result.status === 0 && parsed?.status === 'complete') {
+    return { service: 'suppliers', ok: true, status: 'complete', result: parsed };
+  }
+  if (result.status === 2 && parsed?.status === 'incomplete') {
+    return { service: 'suppliers', ok: true, status: 'incomplete', result: parsed };
+  }
+  return { service: 'suppliers', ok: false, status: parsed?.status || 'failed', result: parsed, exitCode: result.status };
+}
+
+function checkLiveRuntimeReport() {
+  const reportFile = path.join(services.suppliers, 'docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md');
+  if (!fs.existsSync(reportFile)) {
+    return { service: 'suppliers', file: path.relative(services.suppliers, reportFile), ok: true, status: 'absent' };
+  }
+
+  const report = fs.readFileSync(reportFile, 'utf8');
+  if (!report.includes('- status: passed-runtime')) {
+    return { service: 'suppliers', file: path.relative(services.suppliers, reportFile), ok: true, status: 'not-passed-runtime' };
+  }
+
+  try {
+    execFileSync('node', ['reports/validation/verify-runtime-evidence-report.js'], {
+      cwd: services.suppliers,
+      env: { ...process.env, RUNTIME_EVIDENCE_REPORT: reportFile },
+      stdio: 'pipe',
+    });
+    return { service: 'suppliers', file: path.relative(services.suppliers, reportFile), ok: true, status: 'verified-passed-runtime' };
+  } catch (error) {
+    return {
+      service: 'suppliers',
+      file: path.relative(services.suppliers, reportFile),
+      ok: false,
+      status: 'stale-or-invalid-passed-runtime',
+      error: error.stdout?.toString() || error.stderr?.toString() || error.message,
+    };
+  }
+}
+
 function main() {
   const directories = Object.entries(services).map(([name, dir]) => assertServiceDirectory(name, dir));
   const sourceChecks = checks.map(runCheck);
-  const ok = directories.every((item) => item.ok) && sourceChecks.every((item) => item.ok);
+  const liveRuntimeReport = checkLiveRuntimeReport();
+  const completionGate = checkCompletionGate();
+  const ok = directories.every((item) => item.ok) && sourceChecks.every((item) => item.ok) && liveRuntimeReport.ok && completionGate.ok;
   const result = {
     status: ok ? 'passed' : 'failed',
     root,
     directories,
     sourceChecks,
+    liveRuntimeReport,
+    completionGate,
   };
   console.log(JSON.stringify(result, null, 2));
   if (!ok) process.exit(1);

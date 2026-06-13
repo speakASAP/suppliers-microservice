@@ -13,7 +13,7 @@ Current boundary:
 
 ## Synthetic Trace Adapter
 
-A synthetic-only adapter is registered under `synthetic-trace` for owner-approved cross-service smoke tests. It requires `sourceFingerprint` in the format `trace:<productId>:<warehouseId>:<quantity>[:supplierSku]` and emits one normalized stock candidate. It must not be used for real supplier integrations or credentials.
+A synthetic-only adapter is registered under `synthetic-trace` for owner-approved cross-service smoke tests. It accepts legacy `sourceFingerprint` values in the format `trace:<productId>:<warehouseId>:<quantity>[:supplierSku]` and emits one normalized stock candidate. For full stock traceability runtime proof it accepts `trace:<productId>:<supplierWarehouseId>:<dropshipWarehouseId>:<quantity>[:supplierSku]` and emits one supplier replenishment candidate plus one dropship candidate. It must not be used for real supplier integrations or credentials.
 
 ## Production REST JSON Adapter
 

@@ -2,16 +2,16 @@
 
 Metadata:
 - id: VAL-CROSS-STOCK-RUNTIME-LIVE
-- status: passed-runtime
+- status: failed-runtime
 - owner: commerce-platform
 - created: 2026-06-13
 - last_updated: 2026-06-13
-- completeness_level: runtime-complete
+- completeness_level: partial
 - upstream: docs/cross-service/stock-traceability-live-runbook.md, docs/cross-service/stock-traceability-completion-audit.md, reports/validation/runtime-stock-traceability-smoke.js
 
 ## Artifact Validated
 
-Owner-approved deployed Warehouse, Catalog, and Suppliers runtime traceability path for one synthetic Catalog good.
+Superseded runtime traceability attempt for one synthetic Catalog good. This report is retained as non-completion evidence because it does not satisfy the current approved supplier-import and route-leg evidence gates.
 
 ## Deployment Evidence
 
@@ -35,11 +35,11 @@ SMOKE_TIMEOUT_MS=30000 WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=ht
 | Catalog product identity exists. | productId=c0de0000-0000-4000-8000-000000000001, sku=CODEX-STOCK-TRACE-001, expectedSkuPrefix=CODEX-STOCK-TRACE- | passed-runtime |
 | Warehouse topology distinguishes own and supplier-managed warehouses. | own=2, supplierManaged=1, totalAvailable=11 | passed-runtime |
 | Warehouse availability returns own plus supplier or dropship stock. | own:c0de0000-0000-4000-8000-000000000003:available=4:supplier=-; dropship:c0de0000-0000-4000-8000-000000000004:available=7:supplier=c0de0000-0000-4000-8000-000000000002 | passed-runtime |
-| Warehouse logistics returns local and supplier route options. | routes=local_fulfillment,supplier_dropship | passed-runtime |
-| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=2, logisticsOptionCount=2, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_dropship | passed-runtime |
+| Warehouse logistics returns local and supplier route options. | routes=local_fulfillment,supplier_dropship, routeLegs=missing in captured evidence | missing-runtime |
+| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=2, logisticsOptionCount=2, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_dropship, routeLegs=missing in captured evidence | missing-runtime |
 | Catalog coverage and audit classify covered mixed stock. | coverage=covered, origin=mixed_stock, audit=covered/mixed_stock | passed-runtime |
-| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=c0de0000-0000-4000-8000-000000000001, source=warehouse, stockQuantity=11, routeCount=2, routeTypes=local_fulfillment,supplier_dropship | passed-runtime |
-| Suppliers import preserves Warehouse authority. | status=completed, idempotencyKey=manual:traceability-20260613-003, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=1 | passed-runtime |
+| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=c0de0000-0000-4000-8000-000000000001, source=warehouse, stockQuantity=11, routeCount=2, routeTypes=local_fulfillment,supplier_dropship, routeLegs=missing in captured evidence | missing-runtime |
+| Suppliers import preserves Warehouse authority. | Smoke command evidence used TRACE_RUN_SUPPLIERS_IMPORT=false, so this report cannot prove the approved supplier import path even though a historical job row was observed. | missing-runtime |
 | Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11 | passed-runtime |
 | Cleanup or archival evidence is recorded. | cleanupEvidence=completed:synthetic-traceability-records-removed-20260613 | passed-runtime |
 
@@ -50,13 +50,18 @@ SMOKE_TIMEOUT_MS=30000 WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=ht
 - warehouse topology: own=2, supplierManaged=1, totalAvailable=11
 - warehouse origins: own:c0de0000-0000-4000-8000-000000000003:available=4:supplier=-; dropship:c0de0000-0000-4000-8000-000000000004:available=7:supplier=c0de0000-0000-4000-8000-000000000002
 - routes: local_fulfillment,supplier_dropship
+- route legs: missing in captured evidence
 - coverage: covered / mixed_stock
 - supplier job: status=completed, idempotencyKey=manual:traceability-20260613-003, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=1
 - cleanup evidence: completed:synthetic-traceability-records-removed-20260613
 
 ## Completion Decision
 
-Runtime complete
+Runtime incomplete
+
+## Supersession Note
+
+This tracked report predates the current completion gate. It is not valid completion evidence because the captured smoke command used `TRACE_RUN_SUPPLIERS_IMPORT=false`, and the captured Warehouse, Catalog, and FlipFlop logistics assertions did not include route-leg evidence. A new owner-approved live smoke must regenerate this file with `passed-runtime`, `runtime-complete`, `TRACE_RUN_SUPPLIERS_IMPORT=true`, cleanup evidence, deployment evidence, and route legs before the goal can be marked complete.
 
 ## Boundary Evidence
 
@@ -64,7 +69,7 @@ Runtime complete
 - no customer data was captured;
 - no Catalog or Suppliers stock authority was introduced;
 - Warehouse remained the stock and logistics authority;
-- mutation was limited to approved synthetic traceability records;
+- mutation boundary cannot be proven from this report because the captured smoke command disabled `TRACE_RUN_SUPPLIERS_IMPORT`;
 - any cleanup requiring hard delete or compensating stock mutation had separate approval or remained deferred by recorded evidence.
 
 ## Post-Run Cleanup Evidence

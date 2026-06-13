@@ -1,0 +1,110 @@
+#!/usr/bin/env node
+const fs = require('fs');
+const path = require('path');
+const { execFileSync, spawnSync } = require('child_process');
+
+const args = new Set(process.argv.slice(2));
+const selfTest = args.has('--self-test');
+const root = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
+const outputFile = process.env.RUNTIME_HANDOFF_OUTPUT || '/tmp/stock-traceability-runtime-handoff.md';
+const services = {
+  warehouse: 'warehouse-microservice',
+  catalog: 'catalog-microservice',
+  suppliers: 'suppliers-microservice',
+};
+
+function assert(condition, message) {
+  if (!condition) throw new Error(message);
+}
+
+function git(repo, args) {
+  if (selfTest && args[0] === 'rev-parse') return '0'.repeat(40);
+  if (selfTest && args[0] === 'status') return '';
+  return execFileSync('git', args, { cwd: path.join(root, repo), encoding: 'utf8' }).trim();
+}
+
+function runJson(commandArgs) {
+  if (selfTest) return { status: 'passed', completionGate: { status: 'incomplete', result: { reason: 'self-test incomplete' } } };
+  const result = spawnSync(process.execPath, commandArgs, { cwd: process.cwd(), encoding: 'utf8' });
+  if (result.status !== 0) throw new Error(`${commandArgs.join(' ')} failed: ${result.stdout}${result.stderr}`.trim());
+  return JSON.parse(result.stdout);
+}
+
+function serviceRows() {
+  return Object.entries(services).map(([name, repo]) => {
+    const status = git(repo, ['status', '--short']);
+    return {
+      name,
+      repo,
+      head: git(repo, ['rev-parse', 'HEAD']),
+      dirtyLines: status ? status.split('\n').length : 0,
+    };
+  });
+}
+
+function render(rows, preflight) {
+  const table = rows.map((row) => `| ${row.name} | ${row.repo} | ${row.head} | ${row.dirtyLines} |`).join('\n');
+  return `# Stock Traceability Runtime Handoff
+
+Metadata:
+- id: STOCK-TRACEABILITY-RUNTIME-HANDOFF
+- status: ready-for-owner-approval
+- generatedAt: ${new Date().toISOString()}
+- completionGate: ${preflight.completionGate?.status || 'unknown'}
+- completionReason: ${preflight.completionGate?.result?.reason || '-'}
+
+## Source Snapshot
+
+| Service | Repository | HEAD | Dirty lines |
+| --- | --- | --- | --- |
+${table}
+
+## Approval Boundary
+
+Do not deploy, create runtime records, or run the approved supplier import unless the owner explicitly approves deployment, synthetic traceability records, and one Warehouse-mutating Suppliers synthetic import in the active session.
+
+## Required Operator Inputs
+
+- TRACE_PRODUCT_ID with CODEX-STOCK-TRACE- SKU prefix
+- TRACE_SUPPLIER_ID using supplier code synthetic-trace
+- TRACE_OWN_WAREHOUSE_ID
+- TRACE_SUPPLIER_WAREHOUSE_ID
+- TRACE_DROPSHIP_WAREHOUSE_ID
+- TRACE_IMPORT_IDEMPOTENCY_KEY
+- TRACE_CLEANUP_EVIDENCE
+- CATALOG_TOKEN, WAREHOUSE_TOKEN, SUPPLIERS_TOKEN kept only in shell environment
+
+## Command Order
+
+1. Run \`node reports/validation/cross-service-preflight-check.js\` and confirm source checks pass and completionGate is incomplete before deployment.
+2. Generate deployment evidence skeleton with \`DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js\`.
+3. Deploy Warehouse, Catalog, and Suppliers in that order using each repo's \`./scripts/deploy.sh\`.
+4. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence.
+5. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, and the completed deployment evidence file.
+6. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
+7. Run \`node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>\` and require status complete before claiming the goal is done.
+
+## Non-Completion Reminder
+
+A deployment alone is not completion. A source-only synthetic check is not completion. The goal is complete only after the final report, manifest, and bundle verifier prove Warehouse-owned local, supplier replenishment, dropship stock, and logistics route legs through Catalog and Suppliers.
+`;
+}
+
+try {
+  const rows = serviceRows();
+  const preflight = runJson(['reports/validation/cross-service-preflight-check.js']);
+  const markdown = render(rows, preflight);
+  assert(markdown.includes('completionGate'), 'handoff must include completion gate');
+  assert(markdown.includes('TRACE_SUPPLIER_WAREHOUSE_ID'), 'handoff must include supplier warehouse input');
+  assert(markdown.includes('verify-stock-traceability-completion.js'), 'handoff must include final completion verifier');
+  if (selfTest) {
+    console.log(JSON.stringify({ status: 'passed', services: rows.length }, null, 2));
+  } else {
+    fs.mkdirSync(path.dirname(outputFile), { recursive: true });
+    fs.writeFileSync(outputFile, markdown);
+    console.log(JSON.stringify({ status: 'written', outputFile, services: rows.length, completionGate: preflight.completionGate?.status }, null, 2));
+  }
+} catch (error) {
+  console.error(JSON.stringify({ status: 'failed', error: error.message }, null, 2));
+  process.exit(1);
+}

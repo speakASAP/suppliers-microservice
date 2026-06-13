@@ -5,11 +5,12 @@ const args = new Set(process.argv.slice(2));
 const selfTest = args.has('--self-test');
 
 const REQUIRED_ASSERTIONS = [
+  'Read-only live fixture check passed before mutation.',
   'Warehouse, Catalog, and Suppliers health endpoints passed.',
   'Catalog product identity exists.',
   'Warehouse topology distinguishes own and supplier-managed warehouses.',
-  'Warehouse availability returns own plus supplier or dropship stock.',
-  'Warehouse logistics returns local and supplier route options.',
+  'Warehouse availability returns own plus supplier and dropship stock.',
+  'Warehouse logistics returns local, supplier replenishment, and dropship route options.',
   'Catalog availability forwards Warehouse origin rows and logistics.',
   'Catalog coverage and audit classify covered mixed stock.',
   'FlipFlop projection forwards Warehouse-sourced availability and logistics.',
@@ -42,6 +43,18 @@ Metadata:
 
 Owner-approved deployed Warehouse, Catalog, and Suppliers runtime traceability path for one synthetic Catalog good.
 
+## Fixture Check Command Evidence
+
+\`\`\`bash
+WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check
+\`\`\`
+
+## Smoke Command Evidence
+
+\`\`\`bash
+WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js
+\`\`\`
+
 ## Deployment Evidence
 
 | Service | Commit SHA | Deploy command | Health evidence | Protected endpoint evidence |
@@ -54,14 +67,15 @@ Owner-approved deployed Warehouse, Catalog, and Suppliers runtime traceability p
 
 | Assertion | Evidence summary | Status |
 | --- | --- | --- |
+| Read-only live fixture check passed before mutation. | status=fixture-ready, fixtureCheck=yes, mutationEnabled=no, importTriggered=no, own=warehouse-own, supplier=warehouse-supplier, dropship=warehouse-dropship, routes=local_fulfillment,supplier_replenishment,supplier_dropship | passed-runtime |
 | Warehouse, Catalog, and Suppliers health endpoints passed. | warehouse: ok; catalog: ok; suppliers: ok | passed-runtime |
 | Catalog product identity exists. | productId=product-synthetic, sku=CODEX-STOCK-TRACE-001, expectedSkuPrefix=CODEX-STOCK-TRACE- | passed-runtime |
 | Warehouse topology distinguishes own and supplier-managed warehouses. | own=1, supplierManaged=1 | passed-runtime |
-| Warehouse availability returns own plus supplier or dropship stock. | own and dropship rows | passed-runtime |
-| Warehouse logistics returns local and supplier route options. | routes=local_fulfillment,supplier_dropship | passed-runtime |
-| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=2, logisticsOptionCount=2, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_dropship | passed-runtime |
+| Warehouse availability returns own plus supplier and dropship stock. | own, supplier, and dropship rows | passed-runtime |
+| Warehouse logistics returns local, supplier replenishment, and dropship route options. | routes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:OWN>customer:warehouse],supplier_replenishment[1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:DROP>customer:supplier] | passed-runtime |
+| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:OWN>customer:warehouse],supplier_replenishment[1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:DROP>customer:supplier] | passed-runtime |
 | Catalog coverage and audit classify covered mixed stock. | covered/mixed_stock | passed-runtime |
-| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=product-synthetic, source=warehouse, routeCount=2, routeTypes=local_fulfillment,supplier_dropship | passed-runtime |
+| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=product-synthetic, source=warehouse, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:OWN>customer:warehouse],supplier_replenishment[1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:DROP>customer:supplier] | passed-runtime |
 | Suppliers import preserves Warehouse authority. | authority=warehouse-microservice | passed-runtime |
 | Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11 | passed-runtime |
 | Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:traceability-runbook | passed-runtime |
@@ -94,6 +108,16 @@ function assertionRows(report) {
     .filter((line) => line.startsWith('| ') && line.endsWith(' |') && line.includes('passed-runtime'));
 }
 
+function hasRouteLegEvidence(row) {
+  return row.includes('routeLegs=')
+    && row.includes('local_fulfillment')
+    && row.includes('customer:warehouse')
+    && row.includes('supplier_replenishment')
+    && row.includes('alfares')
+    && row.includes('supplier_dropship')
+    && row.includes('customer:supplier');
+}
+
 function verify(report) {
   assert(report.includes('- id: VAL-CROSS-STOCK-RUNTIME-LIVE'), 'runtime report id is missing');
   assert(report.includes('- status: passed-runtime'), 'runtime report status must be passed-runtime');
@@ -102,7 +126,29 @@ function verify(report) {
   assert(!report.includes('missing-runtime'), 'runtime report contains missing-runtime assertions');
   assert(!report.includes('pending-runtime'), 'runtime report contains pending-runtime assertions');
   assert(!report.includes('Runtime incomplete'), 'runtime report is marked incomplete');
-  assert(!report.includes('[REDACTED]') || report.includes('CATALOG_TOKEN=[REDACTED]'), 'redacted token marker must only appear in command evidence');
+  for (const token of ['CATALOG_TOKEN=[REDACTED]', 'WAREHOUSE_TOKEN=[REDACTED]', 'SUPPLIERS_TOKEN=[REDACTED]']) {
+    assert(report.includes(token), `redacted smoke command must include ${token}`);
+  }
+
+  for (const requiredFlag of [
+    'TRACE_RUN_SUPPLIERS_IMPORT=true',
+    'TRACE_EXPECT_SUPPLIERS_JOB=true',
+    'OWNER_APPROVAL=explicit',
+    'SMOKE_ALLOW_MUTATION=true',
+    'TRACE_CLEANUP_EVIDENCE=',
+    'TRACE_IMPORT_IDEMPOTENCY_KEY=',
+    'TRACE_DROPSHIP_WAREHOUSE_ID=',
+    'TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE-',
+  ]) {
+    assert(report.includes(requiredFlag), `redacted smoke command must include ${requiredFlag}`);
+  }
+
+  assert(report.includes('## Fixture Check Command Evidence'), 'fixture check command evidence section is missing');
+  assert(report.includes('--fixture-check'), 'fixture check command must include --fixture-check');
+  assert(report.includes('status=fixture-ready'), 'fixture check assertion must include fixture-ready status');
+  assert(report.includes('fixtureCheck=yes'), 'fixture check assertion must prove fixtureCheck mode');
+  assert(report.includes('mutationEnabled=no'), 'fixture check assertion must prove mutation was disabled');
+  assert(report.includes('importTriggered=no'), 'fixture check assertion must prove supplier import was not triggered');
 
   const passedAssertionCount = countAssertionRows(report);
   assert(passedAssertionCount >= REQUIRED_ASSERTIONS.length, 'runtime report must contain all required passed runtime assertion rows');
@@ -115,17 +161,24 @@ function verify(report) {
     assert(!row.includes('| - |'), `required runtime assertion has placeholder evidence: ${assertion}`);
   }
 
+  const warehouseLogisticsRow = rows.find((line) => line.startsWith('| Warehouse logistics returns local, supplier replenishment, and dropship route options. |'));
+  assert(hasRouteLegEvidence(warehouseLogisticsRow), 'Warehouse logistics assertion must prove local and supplier route legs');
+
   const catalogForwardingRow = rows.find((line) => line.startsWith('| Catalog availability forwards Warehouse origin rows and logistics. |'));
   assert(catalogForwardingRow.includes('source=warehouse'), 'Catalog availability assertion must prove Warehouse source');
   assert(catalogForwardingRow.includes('warehouseCount='), 'Catalog availability assertion must include origin row count');
   assert(catalogForwardingRow.includes('logisticsOptionCount='), 'Catalog availability assertion must include logistics option count');
   assert(catalogForwardingRow.includes('routeTypes=local_fulfillment'), 'Catalog availability assertion must include local route type');
-  assert(catalogForwardingRow.includes('supplier_replenishment') || catalogForwardingRow.includes('supplier_dropship'), 'Catalog availability assertion must include supplier route type');
+  assert(catalogForwardingRow.includes('supplier_replenishment'), 'Catalog availability assertion must include supplier replenishment route type');
+  assert(catalogForwardingRow.includes('supplier_dropship'), 'Catalog availability assertion must include supplier dropship route type');
+  assert(hasRouteLegEvidence(catalogForwardingRow), 'Catalog availability assertion must include forwarded local and supplier route legs');
 
   const projectionRow = rows.find((line) => line.startsWith('| FlipFlop projection forwards Warehouse-sourced availability and logistics. |'));
   assert(projectionRow.includes('source=warehouse'), 'FlipFlop projection assertion must prove Warehouse source');
   assert(projectionRow.includes('routeTypes=local_fulfillment'), 'FlipFlop projection assertion must include local route type');
-  assert(projectionRow.includes('supplier_replenishment') || projectionRow.includes('supplier_dropship'), 'FlipFlop projection assertion must include supplier route type');
+  assert(projectionRow.includes('supplier_replenishment'), 'FlipFlop projection assertion must include supplier replenishment route type');
+  assert(projectionRow.includes('supplier_dropship'), 'FlipFlop projection assertion must include supplier dropship route type');
+  assert(hasRouteLegEvidence(projectionRow), 'FlipFlop projection assertion must include forwarded local and supplier route legs');
 
   const productIdentityRow = rows.find((line) => line.startsWith('| Catalog product identity exists. |'));
   assert(productIdentityRow.includes('expectedSkuPrefix=CODEX-STOCK-TRACE-'), 'Catalog product identity assertion must prove synthetic SKU prefix');
@@ -147,6 +200,7 @@ function verify(report) {
     assert(!line.includes('| - |'), `${service} deployment evidence row contains missing values`);
     const cells = rowCells(line);
     assert(/^[0-9a-f]{7,40}$/i.test(cells[1] || ''), `${service} deployment evidence must include a commit SHA`);
+    assert(!/TODO/i.test(line), `${service} deployment evidence must not contain TODO placeholders`);
     assert(/401|403/.test(line), `${service} protected endpoint evidence must include 401 or 403`);
     assert(line.includes('./scripts/deploy.sh'), `${service} deployment evidence must include deploy command`);
   }

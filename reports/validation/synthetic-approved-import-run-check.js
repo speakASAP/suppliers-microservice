@@ -38,15 +38,26 @@ function createHarness() {
     fetchNormalizedItems: async () => ({
       adapterKey: 'synthetic-adapter',
       sourceFingerprint: 'source-fingerprint-synthetic',
-      items: [{
-        sourceRecordId: 'source-record-synthetic',
-        replayKey: 'replay-key-synthetic',
-        supplierSku: 'SUP-SKU-SYNTHETIC',
-        productId: 'product-synthetic',
-        warehouseId: 'warehouse-supplier',
-        stockQuantity: 7,
-        observedAt: '2026-06-13T10:00:00.000Z',
-      }],
+      items: [
+        {
+          sourceRecordId: 'source-record-synthetic-supplier',
+          replayKey: 'replay-key-synthetic-supplier',
+          supplierSku: 'SUP-SKU-SYNTHETIC',
+          productId: 'product-synthetic',
+          warehouseId: 'warehouse-supplier',
+          stockQuantity: 7,
+          observedAt: '2026-06-13T10:00:00.000Z',
+        },
+        {
+          sourceRecordId: 'source-record-synthetic-dropship',
+          replayKey: 'replay-key-synthetic-dropship',
+          supplierSku: 'SUP-SKU-SYNTHETIC',
+          productId: 'product-synthetic',
+          warehouseId: 'warehouse-dropship',
+          stockQuantity: 7,
+          observedAt: '2026-06-13T10:00:00.000Z',
+        },
+      ],
     }),
   };
   const adapterRegistry = {
@@ -70,13 +81,21 @@ async function assertSyntheticTraceAdapter() {
   const result = await adapter.fetchNormalizedItems({
     supplierId: 'supplier-synthetic',
     idempotencyKey: 'manual:traceability-synthetic',
-    sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:7:SUP-SKU-SYNTHETIC',
+    sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-SYNTHETIC',
   });
   assert(result.adapterKey === 'synthetic-trace', 'synthetic trace adapter key must be stable');
-  assert(result.items.length === 1, 'synthetic trace adapter must emit one item');
-  assert(result.items[0].productId === 'product-synthetic', 'synthetic trace adapter must preserve product ID');
-  assert(result.items[0].warehouseId === 'warehouse-supplier', 'synthetic trace adapter must preserve warehouse ID');
-  assert(result.items[0].stockQuantity === 7, 'synthetic trace adapter must preserve stock quantity');
+  assert(result.items.length === 2, 'synthetic trace adapter must emit supplier and dropship items');
+  assert(result.items.every((item) => item.productId === 'product-synthetic'), 'synthetic trace adapter must preserve product ID');
+  assert(result.items.some((item) => item.warehouseId === 'warehouse-supplier'), 'synthetic trace adapter must preserve supplier warehouse ID');
+  assert(result.items.some((item) => item.warehouseId === 'warehouse-dropship'), 'synthetic trace adapter must preserve dropship warehouse ID');
+  assert(result.items.every((item) => item.stockQuantity === 7), 'synthetic trace adapter must preserve stock quantity');
+
+  const legacy = await adapter.fetchNormalizedItems({
+    supplierId: 'supplier-synthetic',
+    idempotencyKey: 'manual:traceability-legacy',
+    sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:7:SUP-SKU-SYNTHETIC',
+  });
+  assert(legacy.items.length === 1, 'synthetic trace adapter must keep legacy one-warehouse fingerprints compatible');
 }
 
 (async () => {
@@ -97,13 +116,15 @@ async function assertSyntheticTraceAdapter() {
 
   const approved = await runScenario({ warehouseStockUpdateMode: 'apply_with_owner_approval', ownerApproval: 'explicit' });
   const approvedCompletion = approved.updates.at(-1);
-  assert(approved.posts.length === 1, 'approved mutation must call Warehouse once');
-  assert(approved.posts[0].url === 'http://warehouse.example.test/api/supplier-reconciliations', 'approved mutation must call Warehouse supplier reconciliation endpoint');
-  assert(approved.posts[0].body.externalReference.startsWith('supplier-import:'), 'approved mutation must use idempotency-derived externalReference');
+  assert(approved.posts.length === 2, 'approved mutation must call Warehouse once per supplier stock candidate');
+  assert(approved.posts.every((post) => post.url === 'http://warehouse.example.test/api/supplier-reconciliations'), 'approved mutation must call Warehouse supplier reconciliation endpoint');
+  assert(approved.posts.some((post) => post.body.warehouseId === 'warehouse-supplier'), 'approved mutation must include supplier replenishment warehouse');
+  assert(approved.posts.some((post) => post.body.warehouseId === 'warehouse-dropship'), 'approved mutation must include dropship warehouse');
+  assert(approved.posts.every((post) => post.body.externalReference.startsWith('supplier-import:')), 'approved mutation must use idempotency-derived externalReference');
   assert(approvedCompletion.status === 'completed', 'approved mutation must complete');
   assert(approvedCompletion.warehouseStockUpdateAttempted === true, 'approved mutation must record attempt');
   assert(approvedCompletion.warehouseStockUpdateApproved === true, 'approved mutation must record approval');
-  assert(approvedCompletion.updatedProducts === 1, 'approved mutation must report applied update');
+  assert(approvedCompletion.updatedProducts === 2, 'approved mutation must report both applied updates');
 
   console.log(JSON.stringify({
     status: 'passed',
