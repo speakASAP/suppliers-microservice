@@ -135,6 +135,8 @@ function runManifestSelfTest() {
 
 function validateDeploymentEvidenceFile(filePath) {
   const deployment = readJsonFile(filePath, 'DEPLOYMENT_EVIDENCE_FILE');
+  assert(deployment?.generatedFromCurrentHeads === true, 'DEPLOYMENT_EVIDENCE_FILE must be generated from current service heads');
+  assert(String(deployment?.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'DEPLOYMENT_EVIDENCE_FILE must include completion verifier reminder');
   const services = deployment?.services || {};
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
     const item = services[service];

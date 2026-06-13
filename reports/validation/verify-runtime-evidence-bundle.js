@@ -127,6 +127,8 @@ function verifyBundle({ manifestFile, reportFile }) {
 
   verifyTraceArtifactConsistency(manifest);
   const deployment = readJson(manifest.artifacts.deployment.file, 'deployment evidence artifact');
+  assert(deployment?.generatedFromCurrentHeads === true, 'deployment evidence artifact must be generated from current service heads');
+  assert(String(deployment?.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'deployment evidence artifact must include completion verifier reminder');
   const report = fs.readFileSync(reportPath, 'utf8');
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
     const deploymentSha = deployment.services?.[service]?.commitSha;
@@ -242,6 +244,8 @@ function sampleSmoke() {
 
 function sampleDeployment() {
   return {
+    generatedFromCurrentHeads: true,
+    completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: Object.fromEntries(['warehouse', 'catalog', 'suppliers'].map((service) => [service, {
       commitSha: currentHeadForService(service),
       deployCommand: './scripts/deploy.sh',
@@ -404,6 +408,20 @@ function runSelfTest() {
   }
   assert(missingProjectionOwnRouteRejected, 'bundle verifier must reject FlipFlop projection that omits the fixture own warehouse route');
 
+  const missingCurrentHeadMarkerFile = path.join(dir, 'deployment-missing-current-head-marker.json');
+  const missingCurrentHeadMarkerDeployment = sampleDeployment();
+  delete missingCurrentHeadMarkerDeployment.generatedFromCurrentHeads;
+  writeJson(missingCurrentHeadMarkerFile, missingCurrentHeadMarkerDeployment);
+  const missingCurrentHeadMarkerManifestFile = path.join(dir, 'manifest-missing-current-head-marker.json');
+  writeManifest(missingCurrentHeadMarkerManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: missingCurrentHeadMarkerFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let missingCurrentHeadDeploymentMarkerRejected = false;
+  try {
+    verifyBundle({ manifestFile: missingCurrentHeadMarkerManifestFile, reportFile });
+  } catch (error) {
+    missingCurrentHeadDeploymentMarkerRejected = /generated from current service heads/.test(error.message);
+  }
+  assert(missingCurrentHeadDeploymentMarkerRejected, 'bundle verifier must reject deployment evidence without current-head marker');
+
   const mismatchedDeploymentFile = path.join(dir, 'deployment-mismatched.json');
   const mismatchedDeployment = sampleDeployment();
   mismatchedDeployment.services.catalog.commitSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
@@ -417,7 +435,7 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
 }
 
 try {

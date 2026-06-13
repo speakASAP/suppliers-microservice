@@ -116,6 +116,8 @@ function baseFixtureCheck() {
 
 function deploymentEvidence() {
   return {
+    generatedFromCurrentHeads: true,
+    completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: {
       warehouse: {
         commitSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
@@ -289,6 +291,9 @@ const cases = [
   }),
   runDeploymentCase('deployment-health-evidence-placeholder', (deployment) => {
     deployment.services.suppliers.healthEvidence = 'TODO: record /api/health response after deployment';
+  }),
+  runDeploymentCase('missing-current-head-deployment-marker', (deployment) => {
+    delete deployment.generatedFromCurrentHeads;
   }),
   runCommandEvidenceCase('invalid-smoke-command-import-disabled', VALID_REDACTED_SMOKE_COMMAND.replace('TRACE_RUN_SUPPLIERS_IMPORT=true', 'TRACE_RUN_SUPPLIERS_IMPORT=false')),
 ];

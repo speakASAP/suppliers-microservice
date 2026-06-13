@@ -130,7 +130,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/generate-runtime-evidence-report.js',
-    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'summarizeFixtureCheck', 'fixtureCheckComplete', 'FIXTURE_CHECK_RESULT_FILE', 'hasAllRequiredRouteTypes', 'hasRequiredRouteLegs', 'summarizeRouteLegs', 'deploymentEvidenceComplete', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
+    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'summarizeFixtureCheck', 'fixtureCheckComplete', 'FIXTURE_CHECK_RESULT_FILE', 'hasAllRequiredRouteTypes', 'hasRequiredRouteLegs', 'summarizeRouteLegs', 'deploymentEvidenceComplete', 'generatedFromCurrentHeads', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
   },
   {
     service: 'suppliers',
@@ -140,7 +140,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/run-runtime-evidence-flow.js',
-    patterns: ['--fixture-check', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'fixture-ready', 'validateApprovedSmokeConfig', 'validateDeploymentEvidenceFile', 'currentHeadForService', 'commitSha must match current', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'TRACE_OWN_WAREHOUSE_ID', 'FIXTURE_CHECK_RESULT_FILE', 'generate-runtime-evidence-report.js', 'verify-runtime-evidence-report.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'RUNTIME_EVIDENCE_MANIFEST', 'stock-traceability-runtime-evidence-manifest.json', 'sha256', '--manifest-self-test'],
+    patterns: ['--fixture-check', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'fixture-ready', 'validateApprovedSmokeConfig', 'validateDeploymentEvidenceFile', 'generatedFromCurrentHeads', 'completion verifier reminder', 'currentHeadForService', 'commitSha must match current', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'TRACE_OWN_WAREHOUSE_ID', 'FIXTURE_CHECK_RESULT_FILE', 'generate-runtime-evidence-report.js', 'verify-runtime-evidence-report.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'RUNTIME_EVIDENCE_MANIFEST', 'stock-traceability-runtime-evidence-manifest.json', 'sha256', '--manifest-self-test'],
   },
   {
     service: 'suppliers',
@@ -155,7 +155,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-bundle.js',
-    patterns: ['verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-report.js', 'deployment evidence commit must match manifest service head', 'fixture and smoke artifacts must use the same TRACE_PRODUCT_ID', 'smoke artifact must include the fixture dropship warehouse origin for TRACE_SUPPLIER_ID', 'fixture supplier warehouse origin must belong to TRACE_SUPPLIER_ID', 'Runtime complete', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'missingCatalogOwnRouteRejected', 'missingProjectionOwnRouteRejected', 'deploymentManifestMismatchRejected'],
+    patterns: ['verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-report.js', 'deployment evidence commit must match manifest service head', 'fixture and smoke artifacts must use the same TRACE_PRODUCT_ID', 'smoke artifact must include the fixture dropship warehouse origin for TRACE_SUPPLIER_ID', 'fixture supplier warehouse origin must belong to TRACE_SUPPLIER_ID', 'Runtime complete', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'missingCatalogOwnRouteRejected', 'missingProjectionOwnRouteRejected', 'deploymentManifestMismatchRejected', 'missingCurrentHeadDeploymentMarkerRejected'],
   },
   {
     service: 'suppliers',
@@ -175,7 +175,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-evidence-negative-check.js',
-    patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'missing-logistics-leg-evidence', 'missing-origin-supplier-id-report-evidence', 'missing-fixture-check-evidence', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'deployment-health-evidence-placeholder', 'invalid-smoke-command-import-disabled', 'failed-runtime'],
+    patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'missing-logistics-leg-evidence', 'missing-origin-supplier-id-report-evidence', 'missing-fixture-check-evidence', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'deployment-health-evidence-placeholder', 'missing-current-head-deployment-marker', 'invalid-smoke-command-import-disabled', 'failed-runtime'],
   },
   {
     service: 'suppliers',

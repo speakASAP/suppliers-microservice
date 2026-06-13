@@ -101,6 +101,8 @@ function summarizeCatalogAvailability(availability) {
 }
 
 function deploymentEvidenceComplete(deployment) {
+  if (deployment?.generatedFromCurrentHeads !== true) return false;
+  if (!String(deployment?.completionReminder || '').includes('verify-stock-traceability-completion.js')) return false;
   const services = deployment?.services || {};
   return ['warehouse', 'catalog', 'suppliers'].every((service) => {
     const item = services[service];
@@ -416,6 +418,8 @@ function sampleSmoke() {
 
 function sampleDeployment() {
   return {
+    generatedFromCurrentHeads: true,
+    completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: {
       warehouse: {
         commitSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
