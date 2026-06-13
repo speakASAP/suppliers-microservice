@@ -7,6 +7,6 @@
 | Goal 3 - Import Validation And Idempotency | done | `GOAL-03-import-validation-and-idempotency.md` |
 | Goal 4 - Category Mapping Completeness And Catalog Boundary | done | `GOAL-04-category-mapping-completeness-and-catalog-boundary.md` |
 | Goal 5 - Warehouse Stock Update Boundary | done | `GOAL-05-warehouse-stock-update-boundary.md` |
-| Goal 6 - Operational Smoke And Documentation Ingestion | pending | use templates when selected |
+| Goal 6 - Operational Smoke And Documentation Ingestion | done | `GOAL-06-operational-smoke-docs-ingestion.md` |
 
 Before source edits, create/update a goal record, execution plan, context package, coding prompt, and validation report. Block on unresolved execution-critical missing/unknown markers.

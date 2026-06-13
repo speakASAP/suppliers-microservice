@@ -7,4 +7,4 @@
 | Idempotent imports | SUPPLIERS-INV-005 | Goal 3 | done |
 | Catalog category boundary | SUPPLIERS-INV-006 | Goal 4 | done |
 | Warehouse stock boundary | SUPPLIERS-INV-007 | Goal 5 | done |
-| Operational evidence | SUPPLIERS-INV-009, 010 | Goal 6 | pending |
+| Operational evidence | SUPPLIERS-INV-009, 010 | Goal 6 | done |

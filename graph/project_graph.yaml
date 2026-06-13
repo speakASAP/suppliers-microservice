@@ -82,6 +82,22 @@ nodes:
   - id: VAL-TASK-004-review-warehouse-stock-update-boundary
     path: 12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md
     type: ValidationReport
+
+  - id: TASK-005
+    path: 11_tasks/TASK-005-goal-6.md
+    type: Task
+  - id: EP-TASK-005
+    path: 21_execution_plans/EP-TASK-005-goal-6.md
+    type: ExecutionPlan
+  - id: PROMPT-TASK-005-goal-6
+    path: 14_prompts/PROMPT-TASK-005-goal-6.md
+    type: CodingPrompt
+  - id: CP-TASK-005-goal-6
+    path: 13_context_packages/CP-TASK-005-goal-6.md
+    type: ContextPackage
+  - id: VAL-TASK-005-goal-6
+    path: 12_validation/VAL-TASK-005-goal-6.md
+    type: ValidationReport
 edges:
   - from: BUSINESS-CASE
     type: derives_from
@@ -189,3 +205,31 @@ edges:
   - from: VAL-TASK-004-review-warehouse-stock-update-boundary
     type: validates
     to: TASK-004
+
+  - from: TASK-005
+    type: implements
+    to: FEAT-001
+  - from: TASK-005
+    type: impacts_goal
+    to: GOAL-AUTOMATED-SUPPLIER-IMPORTS
+  - from: TASK-005
+    type: decomposes_into
+    to: EP-TASK-005
+  - from: EP-TASK-005
+    type: derives_from
+    to: TASK-005
+  - from: EP-TASK-005
+    type: generates
+    to: PROMPT-TASK-005-goal-6
+  - from: EP-TASK-005
+    type: constrained_by
+    to: ADR-001
+  - from: PROMPT-TASK-005-goal-6
+    type: derives_from
+    to: EP-TASK-005
+  - from: PROMPT-TASK-005-goal-6
+    type: included_in_context
+    to: CP-TASK-005-goal-6
+  - from: VAL-TASK-005-goal-6
+    type: validates
+    to: TASK-005

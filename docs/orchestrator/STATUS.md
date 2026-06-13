@@ -89,3 +89,12 @@ Deployment: committed source as `5cb40f0` and ran `./scripts/deploy.sh`. The scr
 Verification: new pod `suppliers-microservice-cd77cfc9f-9lzw8` is ready on image digest `sha256:6042364ab7e965adb497add6e2a9eff712d316f90a246721fdc435511c3aa2a2`. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.
 
 Next unfinished chunk: Goal 6 - Operational Smoke And Documentation Ingestion.
+
+
+## 2026-06-13 - Goal 6 Operational Smoke And Documentation Ingestion
+
+Change: completed read-only operational smoke and DocsRAG ingestion validation. No runtime source edit, database migration, deployment, production import, Catalog write, Warehouse mutation, credential change, or raw production data inspection was performed.
+
+Validation evidence: python3 scripts/pre_coding_gate.py --root . passed. npm run build passed. package.json has no test script, so test execution was recorded as unavailable. Public Suppliers health returned healthy after local loopback was not bound from the remote host. Strict documentation audit passed with score 100/100. Deployment-readiness gate passed for TASK-005. DocsRAG ingestion completed for suppliers-microservice with 118/118 markdown files processed. DocsRAG retrieval returned current Goal 6 Suppliers IPS docs.
+
+Next unfinished chunk: none in the current goal backlog. Operational follow-ups remain: apply the Goal 5 migration and deploy only after owner approval; review existing npm audit findings; decide whether to push deployment commits to origin.

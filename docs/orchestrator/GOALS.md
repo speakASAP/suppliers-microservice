@@ -36,8 +36,8 @@ Status: done
 - [x] Split production stock verification into owner-approved chunks.
 
 ## Goal 6 - Operational Smoke And Documentation Ingestion
-Status: pending
-- [ ] Run `npm run build` and available tests.
-- [ ] Verify health endpoint after owner approval for external checks.
-- [ ] Trigger DocsRAG ingestion when credentials and tooling are available.
-- [ ] Verify retrieval returns current Suppliers IPS docs.
+Status: done
+- [x] Run `npm run build` and available tests.
+- [x] Verify health endpoint after owner approval for external checks.
+- [x] Trigger DocsRAG ingestion when credentials and tooling are available.
+- [x] Verify retrieval returns current Suppliers IPS docs.

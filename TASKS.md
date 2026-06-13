@@ -15,3 +15,4 @@
 - [x] 2026-06-13 Category mapping completeness and Catalog boundary
 
 - [x] 2026-06-13 Warehouse stock update boundary
+- [x] 2026-06-13 Operational smoke and documentation ingestion

@@ -7,14 +7,17 @@
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "warehouse-stock-update-boundary-deployed",
+  "last_milestone": "operational-smoke-documentation-ingestion",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
+      "docsrag_ingestion_suppliers_microservice": "done_118_markdown_files",
+      "docsrag_retrieval_goal_6": "verified",
       "import_job_migration_applied": "done",
       "import_validation_idempotency": "done",
       "intent_preservation_system": "applied",
       "live_container_curl": "available",
+      "operational_smoke_documentation_ingestion": "done",
       "production_deployment": "done",
       "runtime_changes": 0,
       "supplier_contract_credential_safety": "done",
@@ -24,7 +27,7 @@
       "warehouse_stock_update_boundary_deployed": "done"
     }
   },
-  "next_focus": "Goal 6 - Operational Smoke And Documentation Ingestion; operational follow-up: review npm audit findings and decide whether to push Goal 5 commits to origin",
+  "next_focus": "No pending goal remains; operational follow-ups require owner approval for Goal 5 migration/deployment and npm audit review",
   "open_task_ids": [],
   "project": "suppliers-microservice",
   "stage": "production",
