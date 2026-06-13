@@ -65,3 +65,14 @@ Deployment: committed source as `765e30e` and ran `./scripts/deploy.sh`. The scr
 Verification: new pod `suppliers-microservice-c88759bd5-rv2x8` is ready, in-pod `/usr/bin/curl` exists, in-pod `curl http://127.0.0.1:3202/api/health` returned healthy, and external `https://suppliers.alfares.cz/api/health` returned healthy.
 
 Known deviation: npm install during Docker build reported existing npm audit findings. They were not remediated in this goal.
+
+
+## 2026-06-13 - Goal 5 Warehouse Stock Update Boundary
+
+Change: added service-local Warehouse stock-boundary validation and import-job evidence fields for validation status, sanitized validation errors, actor, reason, idempotency key, approval state, and mutation-attempt marker. Added an unapplied migration artifact for the new import-job evidence columns.
+
+Boundary decision: current Suppliers import code has no Warehouse mutation client and this goal did not add one. Production stock mutation, production stock verification, migration execution, and deployment remain owner-approval gated.
+
+Validation evidence: python3 scripts/pre_coding_gate.py --root . passed before source edits. npm run build passed. Synthetic compiled-validator check passed for malformed stock candidates, unapproved mutation attempts, and a valid synthetic candidate. Strict documentation audit passed. Deployment-readiness gate passed.
+
+Next unfinished chunk: Goal 6 - Operational Smoke And Documentation Ingestion. Operational follow-up remains: apply the Goal 5 migration and deploy only after owner approval.

@@ -37,6 +37,9 @@ nodes:
   - id: TASK-003
     path: 11_tasks/TASK-003-review-category-mapping-completeness.md
     type: Task
+  - id: TASK-004
+    path: 11_tasks/TASK-004-review-warehouse-stock-update-boundary.md
+    type: Task
   - id: EP-TASK-001
     path: 21_execution_plans/EP-TASK-001-ips-documentation-bootstrap.md
     type: ExecutionPlan
@@ -46,17 +49,26 @@ nodes:
   - id: EP-TASK-003
     path: 21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md
     type: ExecutionPlan
+  - id: EP-TASK-004
+    path: 21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md
+    type: ExecutionPlan
   - id: PROMPT-TASK-001-ips-documentation-bootstrap
     path: 14_prompts/PROMPT-TASK-001-ips-documentation-bootstrap.md
     type: CodingPrompt
   - id: PROMPT-TASK-003-review-category-mapping-completeness
     path: 14_prompts/PROMPT-TASK-003-review-category-mapping-completeness.md
     type: CodingPrompt
+  - id: PROMPT-TASK-004-review-warehouse-stock-update-boundary
+    path: 14_prompts/PROMPT-TASK-004-review-warehouse-stock-update-boundary.md
+    type: CodingPrompt
   - id: CP-TASK-002
     path: 13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md
     type: ContextPackage
   - id: CP-TASK-003-review-category-mapping-completeness
     path: 13_context_packages/CP-TASK-003-review-category-mapping-completeness.md
+    type: ContextPackage
+  - id: CP-TASK-004-review-warehouse-stock-update-boundary
+    path: 13_context_packages/CP-TASK-004-review-warehouse-stock-update-boundary.md
     type: ContextPackage
   - id: VAL-TASK-001-ips-documentation-bootstrap
     path: 12_validation/VAL-TASK-001-ips-documentation-bootstrap.md
@@ -66,6 +78,9 @@ nodes:
     type: ValidationReport
   - id: VAL-TASK-003-review-category-mapping-completeness
     path: 12_validation/VAL-TASK-003-review-category-mapping-completeness.md
+    type: ValidationReport
+  - id: VAL-TASK-004-review-warehouse-stock-update-boundary
+    path: 12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md
     type: ValidationReport
 edges:
   - from: BUSINESS-CASE
@@ -146,3 +161,31 @@ edges:
   - from: VAL-TASK-003-review-category-mapping-completeness
     type: validates
     to: TASK-003
+
+  - from: TASK-004
+    type: implements
+    to: FEAT-001
+  - from: TASK-004
+    type: impacts_goal
+    to: GOAL-AUTOMATED-SUPPLIER-IMPORTS
+  - from: TASK-004
+    type: decomposes_into
+    to: EP-TASK-004
+  - from: EP-TASK-004
+    type: derives_from
+    to: TASK-004
+  - from: EP-TASK-004
+    type: generates
+    to: PROMPT-TASK-004-review-warehouse-stock-update-boundary
+  - from: EP-TASK-004
+    type: constrained_by
+    to: ADR-001
+  - from: PROMPT-TASK-004-review-warehouse-stock-update-boundary
+    type: derives_from
+    to: EP-TASK-004
+  - from: PROMPT-TASK-004-review-warehouse-stock-update-boundary
+    type: included_in_context
+    to: CP-TASK-004-review-warehouse-stock-update-boundary
+  - from: VAL-TASK-004-review-warehouse-stock-update-boundary
+    type: validates
+    to: TASK-004

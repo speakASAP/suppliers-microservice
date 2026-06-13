@@ -32,8 +32,11 @@ related_adrs: []
 - Missing supplier-category mappings block safe Catalog import for affected supplier category IDs.
 - Suppliers may reference Catalog category IDs but must not create, rename, or redefine Catalog taxonomy.
 - Import retries must preserve idempotency.
+- Warehouse stock candidates must carry actor, reason, idempotency key, validation status, and sanitized failure evidence before any future Warehouse handoff.
+- Production Warehouse stock mutation and stock verification require owner-approved chunks.
 
 ## Change Note
 
 - 2026-06-12: Initial integrations document created.
 - 2026-06-13: Added Goal 4 Catalog category ownership boundary and missing-mapping rule.
+- 2026-06-13: Added Goal 5 Warehouse stock-boundary validation and owner-approval rules.

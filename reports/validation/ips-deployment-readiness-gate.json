@@ -1,5 +1,5 @@
 {
-  "created_at": "2026-06-13T04:13:06Z",
+  "created_at": "2026-06-13T04:47:29Z",
   "gate": "deployment_readiness",
   "next_step": "ready_for_deployment_review",
   "pre_coding_gate": {
@@ -101,7 +101,8 @@
     "reports": [
       "12_validation/VAL-TASK-001-ips-documentation-bootstrap.md",
       "12_validation/VAL-TASK-002-add-new-supplier-api-integration.md",
-      "12_validation/VAL-TASK-003-review-category-mapping-completeness.md"
+      "12_validation/VAL-TASK-003-review-category-mapping-completeness.md",
+      "12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md"
     ],
     "status": "pass",
     "target": null

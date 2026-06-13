@@ -1,11 +1,11 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from 'typeorm';
-import { ImportTriggerType } from './dto/import-run.dto';
-import { ImportValidationError } from './import-validation';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, Index } from "typeorm";
+import { ImportTriggerType } from "./dto/import-run.dto";
+import { ImportValidationError, WarehouseStockBoundaryPolicy } from "./import-validation";
 
-@Entity('import_jobs')
-@Index(['supplierId', 'idempotencyKey'], { unique: true })
+@Entity("import_jobs")
+@Index(["supplierId", "idempotencyKey"], { unique: true })
 export class ImportJob {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn("uuid")
   id: string;
 
   @Column()
@@ -14,41 +14,55 @@ export class ImportJob {
   @Column({ length: 128 })
   idempotencyKey: string;
 
-  @Column({ length: 50, default: 'manual' })
+  @Column({ length: 50, default: "manual" })
   triggerType: ImportTriggerType;
 
   @Column({ length: 128, nullable: true })
   sourceFingerprint: string;
 
-  // Status: pending, running, completed, failed
-  @Column({ length: 50, default: 'pending' })
+  @Column({ length: 50, default: "pending" })
   status: string;
 
-  @Column({ length: 50, default: 'pending' })
+  @Column({ length: 50, default: "pending" })
   payloadValidationStatus: string;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: "jsonb", nullable: true })
   payloadValidationErrors: ImportValidationError[];
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ length: 50, default: "pending" })
+  warehouseStockValidationStatus: string;
+
+  @Column({ type: "jsonb", nullable: true })
+  warehouseStockValidationErrors: ImportValidationError[];
+
+  @Column({ type: "jsonb", nullable: true })
+  warehouseStockUpdatePolicy: WarehouseStockBoundaryPolicy;
+
+  @Column({ type: "boolean", default: false })
+  warehouseStockUpdateAttempted: boolean;
+
+  @Column({ type: "boolean", default: false })
+  warehouseStockUpdateApproved: boolean;
+
+  @Column({ type: "int", default: 0 })
   totalProducts: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: "int", default: 0 })
   importedProducts: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: "int", default: 0 })
   updatedProducts: number;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ type: "int", default: 0 })
   failedProducts: number;
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ type: "jsonb", nullable: true })
   errors: { sku: string; error: string }[];
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   startedAt: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: "timestamp", nullable: true })
   completedAt: Date;
 
   @CreateDateColumn()

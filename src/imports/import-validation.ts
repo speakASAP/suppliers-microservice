@@ -10,12 +10,40 @@ export interface ImportPayloadValidationResult {
   errors: ImportValidationError[];
 }
 
+export interface WarehouseStockBoundaryPolicy {
+  actor: string;
+  reason: string;
+  idempotencyKey: string;
+  warehouseAuthority: string;
+  approvedForMutation: boolean;
+  mutationAttempted: boolean;
+}
+
+export interface WarehouseStockBoundaryValidationResult {
+  valid: boolean;
+  totalStockUpdates: number;
+  errors: ImportValidationError[];
+  policy: WarehouseStockBoundaryPolicy;
+}
+
+export interface WarehouseStockBoundaryOptions {
+  actor: string;
+  reason: string;
+  idempotencyKey: string;
+  approvedForMutation?: boolean;
+  mutationAttempted?: boolean;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function hasNonEmptyString(value: unknown): boolean {
-  return typeof value === 'string' && value.trim().length > 0;
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isNonNegativeInteger(value: unknown): boolean {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0;
 }
 
 export function validateSupplierImportPayload(payload: unknown): ImportPayloadValidationResult {
@@ -23,7 +51,7 @@ export function validateSupplierImportPayload(payload: unknown): ImportPayloadVa
     return {
       valid: false,
       totalProducts: 0,
-      errors: [{ index: -1, field: 'payload', error: 'Supplier import payload must be an array of normalized items' }],
+      errors: [{ index: -1, field: "payload", error: "Supplier import payload must be an array of normalized items" }],
     };
   }
 
@@ -31,12 +59,12 @@ export function validateSupplierImportPayload(payload: unknown): ImportPayloadVa
 
   payload.forEach((item, index) => {
     if (!isRecord(item)) {
-      errors.push({ index, field: 'item', error: 'Supplier import item must be an object' });
+      errors.push({ index, field: "item", error: "Supplier import item must be an object" });
       return;
     }
 
     if (!hasNonEmptyString(item.supplierSku)) {
-      errors.push({ index, field: 'supplierSku', error: 'supplierSku is required before downstream writes' });
+      errors.push({ index, field: "supplierSku", error: "supplierSku is required before downstream writes" });
     }
   });
 
@@ -44,5 +72,60 @@ export function validateSupplierImportPayload(payload: unknown): ImportPayloadVa
     valid: errors.length === 0,
     totalProducts: payload.length,
     errors,
+  };
+}
+
+export function validateWarehouseStockUpdateBoundary(
+  payload: unknown,
+  options: WarehouseStockBoundaryOptions,
+): WarehouseStockBoundaryValidationResult {
+  const policy: WarehouseStockBoundaryPolicy = {
+    actor: options.actor,
+    reason: options.reason,
+    idempotencyKey: options.idempotencyKey,
+    warehouseAuthority: "warehouse-microservice",
+    approvedForMutation: options.approvedForMutation === true,
+    mutationAttempted: options.mutationAttempted === true,
+  };
+
+  if (!Array.isArray(payload)) {
+    return {
+      valid: false,
+      totalStockUpdates: 0,
+      errors: [{ index: -1, field: "payload", error: "Warehouse stock payload must be an array of normalized stock candidates" }],
+      policy,
+    };
+  }
+
+  const errors: ImportValidationError[] = [];
+
+  payload.forEach((item, index) => {
+    if (!isRecord(item)) {
+      errors.push({ index, field: "item", error: "Warehouse stock candidate must be an object" });
+      return;
+    }
+
+    if (!hasNonEmptyString(item.supplierSku)) {
+      errors.push({ index, field: "supplierSku", error: "supplierSku is required before Warehouse stock validation" });
+    }
+
+    if (!isNonNegativeInteger(item.stockQuantity)) {
+      errors.push({ index, field: "stockQuantity", error: "stockQuantity must be a non-negative integer" });
+    }
+
+    if (item.warehouseLocationId !== undefined && !hasNonEmptyString(item.warehouseLocationId)) {
+      errors.push({ index, field: "warehouseLocationId", error: "warehouseLocationId must be a non-empty string when provided" });
+    }
+  });
+
+  if (policy.mutationAttempted && !policy.approvedForMutation) {
+    errors.push({ index: -1, field: "approval", error: "Warehouse stock mutation requires owner-approved execution" });
+  }
+
+  return {
+    valid: errors.length === 0,
+    totalStockUpdates: payload.length,
+    errors,
+    policy,
   };
 }

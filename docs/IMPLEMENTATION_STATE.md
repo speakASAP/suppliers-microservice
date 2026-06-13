@@ -2,7 +2,7 @@
 
 Stage: production. Health: documented as ok in STATE.json.
 
-Current owner-selected task: none. Runtime source changes: Goal 4 category mapping completeness and Catalog boundary completed and deployed on 2026-06-13 after owner approval. The production database migration for Suppliers-owned tables and import job idempotency/validation columns was applied before rollout.
+Current owner-selected task: Goal 5 Warehouse Stock Update Boundary. Runtime source changes: Goal 5 service-local Warehouse stock-boundary validation and import-job evidence fields completed on 2026-06-13. No Warehouse client, production stock mutation, migration execution, deployment, or production stock verification was performed.
 
 Preserved intent: Suppliers is the validation-first supplier import service. It preserves supplier metadata, import jobs, supplier-to-Catalog category mappings, supplier payload validation, and idempotent import orchestration while avoiding credential leakage, unvalidated Catalog writes, unsafe Warehouse stock mutation, and ownership drift.
 
@@ -10,6 +10,6 @@ Completed goals: Goal 1 - Intent Preservation System, complete on 2026-06-12. Go
 
 Active goal: none.
 
-Next recommended goal: Goal 5 - Warehouse Stock Update Boundary. Operational follow-ups: review existing npm audit findings and decide whether to push commit `765e30e` to origin.
+Next recommended goal: Goal 6 - Operational Smoke And Documentation Ingestion. Operational follow-ups: apply the Goal 5 warehouse-boundary migration and deploy only after owner approval; review existing npm audit findings; decide whether to push deployment commits to origin.
 
 Known blockers: TASK-002 supplier-specific API integration remains draft and blocked pending owner-supplied supplier contract details. Production domain inconsistency remains in older docs, but `https://suppliers.alfares.cz/api/health` was verified healthy after deployment. Docker build reported existing npm audit findings.

@@ -29,11 +29,11 @@ Status: done
 - [x] Record Catalog ownership boundary and consumer compatibility risks.
 
 ## Goal 5 - Warehouse Stock Update Boundary
-Status: pending
-- [ ] Identify current and intended Warehouse update paths.
-- [ ] Define stock payload validation, actor, reason, and idempotency evidence.
-- [ ] Add focused tests or contract notes for stock update failure behavior.
-- [ ] Split production stock verification into owner-approved chunks.
+Status: done
+- [x] Identify current and intended Warehouse update paths.
+- [x] Define stock payload validation, actor, reason, and idempotency evidence.
+- [x] Add focused tests or contract notes for stock update failure behavior.
+- [x] Split production stock verification into owner-approved chunks.
 
 ## Goal 6 - Operational Smoke And Documentation Ingestion
 Status: pending
