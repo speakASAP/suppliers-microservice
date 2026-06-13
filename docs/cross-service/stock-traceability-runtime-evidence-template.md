@@ -41,11 +41,31 @@ If the live run fails, use `status: failed-runtime`, keep `completeness_level: p
 
 ## Deployment Evidence
 
-When using the generator, provide deployment evidence as JSON in this shape. Start from `node reports/validation/create-deployment-evidence-template.js` to capture clean current commit SHAs, the `generatedFromCurrentHeads` marker, and the completion-verifier reminder, then replace all TODO evidence fields after deployment. The generator refuses dirty service worktrees. The guarded runner rejects approved smoke when deployment evidence is missing that current-head marker/reminder, when any deployment commit SHA differs from the current remote repository HEAD for the matching service, or when Warehouse, Catalog, or Suppliers has uncommitted source beside the recorded deployment commit:
+When using the generator, provide deployment evidence as JSON in this shape. Start from `node reports/validation/create-deployment-evidence-template.js` to capture clean current commit SHAs, the `generatedFromCurrentHeads` marker, and the completion-verifier reminder, then use `RUNTIME_READINESS_MANIFEST_FILE=<readiness-manifest>` with `create-deployment-evidence.js` after deployment so completed evidence binds to the same readiness bundle as the approval artifact. The generator refuses dirty service worktrees. The guarded runner rejects approved smoke when deployment evidence is missing that current-head marker/reminder, when any deployment commit SHA differs from the current remote repository HEAD for the matching service, or when Warehouse, Catalog, or Suppliers has uncommitted source beside the recorded deployment commit:
 
 ```json
 {
   "generatedFromCurrentHeads": true,
+  "readinessManifest": {
+    "file": "/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json",
+    "sha256": "64-character-sha256",
+    "status": "verified",
+    "serviceHeads": {
+      "warehouse": "40-character-git-commit-sha",
+      "catalog": "40-character-git-commit-sha",
+      "suppliers": "40-character-git-commit-sha"
+    }
+  },
+  "readinessManifest": {
+    "file": "/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json",
+    "sha256": "64-character-sha256",
+    "status": "verified",
+    "serviceHeads": {
+      "warehouse": "40-character-git-commit-sha",
+      "catalog": "40-character-git-commit-sha",
+      "suppliers": "40-character-git-commit-sha"
+    }
+  },
   "completionReminder": "Deployment evidence is valid only when each commitSha still matches the current remote repo HEAD and verify-stock-traceability-completion.js passes against the generated runtime manifest.",
   "services": {
     "warehouse": {
@@ -69,7 +89,7 @@ When using the generator, provide deployment evidence as JSON in this shape. Sta
 
 Capture `node reports/validation/cross-service-preflight-check.js` output before deployment and preserve it with the final report artifacts. Prefer `node reports/validation/run-runtime-evidence-flow.js` for live evidence capture because it runs fixture check before approved smoke and wires fixture/smoke JSON into the report generator. It records branch/head and dirty-line counts for Warehouse, Catalog, and Suppliers plus required source-surface checks.
 
-The generator marks the final report `Runtime incomplete` unless deployment evidence has `generatedFromCurrentHeads: true`, includes the completion-verifier reminder, and all three services include a SHA-shaped commit ID, deploy command, health evidence, and anonymous protected-endpoint evidence containing `401` or `403`.
+The generator marks the final report `Runtime incomplete` unless deployment evidence has `generatedFromCurrentHeads: true`, includes a verified readiness manifest binding shared with the approval artifact, includes the completion-verifier reminder, and all three services include a SHA-shaped commit ID, deploy command, health evidence, and anonymous protected-endpoint evidence containing `401` or `403`.
 
 | Service | Commit SHA | Deploy command | Health evidence | Protected endpoint evidence |
 | --- | --- | --- | --- | --- |
@@ -160,7 +180,7 @@ Run this command after generating the final report:
 node reports/validation/verify-runtime-evidence-report.js
 ```
 
-The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any named runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values or `TODO` placeholders, if protected endpoint evidence does not include `401` or `403`, if route evidence omits warehouse or supplier identifiers, if route evidence does not match the trace IDs from the redacted smoke command, if supplier replenishment and dropship route evidence are not owned by the same supplier ID, if the Suppliers source fingerprint does not match the redacted command product, supplier warehouse IDs, supplier stock quantity, and supplier SKU, if the redacted fixture command does not include `--fixture-check`, if the redacted fixture command does not match the smoke command trace IDs, if the redacted fixture command enables supplier import or mutation, if fixture evidence does not prove `fixture-ready`, mutation disabled, and supplier import not triggered, if the redacted smoke command does not include the approved import, expected job, own warehouse ID, owner approval, mutation allowance, cleanup, and token-redaction fields, or if the completion decision is not `Runtime complete`. The bundle verifier then cross-checks those deployment rows against the manifest-hashed deployment evidence artifact, so report text generated from different deployment evidence cannot prove completion. The guarded runner must also have accepted clean Warehouse, Catalog, and Suppliers worktrees before generating the final bundle.
+The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any named runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values or `TODO` placeholders, if deployment evidence is not bound to the same readiness manifest as the approval artifact, if deployment evidence is not bound to the same readiness manifest as the approval artifact, if protected endpoint evidence does not include `401` or `403`, if route evidence omits warehouse or supplier identifiers, if route evidence does not match the trace IDs from the redacted smoke command, if supplier replenishment and dropship route evidence are not owned by the same supplier ID, if the Suppliers source fingerprint does not match the redacted command product, supplier warehouse IDs, supplier stock quantity, and supplier SKU, if the redacted fixture command does not include `--fixture-check`, if the redacted fixture command does not match the smoke command trace IDs, if the redacted fixture command enables supplier import or mutation, if fixture evidence does not prove `fixture-ready`, mutation disabled, and supplier import not triggered, if the redacted smoke command does not include the approved import, expected job, own warehouse ID, owner approval, mutation allowance, cleanup, and token-redaction fields, or if the completion decision is not `Runtime complete`. The bundle verifier then cross-checks those deployment rows against the manifest-hashed deployment evidence artifact, so report text generated from different deployment evidence cannot prove completion. The guarded runner must also have accepted clean Warehouse, Catalog, and Suppliers worktrees before generating the final bundle.
 
 The negative validation command proves unsafe evidence cannot pass:
 
