@@ -4,6 +4,7 @@
 
 - [ ] Add new supplier API integration (priority: 2)
 - [ ] Review category mapping completeness (priority: 3)
+- [ ] Plan owner-approved Nest major dependency upgrade for remaining audit findings (priority: 2)
 
 ## Completed
 <!-- AI appends here. Never modifies previous entries. -->
@@ -16,3 +17,4 @@
 
 - [x] 2026-06-13 Warehouse stock update boundary
 - [x] 2026-06-13 Operational smoke and documentation ingestion
+- [x] 2026-06-13 Compatible dependency audit remediation

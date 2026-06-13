@@ -2,7 +2,7 @@
 
 Stage: production. Health: verified healthy during Goal 6 read-only smoke on 2026-06-13.
 
-Current owner-selected task: none. Runtime source changes: none for Goal 6. Goal 5 service-local Warehouse stock-boundary validation and import-job evidence fields remain completed on 2026-06-13, with migration/deployment pending owner approval.
+Current owner-selected task: none. Latest follow-up: compatible dependency audit remediation on 2026-06-13. Runtime source changes: none for the dependency remediation; only `package-lock.json` changed. Goal 5 service-local Warehouse stock-boundary validation and import-job evidence fields were deployed on 2026-06-13.
 
 Preserved intent: Suppliers is the validation-first supplier import service. It preserves supplier metadata, import jobs, supplier-to-Catalog category mappings, supplier payload validation, and idempotent import orchestration while avoiding credential leakage, unvalidated Catalog writes, unsafe Warehouse stock mutation, and ownership drift.
 
@@ -10,6 +10,6 @@ Completed goals: Goal 1 - Intent Preservation System, complete on 2026-06-12. Go
 
 Active goal: none.
 
-Next recommended goal: no pending goal remains in `docs/orchestrator/GOALS.md`. Operational follow-ups: apply the Goal 5 warehouse-boundary migration and deploy only after owner approval; review existing npm audit findings; decide whether to push deployment commits to origin.
+Next recommended goal: no pending goal remains in `docs/orchestrator/GOALS.md`. Operational follow-ups: plan an owner-approved Nest major dependency upgrade for remaining audit findings; decide whether to push deployment and dependency-remediation commits to origin.
 
-Known blockers: TASK-002 supplier-specific API integration remains draft and blocked pending owner-supplied supplier contract details. Goal 5 migration/deployment remains owner-approval gated. Docker build reported existing npm audit findings.
+Known blockers: TASK-002 supplier-specific API integration remains draft and blocked pending owner-supplied supplier contract details. Remaining npm audit findings require breaking Nest major upgrades and should be handled under an owner-approved upgrade plan.

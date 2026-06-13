@@ -98,3 +98,13 @@ Change: completed read-only operational smoke and DocsRAG ingestion validation. 
 Validation evidence: python3 scripts/pre_coding_gate.py --root . passed. npm run build passed. package.json has no test script, so test execution was recorded as unavailable. Public Suppliers health returned healthy after local loopback was not bound from the remote host. Strict documentation audit passed with score 100/100. Deployment-readiness gate passed for TASK-005. DocsRAG ingestion completed for suppliers-microservice with 118/118 markdown files processed. DocsRAG retrieval returned current Goal 6 Suppliers IPS docs.
 
 Next unfinished chunk: none in the current goal backlog. Operational follow-ups remain: apply the Goal 5 migration and deploy only after owner approval; review existing npm audit findings; decide whether to push deployment commits to origin.
+
+## 2026-06-13 - Compatible Dependency Audit Remediation
+
+Selection: no pending IPS goal remained after Goal 6. `TASK-002` supplier-specific API integration is still blocked pending owner-supplied supplier contract details, and category mapping completeness was already completed in Goal 4, so the actionable roadmap follow-up was the recorded npm audit review.
+
+Change: ran npm audit remediation without `--force`, installed the resolved dependency tree, and updated `package-lock.json` only. Compatible updates included `axios` 1.17.0, Nest 10.4.22 lockfile resolutions, Express/body-parser/path-to-regexp/cookie transitive updates, and related safe transitive package refreshes. No runtime source code, schema, Kubernetes manifest, secret, supplier integration, Catalog write, Warehouse mutation, migration, or deployment was changed.
+
+Validation evidence: `python3 scripts/pre_coding_gate.py --root .` passed. `npm run build` passed. `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues` passed. `python3 scripts/deployment_readiness_gate.py --root .` passed. `npm audit fix` now reports 25 remaining findings, with production-impacting fixes requiring breaking Nest major upgrades such as `@nestjs/core`/`@nestjs/platform-express` 11.x, `@nestjs/config` 4.x, `@nestjs/typeorm` 11.x, and `@nestjs/schedule` 6.x.
+
+Next unfinished chunk: owner-approved Nest major dependency upgrade plan, or owner-supplied supplier contract details for `TASK-002` supplier-specific API integration.

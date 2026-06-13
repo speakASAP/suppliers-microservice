@@ -1,13 +1,13 @@
 {
   "blockers": [
     "TASK-002 supplier-specific API integration remains draft pending owner-supplied supplier contract details",
-    "Docker build reported existing npm audit findings"
+    "Remaining npm audit findings require breaking Nest major dependency upgrades"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "operational-smoke-documentation-ingestion",
+  "last_milestone": "compatible-dependency-audit-remediation",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -24,11 +24,16 @@
       "warehouse_stock_boundary_migration_applied": "done",
       "warehouse_stock_mutation": "not_implemented_owner_approval_required",
       "warehouse_stock_update_boundary": "done",
-      "warehouse_stock_update_boundary_deployed": "done"
+      "warehouse_stock_update_boundary_deployed": "done",
+      "compatible_dependency_audit_remediation": "done_package_lock_only",
+      "npm_audit_remaining_findings": "25_total_7_high_15_moderate_3_low_breaking_nest_upgrade_required"
     }
   },
-  "next_focus": "No pending goal remains; operational follow-ups require owner approval for Goal 5 migration/deployment and npm audit review",
-  "open_task_ids": [],
+  "next_focus": "Owner-approved Nest major dependency upgrade plan, or owner-supplied supplier contract details for TASK-002",
+  "open_task_ids": [
+    "TASK-002",
+    "NEST-MAJOR-UPGRADE"
+  ],
   "project": "suppliers-microservice",
   "stage": "production",
   "tasks_active": 0,
