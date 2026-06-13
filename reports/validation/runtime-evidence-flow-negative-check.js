@@ -329,7 +329,7 @@ const cases = [
       RUNTIME_APPROVAL_ARTIFACT_FILE: approvalArtifactFile,
       OWNER_APPROVAL: 'explicit',
       SMOKE_ALLOW_MUTATION: 'true',
-    }, 'catalog-microservice worktree must be clean');
+    }, 'dirty services: catalog-microservice');
   })(),
   runCase('approved-smoke-missing-protected-endpoint-evidence', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
