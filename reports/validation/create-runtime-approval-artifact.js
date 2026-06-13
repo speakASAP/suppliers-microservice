@@ -22,6 +22,7 @@ const requiredTraceInputEnv = [
   'TRACE_IMPORT_IDEMPOTENCY_KEY',
   'TRACE_SUPPLIER_STOCK_QTY',
   'TRACE_SUPPLIER_SKU',
+  'TRACE_CLEANUP_EVIDENCE',
 ];
 
 const services = {
@@ -104,6 +105,7 @@ function traceInputsFromEnv() {
   assert(missing.length === 0, 'runtime approval artifact requires approved trace inputs: ' + missing.join(', '));
   assert(envValue('TRACE_PRODUCT_SKU_PREFIX') === 'CODEX-STOCK-TRACE-', 'TRACE_PRODUCT_SKU_PREFIX must be CODEX-STOCK-TRACE- for runtime approval');
   assert(/^\d+$/.test(envValue('TRACE_SUPPLIER_STOCK_QTY')) && Number(envValue('TRACE_SUPPLIER_STOCK_QTY')) > 0, 'TRACE_SUPPLIER_STOCK_QTY must be a positive integer string');
+  assert(!/TODO/i.test(envValue('TRACE_CLEANUP_EVIDENCE')), 'TRACE_CLEANUP_EVIDENCE must be completed or explicitly deferred and must not contain TODO');
   return Object.fromEntries(requiredTraceInputEnv.map((name) => [name, envValue(name)]));
 }
 
@@ -211,6 +213,7 @@ try {
     process.env.TRACE_IMPORT_IDEMPOTENCY_KEY = 'manual:traceability-synthetic';
     process.env.TRACE_SUPPLIER_STOCK_QTY = '7';
     process.env.TRACE_SUPPLIER_SKU = 'SUP-SKU-TRACE';
+    process.env.TRACE_CLEANUP_EVIDENCE = 'deferred:traceability-runbook';
   }
 
   assertApprovalEnv();

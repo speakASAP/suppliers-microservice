@@ -301,6 +301,7 @@ function assertApprovedTraceInputsMatchEnv(approval) {
     'TRACE_IMPORT_IDEMPOTENCY_KEY',
     'TRACE_SUPPLIER_STOCK_QTY',
     'TRACE_SUPPLIER_SKU',
+    'TRACE_CLEANUP_EVIDENCE',
   ];
   const mismatches = keys.filter((key) => String(inputs[key] || '') !== envValue(key, key === 'TRACE_PRODUCT_SKU_PREFIX' ? 'CODEX-STOCK-TRACE-' : ''));
   assert(mismatches.length === 0, 'approved runtime smoke trace inputs must match RUNTIME_APPROVAL_ARTIFACT_FILE approvedTraceInputs: ' + mismatches.join(', '));

@@ -26,6 +26,7 @@ const requiredTraceInputKeys = [
   'TRACE_IMPORT_IDEMPOTENCY_KEY',
   'TRACE_SUPPLIER_STOCK_QTY',
   'TRACE_SUPPLIER_SKU',
+  'TRACE_CLEANUP_EVIDENCE',
 ];
 
 const requiredForbiddenActions = [
@@ -84,6 +85,7 @@ function assertTraceInputs(artifact) {
   assert(missing.length === 0, 'approval artifact approvedTraceInputs missing: ' + missing.join(', '));
   assert(inputs.TRACE_PRODUCT_SKU_PREFIX === 'CODEX-STOCK-TRACE-', 'approval artifact approvedTraceInputs.TRACE_PRODUCT_SKU_PREFIX must be CODEX-STOCK-TRACE-');
   assert(/^\d+$/.test(inputs.TRACE_SUPPLIER_STOCK_QTY) && Number(inputs.TRACE_SUPPLIER_STOCK_QTY) > 0, 'approval artifact approvedTraceInputs.TRACE_SUPPLIER_STOCK_QTY must be a positive integer string');
+  assert(!/TODO/i.test(inputs.TRACE_CLEANUP_EVIDENCE), 'approval artifact approvedTraceInputs.TRACE_CLEANUP_EVIDENCE must be completed or explicitly deferred and must not contain TODO');
   assert(!Object.values(inputs).some((value) => /Bearer\s+|TOKEN=|api[_-]?key|secret|password/i.test(String(value))), 'approval artifact approvedTraceInputs must not contain secrets');
 }
 
@@ -205,6 +207,7 @@ function validArtifactForRoot(root, dir = fs.mkdtempSync(path.join(os.tmpdir(), 
       TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
       TRACE_SUPPLIER_STOCK_QTY: '7',
       TRACE_SUPPLIER_SKU: 'SUP-SKU-TRACE',
+      TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
     },
     scope: {
       syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',

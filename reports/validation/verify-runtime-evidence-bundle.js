@@ -185,7 +185,7 @@ function assertReportCommandEvidenceMatchesArtifacts(report, fixture, smoke, app
   assertCommandEnv(smokeCommand, 'TRACE_IMPORT_IDEMPOTENCY_KEY', smoke.supplierJob?.idempotencyKey, 'smoke');
   assertCommandEnv(smokeCommand, 'TRACE_CLEANUP_EVIDENCE', smoke.cleanupEvidence, 'smoke');
   const approved = approval.approvedTraceInputs || {};
-  for (const key of ['TRACE_PRODUCT_ID', 'TRACE_PRODUCT_SKU_PREFIX', 'TRACE_SUPPLIER_ID', 'TRACE_OWN_WAREHOUSE_ID', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'TRACE_IMPORT_IDEMPOTENCY_KEY', 'TRACE_SUPPLIER_STOCK_QTY', 'TRACE_SUPPLIER_SKU']) {
+  for (const key of ['TRACE_PRODUCT_ID', 'TRACE_PRODUCT_SKU_PREFIX', 'TRACE_SUPPLIER_ID', 'TRACE_OWN_WAREHOUSE_ID', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'TRACE_IMPORT_IDEMPOTENCY_KEY', 'TRACE_SUPPLIER_STOCK_QTY', 'TRACE_SUPPLIER_SKU', 'TRACE_CLEANUP_EVIDENCE']) {
     assertCommandEnv(smokeCommand, key, approved[key], 'approved smoke');
   }
 }
@@ -444,6 +444,7 @@ function writeApprovalArtifact(filePath, readinessManifest, serviceHeads) {
       TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
       TRACE_SUPPLIER_STOCK_QTY: '7',
       TRACE_SUPPLIER_SKU: 'SUP-SKU-TRACE',
+      TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
     },
     scope: {
       syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',

@@ -144,6 +144,7 @@ function writeRuntimeApprovalArtifact(root = crossServiceRoot, mutateApproval = 
       TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
       TRACE_SUPPLIER_STOCK_QTY: baseEnv.TRACE_SUPPLIER_STOCK_QTY,
       TRACE_SUPPLIER_SKU: baseEnv.TRACE_SUPPLIER_SKU,
+      TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
     },
     scope: {
       syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
@@ -277,6 +278,15 @@ const cases = [
     TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
     TRACE_SUPPLIER_STOCK_QTY: '8',
     TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence(),
+    OWNER_APPROVAL: 'explicit',
+    SMOKE_ALLOW_MUTATION: 'true',
+  }, 'approved runtime smoke trace inputs must match'),
+  runCase('approved-smoke-cleanup-evidence-differs-from-approval', {
+    RUN_APPROVED_RUNTIME_SMOKE: 'true',
+    TRACE_SUPPLIER_ID: 'supplier-synthetic',
+    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+    TRACE_CLEANUP_EVIDENCE: 'deferred:other-cleanup-reference',
     DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence(),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
