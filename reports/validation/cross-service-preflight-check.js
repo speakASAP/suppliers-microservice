@@ -40,7 +40,7 @@ const checks = [
   {
     service: 'warehouse',
     file: 'src/suppliers/supplier-reconciliation.service.ts',
-    patterns: ['is supplier-managed but is not linked to a supplier', 'belongs to supplier', 'supplier-reconciliation'],
+    patterns: ['is supplier-managed but is not linked to a supplier', 'belongs to supplier', 'supplier_reconciliation'],
   },
   {
     service: 'warehouse',
