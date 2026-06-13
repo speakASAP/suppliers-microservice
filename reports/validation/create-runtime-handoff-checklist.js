@@ -97,7 +97,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 - TRACE_SUPPLIER_STOCK_QTY
 - TRACE_SUPPLIER_SKU
 - TRACE_CLEANUP_EVIDENCE
-- DEPLOYMENT_EVIDENCE_FILE pointing to completed deployment evidence JSON bound to RUNTIME_READINESS_MANIFEST_FILE bound to RUNTIME_READINESS_MANIFEST_FILE
+- DEPLOYMENT_EVIDENCE_FILE pointing to completed deployment evidence JSON bound to RUNTIME_READINESS_MANIFEST_FILE
 - RUNTIME_APPROVAL_ARTIFACT_FILE pointing to owner-approved JSON for current clean service heads, the readiness-bundle approval request, and exact approvedTraceInputs
 - CATALOG_TOKEN, WAREHOUSE_TOKEN, SUPPLIERS_TOKEN kept only in shell environment
 
