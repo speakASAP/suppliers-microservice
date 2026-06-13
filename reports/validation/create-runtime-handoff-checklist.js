@@ -105,7 +105,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 3. Deploy Warehouse first: \`ssh alfares 'cd /home/ssf/Documents/Github/warehouse-microservice && ./scripts/deploy.sh'\`.
 4. Deploy Catalog second: \`ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/deploy.sh'\`.
 5. Deploy Suppliers third: \`ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && ./scripts/deploy.sh'\`.
-6. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence for Warehouse, Catalog, and Suppliers.
+6. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence for Warehouse topology/logistics, Catalog availability/coverage, and Suppliers imports.
 7. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, and the completed deployment evidence file.
 8. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
 9. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.

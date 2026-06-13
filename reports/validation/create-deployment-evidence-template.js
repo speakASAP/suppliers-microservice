@@ -13,20 +13,20 @@ const serviceConfig = {
   warehouse: {
     repo: 'warehouse-microservice',
     deployCommand: './scripts/deploy.sh',
-    healthEvidencePlaceholder: 'TODO: record /api/health response after deployment',
-    protectedEndpointEvidencePlaceholder: 'TODO: record anonymous protected endpoint rejection after deployment',
+    healthEvidencePlaceholder: 'TODO: record Warehouse /api/health passed after deployment',
+    protectedEndpointEvidencePlaceholder: 'TODO: record anonymous Warehouse topology or logistics endpoint returned 401 or 403 after deployment',
   },
   catalog: {
     repo: 'catalog-microservice',
     deployCommand: './scripts/deploy.sh',
-    healthEvidencePlaceholder: 'TODO: record /health response after deployment',
-    protectedEndpointEvidencePlaceholder: 'TODO: record anonymous protected endpoint rejection after deployment',
+    healthEvidencePlaceholder: 'TODO: record Catalog /health passed after deployment',
+    protectedEndpointEvidencePlaceholder: 'TODO: record anonymous Catalog availability or coverage endpoint returned 401 or 403 after deployment',
   },
   suppliers: {
     repo: 'suppliers-microservice',
     deployCommand: './scripts/deploy.sh',
-    healthEvidencePlaceholder: 'TODO: record /api/health response after deployment',
-    protectedEndpointEvidencePlaceholder: 'TODO: record anonymous protected endpoint rejection after deployment',
+    healthEvidencePlaceholder: 'TODO: record Suppliers /api/health passed after deployment',
+    protectedEndpointEvidencePlaceholder: 'TODO: record anonymous Suppliers imports endpoint returned 401 or 403 after deployment',
   },
 };
 
@@ -94,7 +94,9 @@ try {
     assert(template.completionReminder.includes("verify-stock-traceability-completion.js"), "self-test completion reminder missing");
     assert(/^[0-9a-f]{40}$/.test(template.services.warehouse.commitSha), 'self-test warehouse SHA missing');
     assert(template.services.catalog.deployCommand === './scripts/deploy.sh', 'self-test deploy command missing');
-    assert(template.services.suppliers.protectedEndpointEvidence.includes('TODO'), 'self-test should keep protected endpoint TODO');
+    assert(template.services.warehouse.protectedEndpointEvidence.includes('401 or 403'), 'self-test warehouse protected endpoint guidance missing');
+    assert(template.services.catalog.protectedEndpointEvidence.includes('401 or 403'), 'self-test catalog protected endpoint guidance missing');
+    assert(template.services.suppliers.protectedEndpointEvidence.includes('401 or 403'), 'self-test suppliers protected endpoint guidance missing');
     fs.writeFileSync(path.join(repoPathFor(serviceConfig.suppliers.repo), 'dirty.txt'), 'dirty\n');
     let dirtyWorktreeRejected = false;
     try {

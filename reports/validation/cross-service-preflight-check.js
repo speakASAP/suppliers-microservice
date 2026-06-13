@@ -145,7 +145,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-deployment-evidence-template.js',
-    patterns: ['DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT', 'warehouse-microservice', 'catalog-microservice', 'suppliers-microservice', 'protectedEndpointEvidencePlaceholder', 'assertCleanWorktree', 'worktree must be clean before generating deployment evidence', 'dirtyWorktreeRejected', 'deployment evidence template self-test must reject dirty service worktrees', 'generatedFromCurrentHeads', 'Regenerate this template after any Warehouse, Catalog, or Suppliers commit', 'verify-stock-traceability-completion.js', 'TODO'],
+    patterns: ['DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT', 'warehouse-microservice', 'catalog-microservice', 'suppliers-microservice', 'protectedEndpointEvidencePlaceholder', 'assertCleanWorktree', 'worktree must be clean before generating deployment evidence', 'dirtyWorktreeRejected', 'deployment evidence template self-test must reject dirty service worktrees', 'generatedFromCurrentHeads', 'Regenerate this template after any Warehouse, Catalog, or Suppliers commit', 'verify-stock-traceability-completion.js', 'Warehouse topology or logistics endpoint returned 401 or 403', 'Catalog availability or coverage endpoint returned 401 or 403', 'Suppliers imports endpoint returned 401 or 403', 'TODO'],
   },
   {
     service: 'suppliers',

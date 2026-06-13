@@ -383,3 +383,5 @@ Next unfinished chunk: regenerate handoff and deployment evidence for latest cle
 - 2026-06-13: Updated the guarded runtime evidence runner so it must execute `verify-stock-traceability-completion.js <report> <manifest>` before printing `runtime-complete`.
 
 - 2026-06-13: Updated runtime handoff and evidence template text so operator artifacts explicitly require positive reservable routes and Suppliers import Catalog/Warehouse authority evidence.
+
+- 2026-06-13: Updated deployment evidence template and handoff wording with service-specific health and protected endpoint 401/403 guidance for Warehouse, Catalog, and Suppliers.

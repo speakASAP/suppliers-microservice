@@ -203,7 +203,7 @@ The guarded runner can generate and verify the final runtime report. If running 
 - cleanup result or deferral reference;
 - final completion audit status.
 
-Create the deployment evidence skeleton from clean current service commit SHAs, then replace the TODO health/protected-endpoint fields after deployment. The generator refuses dirty Warehouse, Catalog, or Suppliers worktrees. Regenerate this file after any Warehouse, Catalog, or Suppliers commit; stale or dirty-source deployment evidence is rejected by the guarded runner and bundle verifier:
+Create the deployment evidence skeleton from clean current service commit SHAs, then replace the TODO health/protected-endpoint fields after deployment. Record service-specific anonymous 401/403 evidence for Warehouse topology/logistics, Catalog availability/coverage, and Suppliers imports. The generator refuses dirty Warehouse, Catalog, or Suppliers worktrees. Regenerate this file after any Warehouse, Catalog, or Suppliers commit; stale or dirty-source deployment evidence is rejected by the guarded runner and bundle verifier:
 
 ```bash
 ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js'
