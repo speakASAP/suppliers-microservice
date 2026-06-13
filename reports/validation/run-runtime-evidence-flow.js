@@ -308,6 +308,7 @@ function printPlan() {
       'Run approved mutation smoke and save smoke JSON.',
       'Generate final runtime report with redacted fixture and smoke commands.',
       'Verify final runtime report.',
+      'Verify the complete runtime report and manifest with verify-stock-traceability-completion.js before printing runtime-complete.',
     ],
   }, null, 2));
 }
@@ -410,6 +411,7 @@ try {
   });
   runNode(['reports/validation/verify-runtime-evidence-manifest.js', manifestFile], process.env);
   runNode(['reports/validation/verify-runtime-evidence-bundle.js', manifestFile, reportEnv.RUNTIME_EVIDENCE_OUTPUT], process.env);
+  runNode(['reports/validation/verify-stock-traceability-completion.js', reportEnv.RUNTIME_EVIDENCE_OUTPUT, manifestFile], process.env);
 
   console.log(JSON.stringify({
     status: 'runtime-complete',

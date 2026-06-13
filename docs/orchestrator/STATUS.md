@@ -379,3 +379,5 @@ Next unfinished chunk: regenerate handoff and deployment evidence for latest cle
 - 2026-06-13: Extended runtime bundle verification so raw smoke artifacts must carry positive `available` and `canReserveFromWarehouse=true` route evidence for configured own, supplier replenishment, and dropship paths.
 
 - 2026-06-13: Extended runtime bundle verification so raw smoke artifacts must prove Suppliers import jobs preserved Catalog product validation and Warehouse stock authority before completion can pass.
+
+- 2026-06-13: Updated the guarded runtime evidence runner so it must execute `verify-stock-traceability-completion.js <report> <manifest>` before printing `runtime-complete`.
