@@ -56,6 +56,11 @@ function serviceRows() {
   });
 }
 
+function assertCleanRows(rows) {
+  const dirty = rows.filter((row) => row.dirtyLines !== 0);
+  assert(dirty.length === 0, `runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees; dirty services: ${dirty.map((row) => row.repo).join(', ')}`);
+}
+
 function render(rows, preflight) {
   const table = rows.map((row) => `| ${row.name} | ${row.repo} | ${row.branch} | ${row.head} | ${row.dirtyLines} |`).join('\n');
   return `# Stock Traceability Runtime Handoff
@@ -78,6 +83,8 @@ ${table}
 ## Approval Boundary
 
 Do not deploy, create runtime records, or run the approved supplier import unless the owner explicitly approves deployment, synthetic traceability records, and one Warehouse-mutating Suppliers synthetic import in the active session.
+
+Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If any source snapshot has dirty lines, commit or remove that source state and regenerate this handoff before approval.
 
 ## Required Operator Inputs
 
@@ -121,6 +128,7 @@ function assertSelfTestContent(markdown) {
   const required = [
     'STOCK-TRACEABILITY-RUNTIME-HANDOFF',
     'completionGate',
+    'runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees',
     'TRACE_SUPPLIER_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID',
     'DEPLOYMENT_EVIDENCE_FILE',
     'Deploy Warehouse first',
@@ -139,6 +147,7 @@ function assertSelfTestContent(markdown) {
 try {
   const rows = serviceRows();
   const preflight = runJson(['reports/validation/cross-service-preflight-check.js']);
+  assertCleanRows(rows);
   const markdown = render(rows, preflight);
   assertSelfTestContent(markdown);
   if (selfTest) {
