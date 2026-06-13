@@ -156,7 +156,7 @@ function runSelfTest() {
     coverage: { coverageStatus: 'covered', stockOrigin: 'mixed_stock' },
     coverageAudit: { matchedProduct: { coverageStatus: 'covered', stockOrigin: 'mixed_stock' } },
     projection: { productId: 'product-synthetic', source: 'warehouse', stockQuantity: 14, routeCount: 3, routeTypes: fixture.logisticsRoutes, routeLegs: legs },
-    supplierJob: { status: 'completed', supplierId: 'supplier-synthetic', idempotencyKey: 'manual:traceability-synthetic', catalogProductValidationStatus: 'passed', catalogProductIdsChecked: ['product-synthetic'], catalogProductValidationErrorCount: 0, warehouseAuthority: 'warehouse-microservice', warehouseStockUpdateAttempted: true, warehouseStockUpdateApproved: true, updatedProducts: 1 },
+    supplierJob: { status: 'completed', supplierId: 'supplier-synthetic', idempotencyKey: 'manual:traceability-synthetic', sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE', catalogProductValidationStatus: 'passed', catalogProductIdsChecked: ['product-synthetic'], catalogProductValidationErrorCount: 0, warehouseAuthority: 'warehouse-microservice', warehouseStockUpdateAttempted: true, warehouseStockUpdateApproved: true, updatedProducts: 1 },
     stockAuthority: { source: 'warehouse', warehouseTotalAvailable: 14, warehouseOriginAvailable: 14, catalogAvailabilityTotal: 14, catalogCoverageTotal: 14, projectionStockQuantity: 14 },
   };
   const repoByService = { warehouse: 'warehouse-microservice', catalog: 'catalog-microservice', suppliers: 'suppliers-microservice' };

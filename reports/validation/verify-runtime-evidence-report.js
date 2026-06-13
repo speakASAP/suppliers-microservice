@@ -76,7 +76,7 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 | Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;1:DROP>customer:supplier] | passed-runtime |
 | Catalog coverage and audit classify covered mixed stock. | covered/mixed_stock | passed-runtime |
 | FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=product-synthetic, source=warehouse, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;1:DROP>customer:supplier] | passed-runtime |
-| Suppliers import preserves Catalog identity and Warehouse authority. | catalogProductValidation=passed, checkedProducts=product-synthetic, authority=warehouse-microservice | passed-runtime |
+| Suppliers import preserves Catalog identity and Warehouse authority. | catalogProductValidation=passed, checkedProducts=product-synthetic, sourceFingerprint=trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE, authority=warehouse-microservice | passed-runtime |
 | Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11 | passed-runtime |
 | Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:traceability-runbook | passed-runtime |
 
@@ -199,6 +199,7 @@ function verify(report) {
   const suppliersImportRow = rows.find((line) => line.startsWith('| Suppliers import preserves Catalog identity and Warehouse authority. |'));
   assert(suppliersImportRow.includes('catalogProductValidation=passed'), 'Suppliers import assertion must prove Catalog product validation passed');
   assert(suppliersImportRow.includes('checkedProducts='), 'Suppliers import assertion must include checked Catalog product IDs');
+  assert(suppliersImportRow.includes('sourceFingerprint=trace:'), 'Suppliers import assertion must include approved import source fingerprint');
   assert(suppliersImportRow.includes('authority=warehouse-microservice'), 'Suppliers import assertion must prove Warehouse authority');
 
   const stockAuthorityRow = rows.find((line) => line.startsWith('| Warehouse remains stock authority across totals. |'));

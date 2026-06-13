@@ -98,6 +98,7 @@ function summarizeSupplierJob(job) {
     id: job.id,
     supplierId: job.supplierId,
     idempotencyKey: job.idempotencyKey,
+    sourceFingerprint: job.sourceFingerprint,
     status: job.status,
     warehouseStockValidationStatus: job.warehouseStockValidationStatus,
     warehouseStockUpdateAttempted: job.warehouseStockUpdateAttempted,
@@ -373,6 +374,7 @@ if (planOnly) {
     supplierJob = await pollSupplierJob({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey });
     assert(supplierJob, 'expected Suppliers import job evidence for TRACE_IMPORT_IDEMPOTENCY_KEY');
     assert(supplierJob.status === 'completed', 'expected Suppliers import job to complete before traceability assertions');
+    assert(supplierJob.sourceFingerprint === sourceFingerprint, 'expected Suppliers job source fingerprint to match the approved trace import request');
     assert(supplierJob.warehouseStockUpdateAttempted === true, 'expected Suppliers job to record Warehouse stock update attempted');
     assert(supplierJob.warehouseStockUpdateApproved === true, 'expected Suppliers job to record approved Warehouse stock update');
     assert(supplierJob.catalogProductValidationStatus === 'passed', 'expected Suppliers job to record passed Catalog product validation');

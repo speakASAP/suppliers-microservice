@@ -42,6 +42,13 @@ function baseSmoke() {
       { warehouseId: 'warehouse-supplier', warehouseType: 'supplier', supplierId: 'supplier-synthetic', available: 3 },
       { warehouseId: 'warehouse-dropship', warehouseType: 'dropship', supplierId: 'supplier-synthetic', available: 7 },
     ],
+    supplierImport: {
+      triggered: true,
+      supplierId: 'supplier-synthetic',
+      supplierWarehouseId: 'warehouse-supplier',
+      dropshipWarehouseId: 'warehouse-dropship',
+      sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE',
+    },
     logisticsRoutes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
     logisticsLegs: [
       { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
@@ -74,6 +81,7 @@ function baseSmoke() {
     supplierJob: {
       status: 'completed',
       idempotencyKey: 'manual:traceability-synthetic',
+      sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE',
       warehouseAuthority: 'warehouse-microservice',
       catalogProductValidationStatus: 'passed',
       catalogProductIdsChecked: ['product-synthetic'],
@@ -284,6 +292,9 @@ const cases = [
     assert(runVerifierExpectFailure(dir, report), 'missing-fixture-check-evidence report should fail runtime verifier');
     return 'missing-fixture-check-evidence';
   })(),
+  runCase('mismatched-supplier-job-source-fingerprint', (smoke) => {
+    smoke.supplierJob.sourceFingerprint = 'trace:product-synthetic:warehouse-other:warehouse-dropship:7:SUP-SKU-TRACE';
+  }),
   runCase('mismatched-stock-authority-total', (smoke) => {
     smoke.stockAuthority.catalogCoverageTotal = 10;
   }),

@@ -98,6 +98,7 @@ function assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId) {
   assert(job.supplierId === supplierId, 'smoke artifact supplier job must belong to TRACE_SUPPLIER_ID');
   assert(job.catalogProductValidationStatus === 'passed', 'smoke artifact supplier job must prove Catalog product validation passed');
   assert(Array.isArray(job.catalogProductIdsChecked) && job.catalogProductIdsChecked.includes(smoke.productId), 'smoke artifact supplier job must include checked TRACE_PRODUCT_ID');
+  assert(job.sourceFingerprint === smoke.supplierImport?.sourceFingerprint, 'smoke artifact supplier job source fingerprint must match approved supplier import request');
   assert(job.warehouseAuthority === 'warehouse-microservice', 'smoke artifact supplier job must preserve Warehouse stock authority');
   assert(job.warehouseStockUpdateAttempted === true, 'smoke artifact supplier job must record Warehouse update attempted');
   assert(job.warehouseStockUpdateApproved === true, 'smoke artifact supplier job must record approved Warehouse update');
@@ -255,6 +256,7 @@ function sampleSmoke() {
       status: 'completed',
       supplierId: 'supplier-synthetic',
       idempotencyKey: 'manual:traceability-synthetic',
+      sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE',
       warehouseAuthority: 'warehouse-microservice',
       warehouseStockUpdateAttempted: true,
       warehouseStockUpdateApproved: true,
@@ -434,6 +436,20 @@ function runSelfTest() {
   assert(nonReservableSupplierRouteRejected, 'bundle verifier must reject non-reservable supplier route evidence');
 
   const missingSupplierJobCatalogValidationSmokeFile = path.join(dir, 'smoke-missing-supplier-job-catalog-validation.json');
+  const mismatchedSupplierJobFingerprintSmokeFile = path.join(dir, 'smoke-mismatched-supplier-job-fingerprint.json');
+  const mismatchedSupplierJobFingerprintSmoke = sampleSmoke();
+  mismatchedSupplierJobFingerprintSmoke.supplierJob.sourceFingerprint = 'trace:product-synthetic:warehouse-other:warehouse-dropship:7:SUP-SKU-TRACE';
+  writeJson(mismatchedSupplierJobFingerprintSmokeFile, mismatchedSupplierJobFingerprintSmoke);
+  const mismatchedSupplierJobFingerprintManifestFile = path.join(dir, 'manifest-mismatched-supplier-job-fingerprint.json');
+  writeManifest(mismatchedSupplierJobFingerprintManifestFile, { fixture: fixtureFile, smoke: mismatchedSupplierJobFingerprintSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let mismatchedSupplierJobFingerprintRejected = false;
+  try {
+    verifyBundle({ manifestFile: mismatchedSupplierJobFingerprintManifestFile, reportFile: reportFile });
+  } catch (error) {
+    mismatchedSupplierJobFingerprintRejected = /source fingerprint/.test(error.message);
+  }
+  assert(mismatchedSupplierJobFingerprintRejected, 'bundle verifier must reject supplier job evidence from a different source fingerprint');
+
   const missingSupplierJobCatalogValidationSmoke = sampleSmoke();
   delete missingSupplierJobCatalogValidationSmoke.supplierJob.catalogProductValidationStatus;
   missingSupplierJobCatalogValidationSmoke.supplierJob.catalogProductIdsChecked = [];
@@ -498,7 +514,7 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, missingSupplierJobCatalogValidationRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
 }
 
 try {

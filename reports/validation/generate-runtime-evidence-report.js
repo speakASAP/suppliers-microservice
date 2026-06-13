@@ -69,7 +69,7 @@ function summarizeOrigins(origins) {
 
 function summarizeSupplierJob(job) {
   if (!job) return 'Supplier import evidence missing.';
-  return `status=${valueOrDash(job.status)}, idempotencyKey=${valueOrDash(job.idempotencyKey)}, catalogProductValidation=${valueOrDash(job.catalogProductValidationStatus)}, checkedProducts=${Array.isArray(job.catalogProductIdsChecked) ? job.catalogProductIdsChecked.join(',') : '-'}, authority=${valueOrDash(job.warehouseAuthority)}, attempted=${boolWord(job.warehouseStockUpdateAttempted)}, approved=${boolWord(job.warehouseStockUpdateApproved)}, updatedProducts=${valueOrDash(job.updatedProducts)}`;
+  return `status=${valueOrDash(job.status)}, idempotencyKey=${valueOrDash(job.idempotencyKey)}, sourceFingerprint=${valueOrDash(job.sourceFingerprint)}, catalogProductValidation=${valueOrDash(job.catalogProductValidationStatus)}, checkedProducts=${Array.isArray(job.catalogProductIdsChecked) ? job.catalogProductIdsChecked.join(',') : '-'}, authority=${valueOrDash(job.warehouseAuthority)}, attempted=${boolWord(job.warehouseStockUpdateAttempted)}, approved=${boolWord(job.warehouseStockUpdateApproved)}, updatedProducts=${valueOrDash(job.updatedProducts)}`;
 }
 
 function summarizeFixtureCheck(fixture) {
@@ -247,6 +247,7 @@ function buildAssertions(smoke, fixture) {
         && smoke.supplierJob?.catalogProductValidationStatus === 'passed'
         && Array.isArray(smoke.supplierJob?.catalogProductIdsChecked)
         && smoke.supplierJob.catalogProductIdsChecked.includes(smoke.productId)
+        && smoke.supplierJob?.sourceFingerprint === smoke.supplierImport?.sourceFingerprint
         && smoke.supplierJob?.warehouseAuthority === 'warehouse-microservice'
         && smoke.supplierJob?.warehouseStockUpdateAttempted === true
         && smoke.supplierJob?.warehouseStockUpdateApproved === true
@@ -385,6 +386,13 @@ function sampleSmoke() {
       { warehouseId: 'warehouse-supplier', warehouseType: 'supplier', supplierId: 'supplier-synthetic', available: 3 },
       { warehouseId: 'warehouse-dropship', warehouseType: 'dropship', supplierId: 'supplier-synthetic', available: 7 },
     ],
+    supplierImport: {
+      triggered: true,
+      supplierId: 'supplier-synthetic',
+      supplierWarehouseId: 'warehouse-supplier',
+      dropshipWarehouseId: 'warehouse-dropship',
+      sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE',
+    },
     logisticsRoutes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
     logisticsLegs: [
       { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
@@ -417,6 +425,7 @@ function sampleSmoke() {
     supplierJob: {
       status: 'completed',
       idempotencyKey: 'manual:traceability-synthetic',
+      sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE',
       warehouseAuthority: 'warehouse-microservice',
       warehouseStockUpdateAttempted: true,
       warehouseStockUpdateApproved: true,
