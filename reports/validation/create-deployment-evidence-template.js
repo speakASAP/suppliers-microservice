@@ -52,7 +52,9 @@ function buildTemplate() {
   }
   return {
     generatedAt: new Date().toISOString(),
-    instructions: 'Replace TODO evidence with post-deploy health and anonymous protected-endpoint observations before using as DEPLOYMENT_EVIDENCE_FILE.',
+    generatedFromCurrentHeads: true,
+    instructions: "Regenerate this template after any Warehouse, Catalog, or Suppliers commit. Replace TODO evidence with post-deploy health and anonymous protected-endpoint observations before using as DEPLOYMENT_EVIDENCE_FILE.",
+    completionReminder: "Deployment evidence is valid only when each commitSha still matches the current remote repo HEAD and verify-stock-traceability-completion.js passes against the generated runtime manifest.",
     services,
   };
 }
@@ -61,6 +63,9 @@ try {
   const template = buildTemplate();
   const output = JSON.stringify(template, null, 2) + '\n';
   if (selfTest) {
+    assert(template.generatedFromCurrentHeads === true, "self-test current-head marker missing");
+    assert(template.instructions.includes("Regenerate this template after any Warehouse, Catalog, or Suppliers commit"), "self-test regeneration instruction missing");
+    assert(template.completionReminder.includes("verify-stock-traceability-completion.js"), "self-test completion reminder missing");
     assert(template.services.warehouse.commitSha.length === 40, 'self-test warehouse SHA missing');
     assert(template.services.catalog.deployCommand === './scripts/deploy.sh', 'self-test deploy command missing');
     assert(template.services.suppliers.protectedEndpointEvidence.includes('TODO'), 'self-test should keep protected endpoint TODO');
