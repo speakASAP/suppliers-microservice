@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Parallel-Agent Planning Refactor
+
+Change: refactored the Suppliers planning workflow so future work is split into agent-ready goals with wave assignment, ownership boundaries, dependencies, blockers, shared-resource conflicts, validation evidence, and handoff paths. Added current parallel task candidates for current-head runtime readiness, source preflight verification, runtime deployment/smoke, supplier-specific adapter discovery, and status consolidation.
+
+Validation evidence: documentation-only validation is rerun after the remote files are updated. No source code, runtime configuration, deployment artifact, secret, supplier data, production import, Catalog write, Warehouse stock mutation, or cleanup mutation was changed.
+
+Boundary decision: runtime deployment and guarded smoke remain blocked until owner approval and fresh readiness/deployment evidence exist. Supplier-specific adapter implementation remains blocked until owner-supplied supplier contract details exist.
+
+Next unfinished chunk: assign Agent A to current-head runtime readiness regeneration and Agent B to cross-service source preflight verification in parallel; keep runtime deployment/smoke blocked until approval and readiness evidence are available.
+
 ## 2026-06-13 - Runtime Trace Role Token Secret
 
 Change: switched Suppliers approved runtime downstream token bindings to the dedicated `stock-traceability-runtime-token` Kubernetes secret. The secret is created during the owner-approved runtime evidence flow with a short-lived role-bearing JWT and is referenced by source manifests without committing token values. Cross-service preflight now checks the runtime-token secret reference.

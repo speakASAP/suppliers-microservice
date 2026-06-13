@@ -42,6 +42,10 @@ completeness_level: skeletal | partial | complete | validated
 
 [MISSING: define exact implementation scope]
 
+## Parallel Execution
+
+[MISSING: classify this task as agent-ready, depends-on, or blocked; list wave number, owning agent/session, parallel-safe tasks, dependencies, blockers, shared-resource conflicts, merge order, and evidence handoff paths]
+
 ## Non-Goals
 
 [MISSING: define what must not be done]

@@ -15,6 +15,14 @@ Future coding requires upstream traceability, invariant impact review, sensitive
 
 Do not code when supplier credential handling, payload validation, Catalog write safety, Warehouse stock update safety, idempotency, production mutation, or deployment approval is unclear.
 
+## Parallel Planning Default
+Planning must maximize safe use of parallel Codex sessions and agents. Split work into agent-ready goals with objective, scope, dependencies, blockers, shared-resource conflicts, validation evidence, and start status. Publish execution waves before implementation:
+
+- Wave 0: discovery, contracts, shared interfaces, schema decisions, owner approvals, and runtime prerequisites.
+- Wave 1+: independent implementation, tests, documentation, and validation chunks.
+
+Do not assign two agents to edit the same source file, migration, runtime manifest, validation report, deployment artifact, or production resource at the same time. Runtime mutation, deployment, secret inspection, production import, Catalog writes, Warehouse stock mutation, and cleanup still require explicit owner approval.
+
 ## Active Agents
 <!-- Coordinator-maintained -->
 None.
