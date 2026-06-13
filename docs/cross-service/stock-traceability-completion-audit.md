@@ -61,7 +61,7 @@ The following are not sufficient by themselves:
 - runtime evidence generated while any service worktree has uncommitted source beside the recorded deployment commit.
 
 
-Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle. The bundle must include deployment evidence generated from clean current service heads with `generatedFromCurrentHeads: true`, the completion-verifier reminder, and no dirty Warehouse/Catalog/Suppliers worktree state at runtime evidence generation.
+Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle. The bundle must include deployment evidence generated from clean current service heads with `generatedFromCurrentHeads: true`, the completion-verifier reminder, no dirty Warehouse/Catalog/Suppliers worktree state at runtime evidence generation, and a passing bundle verifier that rechecks clean current service worktrees.
 
 
 Runtime handoff checklist: generate the operator handoff with `RUNTIME_HANDOFF_OUTPUT=/tmp/stock-traceability-runtime-handoff.md node reports/validation/create-runtime-handoff-checklist.js`. The checklist records current service HEADs, completion gate state, required operator inputs, ordered deployment commands, and the final completion verifier command.

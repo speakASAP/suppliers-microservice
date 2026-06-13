@@ -243,3 +243,13 @@ Validation evidence: `node reports/validation/cross-service-preflight-check.js`,
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
 
 Next unfinished chunk: owner-approved deployment and guarded runtime evidence regeneration for Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and Suppliers `837aff9072520ed5bccce63c706436df1c58e862`.
+
+## 2026-06-13 - Bundle Verifier Clean Source Gate
+
+Change: committed Suppliers `357e93a` so `verify-runtime-evidence-bundle.js` now rechecks clean Warehouse, Catalog, and Suppliers worktrees before a runtime evidence bundle can prove completion. This aligns the independent completion verifier with the guarded runtime flow and deployment evidence generator.
+
+Validation evidence: `node --check reports/validation/verify-runtime-evidence-bundle.js`, `node --check reports/validation/cross-service-preflight-check.js`, `node reports/validation/cross-service-preflight-check.js`, and `git diff --check` passed before commit. After commit, `node reports/validation/verify-runtime-evidence-bundle.js --self-test` passed, `cross-service-preflight-check.js` passed with completionGate `incomplete`, and `verify-stock-traceability-completion.js` exited 2 because the saved runtime manifest still references an older Suppliers head.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed and the bundle verifier passes against the generated manifest.
+
+Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then perform owner-approved deployment and guarded runtime evidence regeneration before claiming completion.
