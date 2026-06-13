@@ -1,5 +1,13 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Warehouse Preferred Route Contract Gate
+
+Change: aligned Suppliers cross-service preflight with the Warehouse preferred-route contract. Preflight now requires Warehouse to choose preferredRoute from the first reservable route and requires tests proving reserved-only or unlinked supplier diagnostic routes do not become preferred.
+
+Validation evidence: node reports/validation/cross-service-preflight-check.js passed after Warehouse source hardening and before commit. This was source-side only; no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse mutation, or cleanup mutation was performed.
+
+Next unfinished chunk: owner-approved current-head deployment and guarded runtime evidence regeneration remains required before stock traceability can be marked complete.
+
 ## 2026-06-12 - Intent Preservation System
 
 Current focus: add the company Intent Preservation System to `suppliers-microservice`. Runtime code changes: none. Deployment: not required.
