@@ -72,10 +72,10 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 | Catalog product identity exists. | productId=product-synthetic, sku=CODEX-STOCK-TRACE-001, expectedSkuPrefix=CODEX-STOCK-TRACE- | passed-runtime |
 | Warehouse topology distinguishes own and supplier-managed warehouses. | own=1, supplierManaged=1 | passed-runtime |
 | Warehouse availability returns own plus supplier and dropship stock. | own:warehouse-own:available=4:supplier=-; supplier:warehouse-supplier:available=3:supplier=supplier-synthetic; dropship:warehouse-dropship:available=7:supplier=supplier-synthetic | passed-runtime |
-| Warehouse logistics returns local, supplier replenishment, and dropship route options. | routes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;1:DROP>customer:supplier] | passed-runtime |
-| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;1:DROP>customer:supplier] | passed-runtime |
+| Warehouse logistics returns local, supplier replenishment, and dropship route options. | routes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;warehouse=warehouse-own;supplier=-;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;warehouse=warehouse-supplier;supplier=supplier-synthetic;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;warehouse=warehouse-dropship;supplier=supplier-synthetic;1:DROP>customer:supplier] | passed-runtime |
+| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;warehouse=warehouse-own;supplier=-;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;warehouse=warehouse-supplier;supplier=supplier-synthetic;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;warehouse=warehouse-dropship;supplier=supplier-synthetic;1:DROP>customer:supplier] | passed-runtime |
 | Catalog coverage and audit classify covered mixed stock. | covered/mixed_stock | passed-runtime |
-| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=product-synthetic, source=warehouse, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;1:DROP>customer:supplier] | passed-runtime |
+| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=product-synthetic, source=warehouse, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;warehouse=warehouse-own;supplier=-;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;warehouse=warehouse-supplier;supplier=supplier-synthetic;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;warehouse=warehouse-dropship;supplier=supplier-synthetic;1:DROP>customer:supplier] | passed-runtime |
 | Suppliers import preserves Catalog identity and Warehouse authority. | catalogProductValidation=passed, checkedProducts=product-synthetic, sourceFingerprint=trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE, authority=warehouse-microservice | passed-runtime |
 | Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11 | passed-runtime |
 | Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:traceability-runbook | passed-runtime |
@@ -131,9 +131,23 @@ function hasRouteLegEvidence(row) {
 
 
 function hasSupplierOriginEvidence(row) {
+  const supplier = row.match(/supplier:[^|;]+:available=[1-9]\d*:supplier=([^;|]+)/)?.[1]?.trim();
+  const dropship = row.match(/dropship:[^|;]+:available=[1-9]\d*:supplier=([^;|]+)/)?.[1]?.trim();
   return /own:[^|;]+:available=[1-9]\d*:supplier=-/.test(row)
-    && /supplier:[^|;]+:available=[1-9]\d*:supplier=(?!-)([^;|]+)/.test(row)
-    && /dropship:[^|;]+:available=[1-9]\d*:supplier=(?!-)([^;|]+)/.test(row);
+    && Boolean(supplier && supplier !== '-')
+    && Boolean(dropship && dropship !== '-')
+    && supplier === dropship;
+}
+
+function routeSupplier(row, routeType) {
+  const match = row.match(new RegExp(routeType + '\\[[^\\]]*supplier=([^;\\]|]+)'));
+  return match?.[1] || null;
+}
+
+function hasSupplierRouteOwnershipEvidence(row) {
+  const replenishment = routeSupplier(row, 'supplier_replenishment');
+  const dropship = routeSupplier(row, 'supplier_dropship');
+  return Boolean(replenishment && dropship && replenishment !== '-' && replenishment === dropship);
 }
 
 function verify(report) {
@@ -185,10 +199,11 @@ function verify(report) {
   }
 
   const warehouseAvailabilityRow = rows.find((line) => line.startsWith(`| Warehouse availability returns own plus supplier and dropship stock. |`));
-  assert(hasSupplierOriginEvidence(warehouseAvailabilityRow), `Warehouse availability assertion must prove own, supplier, and dropship origin rows with positive availability and supplier IDs`);
+  assert(hasSupplierOriginEvidence(warehouseAvailabilityRow), `Warehouse availability assertion must prove own, supplier, and dropship origin rows with positive availability and matching supplier IDs`);
 
   const warehouseLogisticsRow = rows.find((line) => line.startsWith('| Warehouse logistics returns local, supplier replenishment, and dropship route options. |'));
   assert(hasRouteLegEvidence(warehouseLogisticsRow), 'Warehouse logistics assertion must prove local and supplier route legs');
+  assert(hasSupplierRouteOwnershipEvidence(warehouseLogisticsRow), 'Warehouse logistics assertion must prove supplier routes share the same supplier ID');
 
   const catalogForwardingRow = rows.find((line) => line.startsWith('| Catalog availability forwards Warehouse origin rows and logistics. |'));
   assert(catalogForwardingRow.includes('source=warehouse'), 'Catalog availability assertion must prove Warehouse source');
@@ -198,6 +213,7 @@ function verify(report) {
   assert(catalogForwardingRow.includes('supplier_replenishment'), 'Catalog availability assertion must include supplier replenishment route type');
   assert(catalogForwardingRow.includes('supplier_dropship'), 'Catalog availability assertion must include supplier dropship route type');
   assert(hasRouteLegEvidence(catalogForwardingRow), 'Catalog availability assertion must include forwarded local and supplier route legs');
+  assert(hasSupplierRouteOwnershipEvidence(catalogForwardingRow), 'Catalog availability assertion must prove supplier routes share the same supplier ID');
 
   const projectionRow = rows.find((line) => line.startsWith('| FlipFlop projection forwards Warehouse-sourced availability and logistics. |'));
   assert(projectionRow.includes('source=warehouse'), 'FlipFlop projection assertion must prove Warehouse source');
@@ -205,6 +221,7 @@ function verify(report) {
   assert(projectionRow.includes('supplier_replenishment'), 'FlipFlop projection assertion must include supplier replenishment route type');
   assert(projectionRow.includes('supplier_dropship'), 'FlipFlop projection assertion must include supplier dropship route type');
   assert(hasRouteLegEvidence(projectionRow), 'FlipFlop projection assertion must include forwarded local and supplier route legs');
+  assert(hasSupplierRouteOwnershipEvidence(projectionRow), 'FlipFlop projection assertion must prove supplier routes share the same supplier ID');
 
   const productIdentityRow = rows.find((line) => line.startsWith('| Catalog product identity exists. |'));
   assert(productIdentityRow.includes('expectedSkuPrefix=CODEX-STOCK-TRACE-'), 'Catalog product identity assertion must prove synthetic SKU prefix');

@@ -265,6 +265,10 @@ const cases = [
     "own:warehouse-own:available=4:supplier=-; supplier:warehouse-supplier:available=3:supplier=supplier-synthetic; dropship:warehouse-dropship:available=7:supplier=supplier-synthetic",
     "own, supplier, and dropship rows"
   )),
+  runReportTextCase("mismatched-route-supplier-report-evidence", (report) => report.replaceAll(
+    "supplier=supplier-synthetic;1:DROP>customer:supplier",
+    "supplier=supplier-other;1:DROP>customer:supplier"
+  )),
   runCase('bad-sku-prefix', (smoke) => {
     smoke.catalogProduct.sku = 'REAL-SKU-001';
   }),

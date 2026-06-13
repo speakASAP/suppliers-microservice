@@ -136,6 +136,8 @@ function summarizeRouteLegs(routeLegs) {
     const routeEvidence = [
       `available=${valueOrDash(route.available)}`,
       `reservable=${boolWord(route.canReserveFromWarehouse === true)}`,
+      `warehouse=${valueOrDash(route.warehouseId)}`,
+      `supplier=${valueOrDash(route.supplierId)}`,
       legs,
     ].join(';');
     return `${route.routeType}[${routeEvidence}]`;
