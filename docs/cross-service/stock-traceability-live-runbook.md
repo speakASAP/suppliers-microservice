@@ -29,6 +29,7 @@ Prepare these values before deploying:
 | Variable | Meaning |
 | --- | --- |
 | `TRACE_PRODUCT_ID` | Approved synthetic Catalog product ID with a `CODEX-STOCK-TRACE-` SKU prefix. |
+| `TRACE_PRODUCT_SKU_PREFIX` | Required synthetic SKU prefix. Use `CODEX-STOCK-TRACE-` unless the owner approves another isolated prefix. |
 | `TRACE_SUPPLIER_ID` | Active Suppliers supplier ID whose code is `synthetic-trace`. |
 | `TRACE_SUPPLIER_WAREHOUSE_ID` | Warehouse supplier or dropship location linked to `TRACE_SUPPLIER_ID`. |
 | `TRACE_IMPORT_IDEMPOTENCY_KEY` | Stable replay key for this approved smoke, for example `manual:traceability-20260613-001`. |
@@ -60,7 +61,7 @@ Run the last non-mutating validation before deployment:
 ```bash
 ssh alfares 'cd /home/ssf/Documents/Github/warehouse-microservice && npm test -- --runInBand && npm run build && git diff --check'
 ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && npm test -- --runInBand && npm run build && git diff --check'
-ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && npm run build && node reports/validation/cross-service-preflight-check.js && WAREHOUSE_URL=http://warehouse.example.test CATALOG_URL=http://catalog.example.test SUPPLIERS_URL=http://suppliers.example.test CATALOG_TOKEN=catalog-token-synthetic WAREHOUSE_TOKEN=warehouse-token-synthetic SUPPLIERS_TOKEN=suppliers-token-synthetic TRACE_PRODUCT_ID=product-synthetic TRACE_SUPPLIER_ID=11111111-1111-4111-8111-111111111111 TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true TRACE_RUN_SUPPLIERS_IMPORT=true node reports/validation/runtime-stock-traceability-smoke.js --config-only && node reports/validation/generate-runtime-evidence-report.js --self-test && node reports/validation/verify-runtime-evidence-report.js --self-test && node reports/validation/synthetic-approved-import-run-check.js && node reports/validation/production-rest-json-adapter-check.js && node reports/validation/synthetic-production-rest-json-adapter-check.js && node reports/validation/synthetic-stock-traceability-check.js && node reports/validation/runtime-stock-traceability-smoke.js --plan-only && python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues && python3 scripts/deployment_readiness_gate.py --root . && git diff --check'
+ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && npm run build && node reports/validation/cross-service-preflight-check.js && WAREHOUSE_URL=http://warehouse.example.test CATALOG_URL=http://catalog.example.test SUPPLIERS_URL=http://suppliers.example.test CATALOG_TOKEN=catalog-token-synthetic WAREHOUSE_TOKEN=warehouse-token-synthetic SUPPLIERS_TOKEN=suppliers-token-synthetic TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=11111111-1111-4111-8111-111111111111 TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true TRACE_RUN_SUPPLIERS_IMPORT=true node reports/validation/runtime-stock-traceability-smoke.js --config-only && node reports/validation/generate-runtime-evidence-report.js --self-test && node reports/validation/verify-runtime-evidence-report.js --self-test && node reports/validation/synthetic-approved-import-run-check.js && node reports/validation/production-rest-json-adapter-check.js && node reports/validation/synthetic-production-rest-json-adapter-check.js && node reports/validation/synthetic-stock-traceability-check.js && node reports/validation/runtime-stock-traceability-smoke.js --plan-only && python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues && python3 scripts/deployment_readiness_gate.py --root . && git diff --check'
 ```
 
 ## Deploy In Order
@@ -105,6 +106,7 @@ CATALOG_TOKEN="<approved-catalog-token>" \
 WAREHOUSE_TOKEN="<approved-warehouse-token>" \
 SUPPLIERS_TOKEN="<approved-suppliers-token>" \
 TRACE_PRODUCT_ID="<approved-synthetic-product-id>" \
+TRACE_PRODUCT_SKU_PREFIX="CODEX-STOCK-TRACE-" \
 TRACE_SUPPLIER_ID="<active-synthetic-trace-supplier-id>" \
 TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-or-dropship-warehouse-id>" \
 TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
@@ -141,6 +143,7 @@ CATALOG_TOKEN="<approved-catalog-token>" \
 WAREHOUSE_TOKEN="<approved-warehouse-token>" \
 SUPPLIERS_TOKEN="<approved-suppliers-token>" \
 TRACE_PRODUCT_ID="<approved-synthetic-product-id>" \
+TRACE_PRODUCT_SKU_PREFIX="CODEX-STOCK-TRACE-" \
 TRACE_SUPPLIER_ID="<active-synthetic-trace-supplier-id>" \
 TRACE_SUPPLIER_WAREHOUSE_ID="<supplier-or-dropship-warehouse-id>" \
 TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
@@ -181,7 +184,7 @@ ssh alfares '
 cd /home/ssf/Documents/Github/suppliers-microservice &&
 SMOKE_RESULT_FILE=/tmp/stock-traceability-smoke-result.json \
 DEPLOYMENT_EVIDENCE_FILE=/tmp/stock-traceability-deployment-evidence.json \
-REDACTED_SMOKE_COMMAND="WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js" \
+REDACTED_SMOKE_COMMAND="WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js" \
 node reports/validation/generate-runtime-evidence-report.js
 '
 ```

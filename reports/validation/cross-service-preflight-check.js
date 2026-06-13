@@ -75,17 +75,22 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-stock-traceability-smoke.js',
-    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
+    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-', 'readHealth', "service, endpoint", 'catalogRouteTypes', 'projectionRouteTypes', 'stockAuthority', 'warehouseTotalAvailable', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/generate-runtime-evidence-report.js',
-    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'deploymentEvidenceComplete', '401|403', "source === 'warehouse'"],
+    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'hasLocalAndSupplierRoute', 'deploymentEvidenceComplete', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-report.js',
-    patterns: ['REQUIRED_ASSERTIONS', 'source=warehouse', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
+    patterns: ['REQUIRED_ASSERTIONS', 'Warehouse remains stock authority across totals', 'warehouseTotalAvailable=', 'catalogCoverageTotal=', 'deployment evidence must include a commit SHA', 'warehouse:', 'catalog:', 'suppliers:', 'source=warehouse', 'expectedSkuPrefix=CODEX-STOCK-TRACE-', 'routeTypes=local_fulfillment', 'supplier_dropship', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
+  },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/runtime-evidence-negative-check.js',
+    patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'failed-runtime'],
   },
   {
     service: 'suppliers',

@@ -45,7 +45,8 @@ The goal can be marked complete only after the runtime smoke report proves:
 6. Catalog coverage and coverage audit classify the product as `covered` and `mixed_stock`.
 7. FlipFlop projection forwards Warehouse-sourced availability and logistics.
 8. Suppliers import evidence preserves Warehouse authority through an approved `synthetic-trace` import when supplier stock mutation is used.
-9. Cleanup or archival evidence is recorded for synthetic records through `TRACE_CLEANUP_EVIDENCE`.
+9. Warehouse total availability, summed Warehouse origins, Catalog availability total, Catalog coverage total, and FlipFlop stock quantity all match with Warehouse as source.
+10. Cleanup or archival evidence is recorded for synthetic records through `TRACE_CLEANUP_EVIDENCE`.
 
 ## Non-Completion Evidence
 

@@ -31,13 +31,24 @@ function hasText(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+function isCommitSha(value) {
+  return typeof value === 'string' && /^[0-9a-f]{7,40}$/i.test(value.trim());
+}
+
 function summarizeHealth(health) {
   if (!Array.isArray(health)) return 'Health evidence missing.';
   return health.map((item, index) => {
-    if (item?.error) return `service-${index + 1}: failed`;
+    const service = item?.service || `service-${index + 1}`;
+    if (item?.error) return `${service}: failed`;
     const status = item?.status || item?.data?.status || item?.health || 'passed';
-    return `service-${index + 1}: ${status}`;
+    return `${service}: ${status}`;
   }).join('; ');
+}
+
+function namedHealthComplete(health) {
+  if (!Array.isArray(health)) return false;
+  const services = new Set(health.map((item) => item?.service).filter(Boolean));
+  return ['warehouse', 'catalog', 'suppliers'].every((service) => services.has(service));
 }
 
 function summarizeTopology(topology) {
@@ -57,21 +68,49 @@ function summarizeSupplierJob(job) {
   return `status=${valueOrDash(job.status)}, idempotencyKey=${valueOrDash(job.idempotencyKey)}, authority=${valueOrDash(job.warehouseAuthority)}, attempted=${boolWord(job.warehouseStockUpdateAttempted)}, approved=${boolWord(job.warehouseStockUpdateApproved)}, updatedProducts=${valueOrDash(job.updatedProducts)}`;
 }
 
+function summarizeStockAuthority(authority) {
+  if (!authority) return 'Stock authority evidence missing.';
+  return `source=${valueOrDash(authority.source)}, warehouseTotalAvailable=${valueOrDash(authority.warehouseTotalAvailable)}, warehouseOriginAvailable=${valueOrDash(authority.warehouseOriginAvailable)}, catalogAvailabilityTotal=${valueOrDash(authority.catalogAvailabilityTotal)}, catalogCoverageTotal=${valueOrDash(authority.catalogCoverageTotal)}, projectionStockQuantity=${valueOrDash(authority.projectionStockQuantity)}`;
+}
+
 function summarizeCatalogAvailability(availability) {
   if (!availability) return 'Catalog availability evidence missing.';
-  return `source=${valueOrDash(availability.source)}, warehouseCount=${valueOrDash(availability.warehouseCount)}, logisticsOptionCount=${valueOrDash(availability.logisticsOptionCount)}, preferredRoute=${valueOrDash(availability.preferredRoute)}`;
+  return `source=${valueOrDash(availability.source)}, warehouseCount=${valueOrDash(availability.warehouseCount)}, logisticsOptionCount=${valueOrDash(availability.logisticsOptionCount)}, preferredRoute=${valueOrDash(availability.preferredRoute)}, routeTypes=${summarizeRouteTypes(availability.routeTypes)}`;
 }
 
 function deploymentEvidenceComplete(deployment) {
   const services = deployment?.services || {};
   return ['warehouse', 'catalog', 'suppliers'].every((service) => {
     const item = services[service];
-    return hasText(item?.commitSha)
+    return isCommitSha(item?.commitSha)
       && hasText(item?.deployCommand || './scripts/deploy.sh')
       && hasText(item?.healthEvidence)
       && hasText(item?.protectedEndpointEvidence)
       && /401|403/.test(item.protectedEndpointEvidence);
   });
+}
+
+function expectedSkuPrefix(smoke) {
+  return smoke.traceProductSkuPrefix || 'CODEX-STOCK-TRACE-';
+}
+
+function summarizeRouteTypes(routeTypes) {
+  return Array.isArray(routeTypes) && routeTypes.length ? routeTypes.join(',') : '-';
+}
+
+function hasLocalAndSupplierRoute(routeTypes) {
+  if (!Array.isArray(routeTypes)) return false;
+  return routeTypes.includes('local_fulfillment') && routeTypes.some((route) => ['supplier_replenishment', 'supplier_dropship'].includes(route));
+}
+
+function stockAuthorityComplete(authority) {
+  if (!authority || authority.source !== 'warehouse') return false;
+  const warehouseTotal = Number(authority.warehouseTotalAvailable);
+  return Number.isFinite(warehouseTotal)
+    && Number(authority.warehouseOriginAvailable) === warehouseTotal
+    && Number(authority.catalogAvailabilityTotal) === warehouseTotal
+    && Number(authority.catalogCoverageTotal) === warehouseTotal
+    && Number(authority.projectionStockQuantity) === warehouseTotal;
 }
 
 function buildAssertions(smoke) {
@@ -81,12 +120,12 @@ function buildAssertions(smoke) {
     {
       assertion: 'Warehouse, Catalog, and Suppliers health endpoints passed.',
       evidence: summarizeHealth(smoke.health),
-      passed: smoke.status === 'passed' && Array.isArray(smoke.health) && smoke.health.length === 3,
+      passed: smoke.status === 'passed' && Array.isArray(smoke.health) && smoke.health.length === 3 && namedHealthComplete(smoke.health),
     },
     {
       assertion: 'Catalog product identity exists.',
-      evidence: `productId=${valueOrDash(smoke.catalogProduct?.id || smoke.productId)}, sku=${valueOrDash(smoke.catalogProduct?.sku)}`,
-      passed: Boolean(smoke.catalogProduct?.id && smoke.catalogProduct?.sku),
+      evidence: `productId=${valueOrDash(smoke.catalogProduct?.id || smoke.productId)}, sku=${valueOrDash(smoke.catalogProduct?.sku)}, expectedSkuPrefix=${expectedSkuPrefix(smoke)}`,
+      passed: Boolean(smoke.catalogProduct?.id && smoke.catalogProduct?.sku?.startsWith(expectedSkuPrefix(smoke))),
     },
     {
       assertion: 'Warehouse topology distinguishes own and supplier-managed warehouses.',
@@ -102,14 +141,15 @@ function buildAssertions(smoke) {
     {
       assertion: 'Warehouse logistics returns local and supplier route options.',
       evidence: `routes=${routes.join(',') || '-'}`,
-      passed: routes.includes('local_fulfillment') && routes.some((route) => ['supplier_replenishment', 'supplier_dropship'].includes(route)),
+      passed: hasLocalAndSupplierRoute(routes),
     },
     {
       assertion: 'Catalog availability forwards Warehouse origin rows and logistics.',
       evidence: summarizeCatalogAvailability(smoke.catalogAvailability),
       passed: smoke.catalogAvailability?.source === 'warehouse'
         && Number(smoke.catalogAvailability?.warehouseCount || 0) >= 2
-        && Number(smoke.catalogAvailability?.logisticsOptionCount || 0) >= 2,
+        && Number(smoke.catalogAvailability?.logisticsOptionCount || 0) >= 2
+        && hasLocalAndSupplierRoute(smoke.catalogAvailability?.routeTypes),
     },
     {
       assertion: 'Catalog coverage and audit classify covered mixed stock.',
@@ -121,8 +161,8 @@ function buildAssertions(smoke) {
     },
     {
       assertion: 'FlipFlop projection forwards Warehouse-sourced availability and logistics.',
-      evidence: `productId=${valueOrDash(smoke.projection?.productId)}, source=${valueOrDash(smoke.projection?.source)}, stockQuantity=${valueOrDash(smoke.projection?.stockQuantity)}, routeCount=${valueOrDash(smoke.projection?.routeCount)}`,
-      passed: Boolean(smoke.projection?.productId && smoke.projection?.source === 'warehouse' && Number(smoke.projection?.routeCount || 0) >= 2),
+      evidence: `productId=${valueOrDash(smoke.projection?.productId)}, source=${valueOrDash(smoke.projection?.source)}, stockQuantity=${valueOrDash(smoke.projection?.stockQuantity)}, routeCount=${valueOrDash(smoke.projection?.routeCount)}, routeTypes=${summarizeRouteTypes(smoke.projection?.routeTypes)}`,
+      passed: Boolean(smoke.projection?.productId && smoke.projection?.source === 'warehouse' && Number(smoke.projection?.routeCount || 0) >= 2 && hasLocalAndSupplierRoute(smoke.projection?.routeTypes)),
     },
     {
       assertion: 'Suppliers import preserves Warehouse authority.',
@@ -132,6 +172,11 @@ function buildAssertions(smoke) {
         && smoke.supplierJob?.warehouseStockUpdateAttempted === true
         && smoke.supplierJob?.warehouseStockUpdateApproved === true
         && Number(smoke.supplierJob?.updatedProducts || 0) > 0,
+    },
+    {
+      assertion: 'Warehouse remains stock authority across totals.',
+      evidence: summarizeStockAuthority(smoke.stockAuthority),
+      passed: stockAuthorityComplete(smoke.stockAuthority),
     },
     {
       assertion: 'Cleanup or archival evidence is recorded.',
@@ -214,8 +259,9 @@ ${decision}
 function sampleSmoke() {
   return {
     status: 'passed',
-    health: [{ status: 'ok' }, { status: 'ok' }, { status: 'ok' }],
+    health: [{ service: 'warehouse', status: 'ok' }, { service: 'catalog', status: 'ok' }, { service: 'suppliers', status: 'ok' }],
     productId: 'product-synthetic',
+    traceProductSkuPrefix: 'CODEX-STOCK-TRACE-',
     cleanupEvidence: 'deferred:traceability-runbook',
     catalogProduct: { id: 'product-synthetic', sku: 'CODEX-STOCK-TRACE-001' },
     warehouseTopology: {
@@ -228,11 +274,20 @@ function sampleSmoke() {
       { warehouseId: 'warehouse-supplier', warehouseType: 'dropship', supplierId: 'supplier-synthetic', available: 7 },
     ],
     logisticsRoutes: ['local_fulfillment', 'supplier_dropship'],
+    stockAuthority: {
+      source: 'warehouse',
+      warehouseTotalAvailable: 11,
+      warehouseOriginAvailable: 11,
+      catalogAvailabilityTotal: 11,
+      catalogCoverageTotal: 11,
+      projectionStockQuantity: 11,
+    },
     catalogAvailability: {
       source: 'warehouse',
       warehouseCount: 2,
       logisticsOptionCount: 2,
       preferredRoute: 'local_fulfillment',
+      routeTypes: ['local_fulfillment', 'supplier_dropship'],
       warehouseTypes: ['own', 'dropship'],
     },
     coverage: { coverageStatus: 'covered', stockOrigin: 'mixed_stock' },
@@ -245,7 +300,7 @@ function sampleSmoke() {
       warehouseStockUpdateApproved: true,
       updatedProducts: 1,
     },
-    projection: { productId: 'product-synthetic', source: 'warehouse', stockQuantity: 11, routeCount: 2 },
+    projection: { productId: 'product-synthetic', source: 'warehouse', stockQuantity: 11, routeCount: 2, routeTypes: ['local_fulfillment', 'supplier_dropship'] },
   };
 }
 
@@ -253,19 +308,19 @@ function sampleDeployment() {
   return {
     services: {
       warehouse: {
-        commitSha: 'sha-warehouse',
+        commitSha: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/api/health passed',
         protectedEndpointEvidence: 'anonymous topology returned 401',
       },
       catalog: {
-        commitSha: 'sha-catalog',
+        commitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/health passed',
         protectedEndpointEvidence: 'anonymous coverage returned 401',
       },
       suppliers: {
-        commitSha: 'sha-suppliers',
+        commitSha: 'cccccccccccccccccccccccccccccccccccccccc',
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/api/health passed',
         protectedEndpointEvidence: 'anonymous imports returned 401',

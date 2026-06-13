@@ -67,6 +67,15 @@ function assertHealth(health) {
   assert(!failed, `health check failed: ${failed?.error}`);
 }
 
+async function readHealth(service, url) {
+  try {
+    const data = await requestJson(`${service} health`, url);
+    return { service, endpoint: url, status: data?.status || data?.health || 'passed' };
+  } catch (error) {
+    return { service, endpoint: url, error: error.message };
+  }
+}
+
 function summarizeCoverage(item) {
   return {
     productId: item.productId,
@@ -170,6 +179,7 @@ if (planOnly) {
     ],
     optionalRuntimeEnv: [
       'TRACE_RUN_SUPPLIERS_IMPORT=true',
+      'TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE-',
       'TRACE_SUPPLIER_WAREHOUSE_ID',
       'TRACE_SUPPLIER_STOCK_QTY=7',
       'TRACE_SUPPLIER_SKU=SUP-SKU-TRACE',
@@ -200,6 +210,7 @@ if (planOnly) {
   const productId = requiredEnv('TRACE_PRODUCT_ID');
   const auditPage = optionalEnv('TRACE_AUDIT_PAGE', '1');
   const auditLimit = optionalEnv('TRACE_AUDIT_LIMIT', '100');
+  const traceProductSkuPrefix = optionalEnv('TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-');
   const runSuppliersImport = optionalBoolean('TRACE_RUN_SUPPLIERS_IMPORT', approvedMutation);
   const expectSuppliersJob = optionalBoolean('TRACE_EXPECT_SUPPLIERS_JOB', approvedMutation);
   const supplierId = optionalEnv('TRACE_SUPPLIER_ID', '');
@@ -236,6 +247,7 @@ if (planOnly) {
       },
       suppliersJobExpected: expectSuppliersJob,
       cleanupEvidencePresent: Boolean(cleanupEvidence),
+      traceProductSkuPrefix,
       urls: {
         warehouse: warehouseUrl,
         catalog: catalogUrl,
@@ -251,9 +263,9 @@ if (planOnly) {
   }
 
   const health = await Promise.all([
-    requestJson('Warehouse health', `${warehouseUrl}/api/health`).catch((error) => ({ error: error.message })),
-    requestJson('Catalog health', `${catalogUrl}/health`).catch((error) => ({ error: error.message })),
-    requestJson('Suppliers health', `${suppliersUrl}/api/health`).catch((error) => ({ error: error.message })),
+    readHealth('warehouse', `${warehouseUrl}/api/health`),
+    readHealth('catalog', `${catalogUrl}/health`),
+    readHealth('suppliers', `${suppliersUrl}/api/health`),
   ]);
   assertHealth(health);
 
@@ -323,9 +335,17 @@ if (planOnly) {
   const coverageAuditItems = catalogCoverageAudit.data?.items || [];
   const coverageAuditItem = coverageAuditItems.find((item) => item.productId === productId);
   const projectionItem = flipflopProjection.data?.items?.[0];
+  const catalogRouteTypes = (catalogItem?.logistics?.options || []).map((option) => option.routeType);
+  const projectionRouteTypes = (projectionItem?.availability?.logistics?.options || []).map((option) => option.routeType);
+  const warehouseTotalAvailable = Number(warehouseAvailability.data?.[0]?.totalAvailable ?? 0);
+  const warehouseOriginAvailable = warehouseRows.reduce((sum, row) => sum + Number(row.available ?? 0), 0);
+  const catalogAvailabilityTotal = Number(catalogItem?.totalAvailable ?? 0);
+  const catalogCoverageTotal = Number(coverageItem?.totalAvailable ?? 0);
+  const projectionStockQuantity = Number(projectionItem?.stockQuantity ?? 0);
 
   assert(catalogProductData?.id === productId, 'expected Catalog product identity to match TRACE_PRODUCT_ID');
   assert(catalogProductData?.sku, 'expected Catalog product identity to include SKU');
+  assert(catalogProductData.sku.startsWith(traceProductSkuPrefix), `expected Catalog product SKU to start with ${traceProductSkuPrefix}`);
   assert((topologyData?.groups?.own || []).length > 0, 'expected Warehouse topology to include own warehouses');
   assert([...(topologyData?.groups?.supplier || []), ...(topologyData?.groups?.dropship || [])].length > 0, 'expected Warehouse topology to include supplier-managed warehouses');
   assert(warehouseRows.some((row) => row.warehouseType === 'own' && Number(row.available) > 0), 'expected own Warehouse stock row');
@@ -335,12 +355,20 @@ if (planOnly) {
   assert(catalogItem?.source === 'warehouse', 'expected Catalog availability source warehouse');
   assert(catalogItem?.warehouses?.length >= 2, 'expected Catalog to forward origin rows');
   assert(catalogItem?.logistics?.options?.length >= 2, 'expected Catalog to forward logistics options');
+  assert(catalogRouteTypes.includes('local_fulfillment'), 'expected Catalog availability to forward local fulfillment route');
+  assert(catalogRouteTypes.some((route) => ['supplier_replenishment', 'supplier_dropship'].includes(route)), 'expected Catalog availability to forward supplier route');
   assert(coverageItem?.coverageStatus === 'covered', 'expected Catalog coverage status covered');
   assert(coverageItem?.stockOrigin === 'mixed_stock', 'expected Catalog coverage stockOrigin mixed_stock');
   assert(coverageAuditItem?.coverageStatus === 'covered', 'expected Catalog coverage audit to include covered product');
   assert(coverageAuditItem?.stockOrigin === 'mixed_stock', 'expected Catalog coverage audit stockOrigin mixed_stock');
   assert(projectionItem?.availability?.source === 'warehouse', 'expected FlipFlop projection availability source warehouse');
   assert(projectionItem?.availability?.logistics?.options?.length >= 2, 'expected FlipFlop projection logistics options');
+  assert(projectionRouteTypes.includes('local_fulfillment'), 'expected FlipFlop projection to forward local fulfillment route');
+  assert(projectionRouteTypes.some((route) => ['supplier_replenishment', 'supplier_dropship'].includes(route)), 'expected FlipFlop projection to forward supplier route');
+  assert(warehouseTotalAvailable === warehouseOriginAvailable, 'expected Warehouse totalAvailable to equal summed Warehouse origin availability');
+  assert(catalogAvailabilityTotal === warehouseTotalAvailable, 'expected Catalog availability totalAvailable to match Warehouse totalAvailable');
+  assert(catalogCoverageTotal === warehouseTotalAvailable, 'expected Catalog coverage totalAvailable to match Warehouse totalAvailable');
+  assert(projectionStockQuantity === warehouseTotalAvailable, 'expected FlipFlop stockQuantity to match Warehouse totalAvailable');
 
   console.log(JSON.stringify({
     status: 'passed',
@@ -352,6 +380,7 @@ if (planOnly) {
     },
     health,
     productId,
+    traceProductSkuPrefix,
     supplierImport: {
       triggered: runSuppliersImport,
       supplierId: supplierId || null,
@@ -371,11 +400,20 @@ if (planOnly) {
       available: row.available,
     })),
     logisticsRoutes: logisticsOptions.map((option) => option.routeType),
+    stockAuthority: {
+      source: 'warehouse',
+      warehouseTotalAvailable,
+      warehouseOriginAvailable,
+      catalogAvailabilityTotal,
+      catalogCoverageTotal,
+      projectionStockQuantity,
+    },
     catalogAvailability: {
       source: catalogItem.source,
       warehouseCount: catalogItem.warehouses?.length || 0,
       logisticsOptionCount: catalogItem.logistics?.options?.length || 0,
       preferredRoute: catalogItem.logistics?.preferredRoute || null,
+      routeTypes: catalogRouteTypes,
       warehouseTypes: (catalogItem.warehouses || []).map((row) => row.warehouseType),
     },
     coverage: summarizeCoverage(coverageItem),
@@ -391,6 +429,7 @@ if (planOnly) {
       source: projectionItem.availability?.source,
       stockQuantity: projectionItem.stockQuantity,
       routeCount: projectionItem.availability?.logistics?.options?.length || 0,
+      routeTypes: projectionRouteTypes,
     },
   }, null, 2));
 })().catch((error) => {
