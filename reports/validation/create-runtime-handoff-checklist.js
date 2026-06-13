@@ -113,10 +113,12 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 10. Generate completed deployment evidence with \`DEPLOYMENT_EVIDENCE_OUTPUT=/tmp/stock-traceability-deployment-evidence.json WAREHOUSE_HEALTH_EVIDENCE=<summary> WAREHOUSE_PROTECTED_ENDPOINT_EVIDENCE=<401-or-403-summary> CATALOG_HEALTH_EVIDENCE=<summary> CATALOG_PROTECTED_ENDPOINT_EVIDENCE=<401-or-403-summary> SUPPLIERS_HEALTH_EVIDENCE=<summary> SUPPLIERS_PROTECTED_ENDPOINT_EVIDENCE=<401-or-403-summary> node reports/validation/create-deployment-evidence.js\`, then verify it with \`node reports/validation/verify-deployment-evidence.js /tmp/stock-traceability-deployment-evidence.json\`.
 11. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, RUNTIME_APPROVAL_ARTIFACT_FILE, and the completed deployment evidence file.
 12. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
-13. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.
-14. Confirm the bundle verifier proves local fulfillment, supplier replenishment, and dropship routes have positive availability and \`canReserveFromWarehouse=true\` in Warehouse, Catalog, and FlipFlop smoke artifacts.
-15. Confirm the bundle verifier proves the Suppliers import job completed, validated the Catalog product ID, preserved Warehouse stock authority, and recorded an owner-approved Warehouse update.
-16. Run the final verification commands below and require status complete before claiming the goal is done.
+13. Confirm the fixture command and approved smoke command use the same TRACE_PRODUCT_ID, TRACE_PRODUCT_SKU_PREFIX, TRACE_OWN_WAREHOUSE_ID, TRACE_SUPPLIER_WAREHOUSE_ID, and TRACE_DROPSHIP_WAREHOUSE_ID.
+14. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.
+15. Confirm the final report verifier proves route warehouse IDs and the Suppliers source fingerprint match the redacted command trace IDs.
+16. Confirm the bundle verifier proves local fulfillment, supplier replenishment, and dropship routes have positive availability and \`canReserveFromWarehouse=true\` in Warehouse, Catalog, and FlipFlop smoke artifacts.
+17. Confirm the bundle verifier proves the Suppliers import job completed, validated the Catalog product ID, preserved Warehouse stock authority, and recorded an owner-approved Warehouse update.
+18. Run the final verification commands below and require status complete before claiming the goal is done.
 
 ## Final Verification Commands
 
@@ -127,7 +129,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 
 ## Non-Completion Reminder
 
-A deployment alone is not completion. A source-only synthetic check is not completion. The goal is complete only after the final report, manifest, and bundle verifier prove Warehouse-owned local, supplier replenishment, dropship stock, positive reservable logistics routes through Catalog and FlipFlop, supplier identity ownership, and Suppliers import Catalog/Warehouse authority evidence.
+A deployment alone is not completion. A source-only synthetic check is not completion. The goal is complete only after the final report, manifest, and bundle verifier prove Warehouse-owned local, supplier replenishment, dropship stock, positive reservable logistics routes through Catalog and FlipFlop, supplier identity ownership, command/report trace-ID consistency, and Suppliers import Catalog/Warehouse authority evidence.
 `;
 }
 
@@ -152,8 +154,11 @@ function assertSelfTestContent(markdown) {
     'verify-runtime-evidence-report.js',
     'verify-runtime-evidence-manifest.js <manifest-file>',
     'verify-runtime-evidence-bundle.js <manifest-file> <report-file>',
+    'fixture command and approved smoke command use the same TRACE_PRODUCT_ID',
     'same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options',
+    'route warehouse IDs and the Suppliers source fingerprint match the redacted command trace IDs',
     'positive availability and \`canReserveFromWarehouse=true\`',
+    'command/report trace-ID consistency',
     'Suppliers import job completed, validated the Catalog product ID, preserved Warehouse stock authority',
     'verify-stock-traceability-completion.js <report-file> <manifest-file>',
   ];
