@@ -123,6 +123,16 @@ const cases = [
   runPassCase('manifest-bundle-self-test-rejects-mixed-trace-product', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mixedTraceProductRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mixed-supplier-warehouse', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mixedSupplierWarehouseRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mismatched-supplier-id', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mismatchedSupplierRejected'),
+  runCase('approved-smoke-missing-own-warehouse-id', {
+    RUN_APPROVED_RUNTIME_SMOKE: 'true',
+    TRACE_SUPPLIER_ID: 'supplier-synthetic',
+    TRACE_OWN_WAREHOUSE_ID: '',
+    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+    TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence(),
+    OWNER_APPROVAL: 'explicit',
+    SMOKE_ALLOW_MUTATION: 'true',
+  }, 'TRACE_OWN_WAREHOUSE_ID'),
   runCase('approved-smoke-missing-deployment-evidence', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',

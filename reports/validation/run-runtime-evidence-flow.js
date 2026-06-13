@@ -29,6 +29,7 @@ const requiredBaseEnv = [
 
 const requiredApprovedSmokeEnv = [
   'TRACE_SUPPLIER_ID',
+  'TRACE_OWN_WAREHOUSE_ID',
   'TRACE_SUPPLIER_WAREHOUSE_ID',
   'TRACE_DROPSHIP_WAREHOUSE_ID',
   'TRACE_IMPORT_IDEMPOTENCY_KEY',
