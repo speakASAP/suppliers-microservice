@@ -228,6 +228,11 @@ const checks = [
     file: 'reports/validation/create-runtime-approval-request.js',
     patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'RUNTIME_APPROVAL_REQUEST_OUTPUT', 'Approve exactly these three actions', 'runtime approval request requires clean Warehouse, Catalog, and Suppliers worktrees', 'dirtyRowsRejected', 'approval request self-test must reject dirty source snapshots', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'This approval request is not completion evidence', 'verify-stock-traceability-completion.js'],
   },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/verify-runtime-approval-artifact.js',
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'approvedForCurrentCleanHeads', 'syntheticRecordsOnly', 'oneGuardedSyntheticImport', 'forbiddenActionsAcknowledged', 'token disclosure', 'worktree must be clean before runtime approval can authorize mutation', 'mismatchedApprovalHeadRejected', 'dirtyApprovalRootRejected'],
+  },
 ];
 
 function git(cwd, args) {

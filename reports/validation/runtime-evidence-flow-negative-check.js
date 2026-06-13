@@ -96,6 +96,43 @@ function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root =
   return filePath;
 }
 
+function writeRuntimeApprovalArtifact(root = crossServiceRoot, mutateApproval = null) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-flow-approval-'));
+  const approval = {
+    id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
+    status: 'approved',
+    approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvedBy: 'owner@example.test',
+    approvedAt: new Date().toISOString(),
+    approvedForCurrentCleanHeads: true,
+    serviceHeads: {
+      warehouse: currentHeadForService('warehouse', root),
+      catalog: currentHeadForService('catalog', root),
+      suppliers: currentHeadForService('suppliers', root),
+    },
+    scope: {
+      syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
+      syntheticRecordsOnly: true,
+      oneGuardedSyntheticImport: true,
+      runApprovedRuntimeSmoke: true,
+      ownerApproval: 'explicit',
+      smokeAllowMutation: true,
+    },
+    forbiddenActionsAcknowledged: [
+      'real supplier imports',
+      'production payload ingestion',
+      'customer data capture',
+      'hard deletes',
+      'compensating stock changes',
+      'token disclosure',
+    ],
+  };
+  if (mutateApproval) mutateApproval(approval);
+  const filePath = path.join(dir, 'runtime-approval.json');
+  fs.writeFileSync(filePath, JSON.stringify(approval, null, 2));
+  return filePath;
+}
+
 function createDeploymentEvidenceTemplate(root = crossServiceRoot) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-flow-template-'));
   const filePath = path.join(dir, 'deployment-template.json');
@@ -129,12 +166,16 @@ function runPassCase(name, args, expectedText) {
 
 function runCase(name, envPatch, expectedText, args = ["--config-only"]) {
   const commandArgs = args[0] && args[0].endsWith('.js') ? args : ["reports/validation/run-runtime-evidence-flow.js", ...args];
+  const env = {
+    ...baseEnv,
+    ...envPatch,
+  };
+  if (env.RUN_APPROVED_RUNTIME_SMOKE === 'true' && !Object.prototype.hasOwnProperty.call(envPatch, 'RUNTIME_APPROVAL_ARTIFACT_FILE')) {
+    env.RUNTIME_APPROVAL_ARTIFACT_FILE = writeRuntimeApprovalArtifact(env.CROSS_SERVICE_ROOT || crossServiceRoot);
+  }
   const result = spawnSync(process.execPath, commandArgs, {
     cwd: process.cwd(),
-    env: {
-      ...baseEnv,
-      ...envPatch,
-    },
+    env,
     encoding: "utf8",
   });
   assert(result.status !== 0, name + " should fail");
@@ -144,6 +185,7 @@ function runCase(name, envPatch, expectedText, args = ["--config-only"]) {
 }
 
 const cases = [
+  runPassCase('approval-artifact-self-test-rejects-stale-or-dirty-approval', ['reports/validation/verify-runtime-approval-artifact.js', '--self-test'], 'mismatchedApprovalHeadRejected'),
   runPassCase('manifest-self-test-writes-hashed-evidence', ['--manifest-self-test'], 'manifest-self-test-passed'),
   runPassCase('manifest-verifier-self-test-rejects-tampering', ['reports/validation/verify-runtime-evidence-manifest.js', '--self-test'], 'tamperedHashRejected'),
   runPassCase('manifest-bundle-self-test-cross-checks-deployment', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'deploymentManifestMismatchRejected'),
@@ -167,6 +209,28 @@ const cases = [
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'TRACE_OWN_WAREHOUSE_ID'),
+  runCase('approved-smoke-missing-runtime-approval-artifact', {
+    RUN_APPROVED_RUNTIME_SMOKE: 'true',
+    TRACE_SUPPLIER_ID: 'supplier-synthetic',
+    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+    TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence(),
+    RUNTIME_APPROVAL_ARTIFACT_FILE: '',
+    OWNER_APPROVAL: 'explicit',
+    SMOKE_ALLOW_MUTATION: 'true',
+  }, 'RUNTIME_APPROVAL_ARTIFACT_FILE'),
+  runCase('approved-smoke-runtime-approval-head-not-current', {
+    RUN_APPROVED_RUNTIME_SMOKE: 'true',
+    TRACE_SUPPLIER_ID: 'supplier-synthetic',
+    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+    TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence(),
+    RUNTIME_APPROVAL_ARTIFACT_FILE: writeRuntimeApprovalArtifact(crossServiceRoot, (approval) => {
+      approval.serviceHeads.catalog = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+    }),
+    OWNER_APPROVAL: 'explicit',
+    SMOKE_ALLOW_MUTATION: 'true',
+  }, 'catalog head must match current'),
   runCase('approved-smoke-missing-deployment-evidence', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
@@ -267,6 +331,18 @@ const cases = [
       SMOKE_ALLOW_MUTATION: 'true',
     }, 'warehouse healthEvidence');
   })(),
+  runCase("approved-smoke-execution-validates-approval-before-fixture", {
+    RUN_APPROVED_RUNTIME_SMOKE: "true",
+    TRACE_SUPPLIER_ID: "supplier-synthetic",
+    TRACE_IMPORT_IDEMPOTENCY_KEY: "manual:traceability-synthetic",
+    TRACE_CLEANUP_EVIDENCE: "deferred:traceability-runbook",
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence(),
+    RUNTIME_APPROVAL_ARTIFACT_FILE: writeRuntimeApprovalArtifact(crossServiceRoot, (approval) => {
+      approval.scope.syntheticRecordsOnly = false;
+    }),
+    OWNER_APPROVAL: "explicit",
+    SMOKE_ALLOW_MUTATION: "true",
+  }, "syntheticRecordsOnly", []),
   runCase("approved-smoke-execution-validates-deployment-before-fixture", {
     RUN_APPROVED_RUNTIME_SMOKE: "true",
     TRACE_SUPPLIER_ID: "supplier-synthetic",

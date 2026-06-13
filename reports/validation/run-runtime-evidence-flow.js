@@ -36,6 +36,7 @@ const requiredApprovedSmokeEnv = [
   'TRACE_IMPORT_IDEMPOTENCY_KEY',
   'TRACE_CLEANUP_EVIDENCE',
   'DEPLOYMENT_EVIDENCE_FILE',
+  'RUNTIME_APPROVAL_ARTIFACT_FILE',
 ];
 
 function assert(condition, message) {
@@ -280,10 +281,23 @@ function runNode(commandArgs, env) {
   assert(result.status === 0, `${commandArgs.join(' ')} failed with exit ${result.status}`);
 }
 
+function validateRuntimeApprovalArtifactFile(filePath) {
+  const result = spawnSync(process.execPath, ['reports/validation/verify-runtime-approval-artifact.js', filePath], {
+    cwd: process.cwd(),
+    env: process.env,
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) {
+    throw new Error('runtime approval artifact validation failed: ' + (result.stdout + result.stderr).trim());
+  }
+  return JSON.parse(result.stdout);
+}
+
 function validateApprovedSmokeConfig() {
   requireEnv(requiredApprovedSmokeEnv);
   assert(process.env.OWNER_APPROVAL === 'explicit', 'OWNER_APPROVAL=explicit is required for approved runtime smoke');
   assert(process.env.SMOKE_ALLOW_MUTATION === 'true', 'SMOKE_ALLOW_MUTATION=true is required for approved runtime smoke');
+  validateRuntimeApprovalArtifactFile(envValue('RUNTIME_APPROVAL_ARTIFACT_FILE'));
   validateDeploymentEvidenceFile(envValue('DEPLOYMENT_EVIDENCE_FILE'));
 }
 
@@ -293,6 +307,7 @@ function printPlan() {
     outputDir,
     requiredBaseEnv,
     requiredApprovedSmokeEnv,
+    approvalArtifactValidation: 'requires RUNTIME_APPROVAL_ARTIFACT_FILE with owner approval, synthetic-only scope, forbidden-action acknowledgement, clean current service heads, and service SHAs matching current repo HEADs',
     deploymentEvidenceValidation: 'requires warehouse/catalog/suppliers commit SHA matching current repo HEAD, deploy command, completed health evidence, and 401/403 protected endpoint evidence',
     runApprovedSmokeEnv: 'RUN_APPROVED_RUNTIME_SMOKE=true',
     artifacts: {
@@ -302,7 +317,7 @@ function printPlan() {
       manifest: envValue('RUNTIME_EVIDENCE_MANIFEST', path.join(outputDir, 'stock-traceability-runtime-evidence-manifest.json')),
     },
     order: [
-      'Validate approved-smoke owner, mutation, cleanup, and deployment evidence before any live request when RUN_APPROVED_RUNTIME_SMOKE=true.',
+      'Validate approved-smoke owner, mutation, cleanup, runtime approval artifact, and deployment evidence before any live request when RUN_APPROVED_RUNTIME_SMOKE=true.',
       'Run source preflight.',
       'Run read-only fixture check and save fixture JSON.',
       'Stop unless RUN_APPROVED_RUNTIME_SMOKE=true is set.',
@@ -339,6 +354,7 @@ try {
       outputDir,
       runApprovedSmoke,
       approvedSmokeConfigReady: runApprovedSmoke,
+      runtimeApprovalArtifactFile: runApprovedSmoke ? envValue('RUNTIME_APPROVAL_ARTIFACT_FILE') : null,
       redactedFixtureCommand: redactedFixtureCommand(),
       redactedSmokeCommand: runApprovedSmoke ? redactedSmokeCommand() : null,
     }, null, 2));
