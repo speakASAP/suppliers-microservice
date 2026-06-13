@@ -87,7 +87,7 @@ export class ImportsService {
     return this.importJobRepository.findOne({ where: { id } });
   }
 
-  async runImport(jobId: string, supplierId: string): Promise<void> {
+  async runImport(jobId: string, supplierId: string, _options: RunImportDto = {}): Promise<void> {
     const job = await this.importJobRepository.findOne({ where: { id: jobId, supplierId } });
     if (!job) throw new NotFoundException("Import job " + jobId + " not found");
     if (job.status === "running") return;
