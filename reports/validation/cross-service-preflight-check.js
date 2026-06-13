@@ -15,7 +15,17 @@ const checks = [
   {
     service: 'warehouse',
     file: 'src/warehouses/warehouses.controller.ts',
-    patterns: ['@Get(\'topology\')', '@Post(\'logistics/batch\')'],
+    patterns: ['BatchWarehouseLogisticsDto', "@Get('topology')", "@Post('logistics/batch')"],
+  },
+  {
+    service: 'warehouse',
+    file: 'src/warehouses/dto/warehouse.dto.ts',
+    patterns: ['BatchWarehouseLogisticsDto', 'ArrayNotEmpty', 'ArrayMaxSize(200)', 'IsString({ each: true })'],
+  },
+  {
+    service: 'warehouse',
+    file: 'test/warehouses.dto.spec.ts',
+    patterns: ['BatchWarehouseLogisticsDto', 'rejects missing, empty, and oversized logistics batch requests', 'rejects non-string product identifiers'],
   },
   {
     service: 'warehouse',
@@ -30,7 +40,7 @@ const checks = [
   {
     service: 'warehouse',
     file: 'test/warehouses.service.spec.ts',
-    patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', 'responsibility: \'supplier\'', 'responsibility: \'warehouse\''],
+    patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', "responsibility: 'supplier'", "responsibility: 'warehouse'"],
   },
   {
     service: 'catalog',
