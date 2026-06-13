@@ -35,7 +35,7 @@ const checks = [
   {
     service: 'warehouse',
     file: 'src/stock/stock.service.ts',
-    patterns: ['warehouseType', 'supplierId'],
+    patterns: ['warehouseType', 'supplierId', 'relations: [\'warehouse\']', 'assertReservableWarehouseOrigin', 'is supplier-managed but is not linked to a supplier'],
   },
   {
     service: 'warehouse',
@@ -51,6 +51,11 @@ const checks = [
     service: 'warehouse',
     file: 'docs/contracts/supplier-reconciliation-contract.md',
     patterns: ['Supplier-managed warehouses must have a Warehouse-owned `supplierId`', 'must match the request supplier'],
+  },
+  {
+    service: 'warehouse',
+    file: 'test/stock.service.spec.ts',
+    patterns: ['rejects reservation from supplier-managed stock without supplier linkage', 'is supplier-managed but is not linked to a supplier', "relations: ['warehouse']"],
   },
   {
     service: 'warehouse',

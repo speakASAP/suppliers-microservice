@@ -1,5 +1,13 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Warehouse Reservation Supplier Linkage Preflight Gate
+
+Change: aligned Suppliers cross-service preflight with the Warehouse reservation supplier-linkage guard. Preflight now requires Warehouse checkout reservations to load warehouse origin metadata and reject supplier-managed stock rows missing supplier ownership before saving stock, reservation, or movement rows.
+
+Validation evidence: node reports/validation/cross-service-preflight-check.js passed after Warehouse source hardening and before commit. This was source-side only; no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse mutation, or cleanup mutation was performed.
+
+Next unfinished chunk: owner-approved current-head deployment and guarded runtime evidence regeneration remains required before stock traceability can be marked complete.
+
 ## 2026-06-13 - Supplier Stock Candidate Ownership Gate
 
 Change: tightened Suppliers Warehouse stock-boundary validation so every candidate must carry a non-empty supplierId matching the import supplier whenever the import is validated for Warehouse mutation. This prevents supplier-managed virtual stock from entering the Warehouse reconciliation path without explicit supplier ownership on the candidate itself.
