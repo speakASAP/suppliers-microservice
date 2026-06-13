@@ -96,22 +96,25 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 - TRACE_IMPORT_IDEMPOTENCY_KEY
 - TRACE_CLEANUP_EVIDENCE
 - DEPLOYMENT_EVIDENCE_FILE pointing to completed deployment evidence JSON
+- RUNTIME_APPROVAL_ARTIFACT_FILE pointing to owner-approved JSON for current clean service heads
 - CATALOG_TOKEN, WAREHOUSE_TOKEN, SUPPLIERS_TOKEN kept only in shell environment
 
 ## Command Order
 
 1. Run \`node reports/validation/cross-service-preflight-check.js\` and confirm source checks pass and completionGate is incomplete before deployment.
 2. Generate deployment evidence skeleton with \`DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js\`.
-3. Deploy Warehouse first: \`ssh alfares 'cd /home/ssf/Documents/Github/warehouse-microservice && ./scripts/deploy.sh'\`.
-4. Deploy Catalog second: \`ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/deploy.sh'\`.
-5. Deploy Suppliers third: \`ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && ./scripts/deploy.sh'\`.
-6. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence for Warehouse topology/logistics, Catalog availability/coverage, and Suppliers imports.
-7. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, and the completed deployment evidence file.
-8. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
-9. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.
-10. Confirm the bundle verifier proves local fulfillment, supplier replenishment, and dropship routes have positive availability and \`canReserveFromWarehouse=true\` in Warehouse, Catalog, and FlipFlop smoke artifacts.
-11. Confirm the bundle verifier proves the Suppliers import job completed, validated the Catalog product ID, preserved Warehouse stock authority, and recorded an owner-approved Warehouse update.
-12. Run the final verification commands below and require status complete before claiming the goal is done.
+3. Generate the approval prompt with \`RUNTIME_APPROVAL_REQUEST_OUTPUT=/tmp/stock-traceability-runtime-approval-request.md node reports/validation/create-runtime-approval-request.js\` and create the owner-approved runtime approval artifact for those exact heads.
+4. Validate the approval artifact with \`node reports/validation/verify-runtime-approval-artifact.js /tmp/stock-traceability-runtime-approval.json\`.
+5. Deploy Warehouse first: \`ssh alfares 'cd /home/ssf/Documents/Github/warehouse-microservice && ./scripts/deploy.sh'\`.
+6. Deploy Catalog second: \`ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/deploy.sh'\`.
+7. Deploy Suppliers third: \`ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && ./scripts/deploy.sh'\`.
+8. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence for Warehouse topology/logistics, Catalog availability/coverage, and Suppliers imports.
+9. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, RUNTIME_APPROVAL_ARTIFACT_FILE, and the completed deployment evidence file.
+10. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
+11. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.
+12. Confirm the bundle verifier proves local fulfillment, supplier replenishment, and dropship routes have positive availability and \`canReserveFromWarehouse=true\` in Warehouse, Catalog, and FlipFlop smoke artifacts.
+13. Confirm the bundle verifier proves the Suppliers import job completed, validated the Catalog product ID, preserved Warehouse stock authority, and recorded an owner-approved Warehouse update.
+14. Run the final verification commands below and require status complete before claiming the goal is done.
 
 ## Final Verification Commands
 
@@ -133,6 +136,8 @@ function assertSelfTestContent(markdown) {
     'Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees',
     'TRACE_SUPPLIER_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID',
     'DEPLOYMENT_EVIDENCE_FILE',
+    'RUNTIME_APPROVAL_ARTIFACT_FILE',
+    'verify-runtime-approval-artifact.js /tmp/stock-traceability-runtime-approval.json',
     'Deploy Warehouse first',
     'RUN_APPROVED_RUNTIME_SMOKE=true',
     'verify-runtime-evidence-report.js',
