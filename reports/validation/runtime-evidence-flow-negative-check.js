@@ -390,6 +390,17 @@ const cases = [
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'warehouse head must match deployment commitSha'),
+  runCase('approved-smoke-non-canonical-deployment-generated-at', {
+    RUN_APPROVED_RUNTIME_SMOKE: 'true',
+    TRACE_SUPPLIER_ID: 'supplier-synthetic',
+    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+    TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({}, (deployment) => {
+      deployment.generatedAt = 'June 13 2026';
+    }),
+    OWNER_APPROVAL: 'explicit',
+    SMOKE_ALLOW_MUTATION: 'true',
+  }, 'canonical UTC ISO timestamp'),
   runCase('approved-smoke-deployment-sha-not-current-head', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
