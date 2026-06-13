@@ -97,9 +97,20 @@ function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root =
   return filePath;
 }
 
-function writeReadinessManifestForApproval(dir, serviceHeads) {
-  const filePath = path.join(dir, 'readiness-manifest.json');
-  fs.writeFileSync(filePath, JSON.stringify({ status: 'ready-for-owner-approval', serviceHeads, artifacts: {} }, null, 2));
+function writeReadinessManifestForApproval(dir, serviceHeads, root = crossServiceRoot) {
+  const bundleDir = path.join(dir, 'readiness');
+  const result = spawnSync(process.execPath, ['reports/validation/create-runtime-readiness-bundle.js'], {
+    cwd: process.cwd(),
+    env: {
+      PATH: process.env.PATH,
+      HOME: process.env.HOME,
+      CROSS_SERVICE_ROOT: root,
+      RUNTIME_READINESS_BUNDLE_DIR: bundleDir,
+    },
+    encoding: 'utf8',
+  });
+  assert(result.status === 0, 'runtime approval helper should generate a verified readiness bundle: ' + (result.stdout + result.stderr).trim());
+  const filePath = path.join(bundleDir, 'stock-traceability-runtime-readiness-manifest.json');
   return {
     file: filePath,
     sha256: crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex'),
@@ -123,7 +134,7 @@ function writeRuntimeApprovalArtifact(root = crossServiceRoot, mutateApproval = 
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
     serviceHeads,
-    readinessManifest: writeReadinessManifestForApproval(dir, serviceHeads),
+    readinessManifest: writeReadinessManifestForApproval(dir, serviceHeads, root),
     scope: {
       syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
       syntheticRecordsOnly: true,
