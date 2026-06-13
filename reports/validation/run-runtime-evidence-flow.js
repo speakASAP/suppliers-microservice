@@ -62,12 +62,21 @@ function isCommitSha(value) {
   return typeof value === 'string' && /^[0-9a-f]{7,40}$/i.test(value.trim());
 }
 
-function currentHeadForService(service) {
+function repoPathForService(service) {
   const repo = deploymentRepos[service];
   assert(repo, `Unknown deployment service: ${service}`);
   const repoPath = path.join(crossServiceRoot, repo);
   assert(fs.existsSync(repoPath), `Repository not found for ${service}: ${repoPath}`);
-  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoPath, encoding: 'utf8' }).trim();
+  return repoPath;
+}
+
+function currentHeadForService(service) {
+  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoPathForService(service), encoding: 'utf8' }).trim();
+}
+
+function assertCleanWorktreeForService(service) {
+  const status = execFileSync('git', ['status', '--short'], { cwd: repoPathForService(service), encoding: 'utf8' }).trim();
+  assert(!status, `${deploymentRepos[service]} worktree must be clean before approved runtime evidence can use its deployment commit`);
 }
 
 function readJsonFile(filePath, label) {
@@ -148,6 +157,9 @@ function validateDeploymentEvidenceFile(filePath) {
     assert(isCompletedEvidenceText(item.healthEvidence), `DEPLOYMENT_EVIDENCE_FILE ${service} healthEvidence must be completed and must not contain TODO`);
     assert(isCompletedEvidenceText(item.protectedEndpointEvidence), `DEPLOYMENT_EVIDENCE_FILE ${service} protectedEndpointEvidence must be completed and must not contain TODO`);
     assert(/401|403/.test(item.protectedEndpointEvidence || ''), `DEPLOYMENT_EVIDENCE_FILE ${service} protectedEndpointEvidence must include 401 or 403`);
+  }
+  for (const service of ['warehouse', 'catalog', 'suppliers']) {
+    assertCleanWorktreeForService(service);
   }
   return deployment;
 }

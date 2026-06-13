@@ -135,12 +135,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-deployment-evidence-template.js',
-    patterns: ['DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT', 'warehouse-microservice', 'catalog-microservice', 'suppliers-microservice', 'protectedEndpointEvidencePlaceholder', 'generatedFromCurrentHeads', 'Regenerate this template after any Warehouse, Catalog, or Suppliers commit', 'verify-stock-traceability-completion.js', 'TODO'],
+    patterns: ['DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT', 'warehouse-microservice', 'catalog-microservice', 'suppliers-microservice', 'protectedEndpointEvidencePlaceholder', 'assertCleanWorktree', 'worktree must be clean before generating deployment evidence', 'generatedFromCurrentHeads', 'Regenerate this template after any Warehouse, Catalog, or Suppliers commit', 'verify-stock-traceability-completion.js', 'TODO'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/run-runtime-evidence-flow.js',
-    patterns: ['--fixture-check', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'fixture-ready', 'validateApprovedSmokeConfig', 'validateDeploymentEvidenceFile', 'generatedFromCurrentHeads', 'completion verifier reminder', 'currentHeadForService', 'commitSha must match current', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'TRACE_OWN_WAREHOUSE_ID', 'FIXTURE_CHECK_RESULT_FILE', 'generate-runtime-evidence-report.js', 'verify-runtime-evidence-report.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'RUNTIME_EVIDENCE_MANIFEST', 'stock-traceability-runtime-evidence-manifest.json', 'sha256', '--manifest-self-test'],
+    patterns: ['--fixture-check', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'fixture-ready', 'validateApprovedSmokeConfig', 'validateDeploymentEvidenceFile', 'generatedFromCurrentHeads', 'completion verifier reminder', 'assertCleanWorktreeForService', 'worktree must be clean before approved runtime evidence', 'currentHeadForService', 'commitSha must match current', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'TRACE_OWN_WAREHOUSE_ID', 'FIXTURE_CHECK_RESULT_FILE', 'generate-runtime-evidence-report.js', 'verify-runtime-evidence-report.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'RUNTIME_EVIDENCE_MANIFEST', 'stock-traceability-runtime-evidence-manifest.json', 'sha256', '--manifest-self-test'],
   },
   {
     service: 'suppliers',
@@ -170,7 +170,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-evidence-flow-negative-check.js',
-    patterns: ['approved-smoke-missing-deployment-evidence', 'approved-smoke-missing-own-warehouse-id', 'approved-smoke-missing-owner-approval', 'approved-smoke-missing-mutation-allowance', 'approved-smoke-invalid-deployment-evidence', 'approved-smoke-deployment-sha-not-current-head', 'approved-smoke-missing-current-head-deployment-marker', 'approved-smoke-missing-protected-endpoint-evidence', 'approved-smoke-health-evidence-still-placeholder', 'approved-smoke-template-not-complete-evidence', 'RUN_APPROVED_RUNTIME_SMOKE', 'DEPLOYMENT_EVIDENCE_FILE', 'generatedFromCurrentHeads', 'verify-stock-traceability-completion.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'missingCatalogOwnRouteRejected', 'missingProjectionOwnRouteRejected', '--manifest-self-test'],
+    patterns: ['approved-smoke-missing-deployment-evidence', 'approved-smoke-missing-own-warehouse-id', 'approved-smoke-missing-owner-approval', 'approved-smoke-missing-mutation-allowance', 'approved-smoke-invalid-deployment-evidence', 'approved-smoke-deployment-sha-not-current-head', 'approved-smoke-missing-current-head-deployment-marker', 'approved-smoke-dirty-service-worktree', 'approved-smoke-missing-protected-endpoint-evidence', 'approved-smoke-health-evidence-still-placeholder', 'approved-smoke-template-not-complete-evidence', 'RUN_APPROVED_RUNTIME_SMOKE', 'DEPLOYMENT_EVIDENCE_FILE', 'generatedFromCurrentHeads', 'verify-stock-traceability-completion.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'missingCatalogOwnRouteRejected', 'missingProjectionOwnRouteRejected', '--manifest-self-test'],
   },
   {
     service: 'suppliers',

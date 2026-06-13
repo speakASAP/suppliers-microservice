@@ -15,11 +15,34 @@ const deploymentRepos = {
   suppliers: 'suppliers-microservice',
 };
 
-function currentHeadForService(service) {
+function currentHeadForService(service, root = crossServiceRoot) {
   return execFileSync('git', ['rev-parse', 'HEAD'], {
-    cwd: path.join(crossServiceRoot, deploymentRepos[service]),
+    cwd: path.join(root, deploymentRepos[service]),
     encoding: 'utf8',
   }).trim();
+}
+
+function git(repoPath, args) {
+  return execFileSync('git', args, { cwd: repoPath, encoding: 'utf8' }).trim();
+}
+
+function createCleanCrossServiceRoot() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-root-'));
+  for (const repo of Object.values(deploymentRepos)) {
+    const repoPath = path.join(root, repo);
+    fs.mkdirSync(repoPath, { recursive: true });
+    git(repoPath, ['init']);
+    fs.writeFileSync(path.join(repoPath, 'README.md'), repo + '\n');
+    git(repoPath, ['add', 'README.md']);
+    git(repoPath, ['-c', 'user.email=traceability@example.test', '-c', 'user.name=Traceability Check', 'commit', '-m', 'Initial traceability fixture']);
+  }
+  return root;
+}
+
+function createDirtyCrossServiceRoot() {
+  const root = createCleanCrossServiceRoot();
+  fs.writeFileSync(path.join(root, deploymentRepos.catalog, 'dirty.txt'), 'uncommitted catalog change\n');
+  return root;
 }
 
 const baseEnv = {
@@ -38,26 +61,26 @@ const baseEnv = {
   TRACE_DROPSHIP_WAREHOUSE_ID: 'warehouse-dropship',
 };
 
-function writeDeploymentEvidence(overrides = {}, mutateDeployment = null) {
+function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root = crossServiceRoot) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-flow-deployment-'));
   const deployment = {
     generatedFromCurrentHeads: true,
     completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: {
       warehouse: {
-        commitSha: currentHeadForService('warehouse'),
+        commitSha: currentHeadForService('warehouse', root),
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/api/health passed',
         protectedEndpointEvidence: 'anonymous topology returned 401',
       },
       catalog: {
-        commitSha: currentHeadForService('catalog'),
+        commitSha: currentHeadForService('catalog', root),
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/health passed',
         protectedEndpointEvidence: 'anonymous coverage returned 401',
       },
       suppliers: {
-        commitSha: currentHeadForService('suppliers'),
+        commitSha: currentHeadForService('suppliers', root),
         deployCommand: './scripts/deploy.sh',
         healthEvidence: '/api/health passed',
         protectedEndpointEvidence: 'anonymous imports returned 401',
@@ -73,7 +96,7 @@ function writeDeploymentEvidence(overrides = {}, mutateDeployment = null) {
   return filePath;
 }
 
-function createDeploymentEvidenceTemplate() {
+function createDeploymentEvidenceTemplate(root = crossServiceRoot) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-flow-template-'));
   const filePath = path.join(dir, 'deployment-template.json');
   const result = spawnSync(process.execPath, ['reports/validation/create-deployment-evidence-template.js'], {
@@ -82,6 +105,7 @@ function createDeploymentEvidenceTemplate() {
       PATH: process.env.PATH,
       HOME: process.env.HOME,
       DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT: filePath,
+      CROSS_SERVICE_ROOT: root,
     },
     encoding: 'utf8',
   });
@@ -194,6 +218,19 @@ const cases = [
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'generated from current service heads'),
+  (() => {
+    const dirtyRoot = createDirtyCrossServiceRoot();
+    return runCase('approved-smoke-dirty-service-worktree', {
+      CROSS_SERVICE_ROOT: dirtyRoot,
+      RUN_APPROVED_RUNTIME_SMOKE: 'true',
+      TRACE_SUPPLIER_ID: 'supplier-synthetic',
+      TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+      TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+      DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({}, null, dirtyRoot),
+      OWNER_APPROVAL: 'explicit',
+      SMOKE_ALLOW_MUTATION: 'true',
+    }, 'catalog-microservice worktree must be clean');
+  })(),
   runCase('approved-smoke-missing-protected-endpoint-evidence', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
@@ -212,15 +249,19 @@ const cases = [
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'suppliers healthEvidence'),
-  runCase('approved-smoke-template-not-complete-evidence', {
-    RUN_APPROVED_RUNTIME_SMOKE: 'true',
-    TRACE_SUPPLIER_ID: 'supplier-synthetic',
-    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
-    TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
-    DEPLOYMENT_EVIDENCE_FILE: createDeploymentEvidenceTemplate(),
-    OWNER_APPROVAL: 'explicit',
-    SMOKE_ALLOW_MUTATION: 'true',
-  }, 'warehouse healthEvidence'),
+  (() => {
+    const cleanRoot = createCleanCrossServiceRoot();
+    return runCase('approved-smoke-template-not-complete-evidence', {
+      CROSS_SERVICE_ROOT: cleanRoot,
+      RUN_APPROVED_RUNTIME_SMOKE: 'true',
+      TRACE_SUPPLIER_ID: 'supplier-synthetic',
+      TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+      TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+      DEPLOYMENT_EVIDENCE_FILE: createDeploymentEvidenceTemplate(cleanRoot),
+      OWNER_APPROVAL: 'explicit',
+      SMOKE_ALLOW_MUTATION: 'true',
+    }, 'warehouse healthEvidence');
+  })(),
   runCase("approved-smoke-execution-validates-deployment-before-fixture", {
     RUN_APPROVED_RUNTIME_SMOKE: "true",
     TRACE_SUPPLIER_ID: "supplier-synthetic",

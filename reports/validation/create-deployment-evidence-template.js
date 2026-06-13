@@ -33,11 +33,22 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-function commitShaFor(repo) {
-  if (selfTest) return '0'.repeat(40);
+function repoPathFor(repo) {
   const repoPath = path.join(root, repo);
   assert(fs.existsSync(repoPath), `Repository not found: ${repoPath}`);
-  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoPath, encoding: 'utf8' }).trim();
+  return repoPath;
+}
+
+function assertCleanWorktree(repo) {
+  if (selfTest) return;
+  const status = execFileSync('git', ['status', '--short'], { cwd: repoPathFor(repo), encoding: 'utf8' }).trim();
+  assert(!status, `${repo} worktree must be clean before generating deployment evidence`);
+}
+
+function commitShaFor(repo) {
+  if (selfTest) return '0'.repeat(40);
+  assertCleanWorktree(repo);
+  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repoPathFor(repo), encoding: 'utf8' }).trim();
 }
 
 function buildTemplate() {
