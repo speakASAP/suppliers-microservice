@@ -213,3 +213,13 @@ Validation evidence: report generator self-test, runtime evidence negative suite
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
 
 Next unfinished chunk: regenerate handoff and deployment evidence after any additional commit, then perform owner-approved deployment and guarded runtime evidence regeneration for the latest clean Warehouse, Catalog, and Suppliers heads.
+
+## 2026-06-13 - Current-Head Flow Negative Coverage Checkpoint
+
+Change: committed Suppliers `fadc54cc073120cc01c4d2a031786b0e26dab3a0` so the approved runtime evidence flow negative suite now treats current-head deployment evidence as a first-class requirement. The valid deployment evidence fixture includes `generatedFromCurrentHeads: true` plus the completion-verifier reminder, and the suite has a dedicated `approved-smoke-missing-current-head-deployment-marker` failure case.
+
+Validation evidence: `node --check reports/validation/runtime-evidence-flow-negative-check.js`, `node reports/validation/runtime-evidence-flow-negative-check.js`, `node reports/validation/cross-service-preflight-check.js`, and `git diff --check` passed before commit. After commit, regenerated `/tmp/stock-traceability-runtime-handoff-current.md` and `/tmp/stock-traceability-deployment-evidence-current.template.json`; both recorded Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, Suppliers `fadc54cc073120cc01c4d2a031786b0e26dab3a0`, and clean source state. `cross-service-preflight-check.js` passed with completionGate `incomplete`; `verify-stock-traceability-completion.js` exited 2 because the saved runtime manifest still references an older Suppliers head.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. The previous passed runtime report remains valid only for its recorded deployed commits; it is not current-head completion evidence.
+
+Next unfinished chunk: perform owner-approved deployment and guarded runtime evidence regeneration for the latest clean Warehouse, Catalog, and Suppliers heads, then require `verify-stock-traceability-completion.js` to return complete before closing this goal.
