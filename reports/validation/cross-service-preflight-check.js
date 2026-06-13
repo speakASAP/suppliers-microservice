@@ -223,6 +223,11 @@ const checks = [
     file: 'reports/validation/synthetic-approved-import-run-check.js',
     patterns: ['duplicateWarehouseCandidateRejected', 'mismatchedCandidateSupplierRejected', 'Duplicate Warehouse stock candidate', 'Warehouse stock candidate supplierId must match the import supplier before Warehouse mutation', 'approved mutation must verify each unique Catalog product before Warehouse mutation', 'approved mutation must record passed Catalog product validation', 'unknown Catalog product must record failed Catalog product validation', 'approved mutation must include supplier replenishment warehouse', 'approved mutation must include dropship warehouse'],
   },
+  {
+    service: 'suppliers',
+    file: 'reports/validation/create-runtime-approval-request.js',
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'RUNTIME_APPROVAL_REQUEST_OUTPUT', 'Approve exactly these three actions', 'runtime approval request requires clean Warehouse, Catalog, and Suppliers worktrees', 'dirtyRowsRejected', 'approval request self-test must reject dirty source snapshots', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'This approval request is not completion evidence', 'verify-stock-traceability-completion.js'],
+  },
 ];
 
 function git(cwd, args) {
