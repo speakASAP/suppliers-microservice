@@ -158,3 +158,5 @@ Validation evidence: `npm run build` passed. `node reports/validation/synthetic-
 Boundary decision: no real supplier row, private endpoint, decoded credential, raw supplier payload, Catalog write, Warehouse production mutation, database schema change, or runtime secret change was introduced. Production supplier onboarding now requires creating an active supplier record with reviewed `apiUrl` and runtime credential refs.
 
 Next unfinished chunk: owner-approved supplier onboarding/runtime smoke using the production REST JSON contract, or a supplier-code-specific adapter if a supplier provides a non-generic contract.
+
+Deployment evidence: committed production REST JSON adapter as `1043871`, pushed to `origin/main`, ran `./scripts/deploy.sh`, and explicitly restarted the deployment because the manifest references mutable `latest`. Running pod `suppliers-microservice-6d5fdf4f5-k6lp7` is ready on image digest `sha256:eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34`. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.

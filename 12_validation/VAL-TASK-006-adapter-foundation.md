@@ -115,3 +115,7 @@ Additional validation evidence:
 - `node reports/validation/production-rest-json-adapter-check.js`: passed with deterministic replay keys, deterministic source fingerprint, runtime credential-ref resolution, defaulted `sourceRecordId`, and invalid payload blocking.
 
 Additional boundary confirmation: no private supplier URL, decoded credential, real SKU, raw production payload, Catalog mutation, Warehouse production mutation, database schema change, or Kubernetes secret change was introduced. Runtime onboarding remains a separate owner-approved step.
+
+## Deployment Evidence
+
+The production REST JSON adapter was deployed from commit `1043871`. Image digest `sha256:eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34` is running in pod `suppliers-microservice-6d5fdf4f5-k6lp7`. In-pod and external health checks returned healthy.
