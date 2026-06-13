@@ -158,7 +158,7 @@ function runSelfTest() {
     coverageAudit: { matchedProduct: { coverageStatus: 'covered', stockOrigin: 'mixed_stock' } },
     projection: { productId: 'product-synthetic', source: 'warehouse', stockQuantity: 14, routeCount: 3, routeTypes: fixture.logisticsRoutes, routeLegs: legs },
     supplierJob: { status: 'completed', supplierId: 'supplier-synthetic', idempotencyKey: 'manual:traceability-synthetic', sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE', catalogProductValidationStatus: 'passed', catalogProductIdsChecked: ['product-synthetic'], catalogProductValidationErrorCount: 0, warehouseAuthority: 'warehouse-microservice', warehouseStockUpdateAttempted: true, warehouseStockUpdateApproved: true, updatedProducts: 1 },
-    stockAuthority: { source: 'warehouse', warehouseTotalAvailable: 14, warehouseOriginAvailable: 14, catalogAvailabilityTotal: 14, catalogCoverageTotal: 14, projectionStockQuantity: 14 },
+    stockAuthority: { source: 'warehouse', warehouseTotalAvailable: 14, warehouseOriginAvailable: 14, catalogAvailabilityTotal: 14, catalogCoverageTotal: 14, projectionStockQuantity: 14, projectionSellableRouteAvailable: 14 },
   };
   const repoByService = { warehouse: 'warehouse-microservice', catalog: 'catalog-microservice', suppliers: 'suppliers-microservice' };
   const services = Object.fromEntries(['warehouse', 'catalog', 'suppliers'].map((service) => [service, {
@@ -170,18 +170,20 @@ function runSelfTest() {
   writeJson(fixtureFile, fixture);
   writeJson(smokeFile, smoke);
   writeJson(deploymentFile, {
+    generatedAt: new Date().toISOString(),
     generatedFromCurrentHeads: true,
     completionReminder: "Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.",
     services,
   });
-  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
+  const reportEnv = {
     FIXTURE_CHECK_RESULT_FILE: fixtureFile,
     SMOKE_RESULT_FILE: smokeFile,
     DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
     RUNTIME_EVIDENCE_OUTPUT: reportFile,
     REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
-  });
+  };
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], reportEnv);
   runNodeJson(['reports/validation/run-runtime-evidence-flow.js', '--manifest-self-test'], { CROSS_SERVICE_ROOT: selfTestRoot });
   const readinessDir = path.join(dir, 'readiness');
   fs.mkdirSync(readinessDir, { recursive: true });
@@ -214,6 +216,7 @@ function runSelfTest() {
   });
   const readinessManifestBinding = { file: readinessManifestFile, ...artifact(readinessManifestFile), status: 'verified', serviceHeads };
   writeJson(deploymentFile, {
+    generatedAt: new Date().toISOString(),
     generatedFromCurrentHeads: true,
     readinessManifest: readinessManifestBinding,
     completionReminder: "Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.",
@@ -244,6 +247,7 @@ function runSelfTest() {
     scope: { syntheticSkuPrefix: 'CODEX-STOCK-TRACE-', syntheticRecordsOnly: true, oneGuardedSyntheticImport: true, runApprovedRuntimeSmoke: true, ownerApproval: 'explicit', smokeAllowMutation: true },
     forbiddenActionsAcknowledged: ['real supplier imports', 'production payload ingestion', 'customer data capture', 'hard deletes', 'compensating stock changes', 'token disclosure'],
   });
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], reportEnv);
   writeJson(manifestFile, {
     status: 'runtime-complete-evidence-bundle',
     generatedAt: new Date().toISOString(),
