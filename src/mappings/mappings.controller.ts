@@ -1,4 +1,6 @@
 import { Controller, Get, Post, Body, Param, ParseUUIDPipe } from '@nestjs/common';
+import { SetCategoryMappingDto } from './dto/set-category-mapping.dto';
+import { ValidateCategoryMappingsDto } from './dto/validate-category-mappings.dto';
 import { MappingsService } from './mappings.service';
 
 @Controller('mappings')
@@ -12,13 +14,17 @@ export class MappingsController {
   }
 
   @Post()
-  async setMapping(@Body() body: { supplierId: string; supplierCategoryId: string; catalogCategoryId: string }) {
-    const mapping = await this.mappingsService.setMapping(
-      body.supplierId,
-      body.supplierCategoryId,
-      body.catalogCategoryId
-    );
+  async setMapping(@Body() body: SetCategoryMappingDto) {
+    const mapping = await this.mappingsService.setMapping(body);
     return { success: true, data: mapping };
   }
-}
 
+  @Post('supplier/:supplierId/validate')
+  async validateSupplierMappings(
+    @Param('supplierId', ParseUUIDPipe) supplierId: string,
+    @Body() body: ValidateCategoryMappingsDto,
+  ) {
+    const result = await this.mappingsService.validateSupplierCategories(supplierId, body.supplierCategoryIds);
+    return { success: true, data: result };
+  }
+}

@@ -1,6 +1,6 @@
 # Suppliers Implementation Plan
 
-Work one owner-approved goal chunk at a time. Default next goal is Goal 4 - Category Mapping Completeness And Catalog Boundary.
+Work one owner-approved goal chunk at a time. Default next goal is Goal 5 - Warehouse Stock Update Boundary.
 
 Workflow: read source-of-truth docs, query DocsRAG when available, select active/earliest pending goal, create goal artifacts, run pre-coding gate, implement only selected chunk, validate, append `docs/orchestrator/STATUS.md`, update `docs/IMPLEMENTATION_STATE.md`, `TASKS.md`, and `STATE.json` when state changes.
 

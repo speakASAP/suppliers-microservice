@@ -2,11 +2,11 @@
 
 ```yaml
 id: EP-TASK-003
-status: draft
+status: implemented
 source_task: ../11_tasks/TASK-003-review-category-mapping-completeness.md
 owner: supplier-service-owner
 created: 2026-06-12
-last_updated: 2026-06-12
+last_updated: 2026-06-13
 completeness_level: complete
 vision: ../01_vision/VISION.md
 constitution: ../00_constitution/CONSTITUTION.md
@@ -16,7 +16,7 @@ goal_impact: ../22_goal_impact/GOAL-IMPACT-TASK-003.md
 
 ## Metadata
 
-Task: `TASK-003`. Lifecycle state: draft. Review required before production data queries or code changes.
+Task: `TASK-003`. Lifecycle state: implemented for service-local validation. Production data queries remain owner-approval gated.
 
 ## Upstream Traceability
 
@@ -38,7 +38,7 @@ Mapping review may include supplier IDs and category names. Reports must avoid c
 
 ## Contract Validation Plan
 
-If a report format or API changes, document the contract and validation evidence before implementation. Otherwise treat as documentation/query review only.
+The mapping API keeps the existing `POST /api/mappings` response envelope and adds `POST /api/mappings/supplier/:supplierId/validate` for caller-supplied category completeness checks.
 
 ## Replay/Determinism Plan
 
@@ -46,11 +46,11 @@ Mapping completeness checks should be deterministic for a given supplier/categor
 
 ## Scope
 
-Define review method, identify missing mappings, and define import behavior for unmapped categories.
+Define review method, identify missing mappings from supplied category IDs, and define import behavior for unmapped categories.
 
 ## Non-Goals
 
-Automatic approval of mappings, catalog taxonomy changes, or supplier integration implementation.
+Automatic approval of mappings, production data queries, catalog taxonomy changes, or supplier integration implementation.
 
 ## Files to Inspect
 
@@ -61,11 +61,17 @@ Automatic approval of mappings, catalog taxonomy changes, or supplier integratio
 
 ## Files to Create
 
-Validation report and optional mapping review script if approved.
+Validation report, DTOs, and migration artifact.
 
 ## Files to Modify
 
-None unless owner approves code or script changes.
+- `src/mappings/category-mapping.entity.ts`
+- `src/mappings/mappings.service.ts`
+- `src/mappings/mappings.controller.ts`
+- `README.md`
+- `10_features/FEAT-002-category-mapping.md`
+- `12_validation/VAL-TASK-003-review-category-mapping-completeness.md`
+- `16_operations/INTEGRATIONS.md`
 
 ## Files That Must Not Be Modified
 
@@ -77,14 +83,15 @@ None unless owner approves code or script changes.
 ## Implementation Steps
 
 1. Confirm allowed data source for mapping review.
-2. Define review query or script using masked output where needed.
-3. Identify missing mappings.
-4. Define import behavior for unmapped categories.
-5. Record validation evidence.
+2. Prepare the Goal 3 import-job migration as a source artifact before deployment.
+3. Define a supplied-category completeness check using masked or synthetic output.
+4. Identify missing mappings from caller-supplied category IDs.
+5. Define import behavior for unmapped categories.
+6. Record validation evidence.
 
 ## Test Plan
 
-Run `npm run build` if code changes occur. Validate query/script output against synthetic or masked examples.
+Run `npm run build` because code changes occur. Validate completeness behavior against synthetic examples.
 
 ## Validation Plan
 
@@ -112,12 +119,13 @@ Review mapping completeness without exposing secrets. Do not change catalog taxo
 
 ## Completion Checklist
 
-- [ ] Implementation complete
-- [ ] Tests complete
-- [ ] Validation evidence collected
-- [ ] Documentation updated
-- [ ] Deviations documented
+- [x] Implementation complete
+- [x] Tests complete
+- [x] Validation evidence collected
+- [x] Documentation updated
+- [x] Deviations documented
 
 ## Change Note
 
 - 2026-06-12: Draft execution plan created from backlog item.
+- 2026-06-13: Implemented service-local mapping validation and documented production-data and deployment gates.

@@ -2,10 +2,10 @@
 
 ```yaml
 id: FEAT-002
-status: draft
+status: implemented
 owner: supplier-service-owner
 created: 2026-06-12
-last_updated: 2026-06-12
+last_updated: 2026-06-13
 completeness_level: complete
 upstream:
   - ../05_subsystems/SUB-003-category-mapping.md
@@ -40,6 +40,7 @@ Protects catalog quality by preventing unmapped or incorrectly mapped supplier c
 - Mapping upsert preserves unique supplier-category relationship.
 - Mapping completeness can be reviewed for active supplier inputs.
 - Missing mapping behavior is documented before downstream imports depend on it.
+- Catalog category identity remains Catalog-owned; Suppliers stores only selected Catalog category IDs.
 
 ## Dependencies
 
@@ -54,6 +55,7 @@ Run build checks, repository tests when added, mapping completeness review queri
 ## Change Note
 
 - 2026-06-12: Initial feature created from backlog item.
+- 2026-06-13: Implemented DTO validation and a supplied-category completeness check for Goal 4.
 
 ## Traceability
 

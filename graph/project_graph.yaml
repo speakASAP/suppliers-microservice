@@ -49,8 +49,14 @@ nodes:
   - id: PROMPT-TASK-001-ips-documentation-bootstrap
     path: 14_prompts/PROMPT-TASK-001-ips-documentation-bootstrap.md
     type: CodingPrompt
+  - id: PROMPT-TASK-003-review-category-mapping-completeness
+    path: 14_prompts/PROMPT-TASK-003-review-category-mapping-completeness.md
+    type: CodingPrompt
   - id: CP-TASK-002
     path: 13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md
+    type: ContextPackage
+  - id: CP-TASK-003-review-category-mapping-completeness
+    path: 13_context_packages/CP-TASK-003-review-category-mapping-completeness.md
     type: ContextPackage
   - id: VAL-TASK-001-ips-documentation-bootstrap
     path: 12_validation/VAL-TASK-001-ips-documentation-bootstrap.md
@@ -114,6 +120,9 @@ edges:
     type: derives_from
     to: TASK-003
   - from: EP-TASK-003
+    type: generates
+    to: PROMPT-TASK-003-review-category-mapping-completeness
+  - from: EP-TASK-003
     type: constrained_by
     to: ADR-001
   - from: PROMPT-TASK-001-ips-documentation-bootstrap
@@ -122,6 +131,12 @@ edges:
   - from: PROMPT-TASK-001-ips-documentation-bootstrap
     type: included_in_context
     to: CP-TASK-002
+  - from: PROMPT-TASK-003-review-category-mapping-completeness
+    type: derives_from
+    to: EP-TASK-003
+  - from: PROMPT-TASK-003-review-category-mapping-completeness
+    type: included_in_context
+    to: CP-TASK-003-review-category-mapping-completeness
   - from: VAL-TASK-001-ips-documentation-bootstrap
     type: validates
     to: TASK-001

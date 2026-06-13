@@ -22,11 +22,11 @@ Status: done
 - [x] Add synthetic duplicate-run validation evidence.
 
 ## Goal 4 - Category Mapping Completeness And Catalog Boundary
-Status: pending
-- [ ] Audit mapping create/update semantics.
-- [ ] Define missing, stale, or ambiguous mapping behavior before import.
-- [ ] Add validation for mapping identifiers and duplicate mapping updates.
-- [ ] Record Catalog ownership boundary and consumer compatibility risks.
+Status: done
+- [x] Audit mapping create/update semantics.
+- [x] Define missing, stale, or ambiguous mapping behavior before import.
+- [x] Add validation for mapping identifiers and duplicate mapping updates.
+- [x] Record Catalog ownership boundary and consumer compatibility risks.
 
 ## Goal 5 - Warehouse Stock Update Boundary
 Status: pending

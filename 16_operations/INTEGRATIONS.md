@@ -5,7 +5,7 @@ id: INTEGRATIONS
 status: draft
 owner: supplier-service-owner
 created: 2026-06-12
-last_updated: 2026-06-12
+last_updated: 2026-06-13
 completeness_level: complete
 upstream:
   - ../06_architecture/ARCHITECTURE_OVERVIEW.md
@@ -29,8 +29,11 @@ related_adrs: []
 - Supplier credentials must be environment-managed.
 - Supplier data must be validated before catalog or warehouse writes.
 - Category mapping gaps must be handled explicitly.
+- Missing supplier-category mappings block safe Catalog import for affected supplier category IDs.
+- Suppliers may reference Catalog category IDs but must not create, rename, or redefine Catalog taxonomy.
 - Import retries must preserve idempotency.
 
 ## Change Note
 
 - 2026-06-12: Initial integrations document created.
+- 2026-06-13: Added Goal 4 Catalog category ownership boundary and missing-mapping rule.

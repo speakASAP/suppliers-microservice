@@ -14,6 +14,7 @@ Connects to supplier APIs to import products and stock into the central catalog.
 - `POST /api/imports/run/:supplierId` - Run import for supplier
 - `GET /api/mappings/supplier/:supplierId` - Get category mappings
 - `POST /api/mappings` - Set category mapping
+- `POST /api/mappings/supplier/:supplierId/validate` - Validate mapping completeness for supplied supplier category IDs
 - `GET /health` - Health check
 
 ## Features
@@ -27,4 +28,3 @@ Connects to supplier APIs to import products and stock into the central catalog.
 
 - `catalog-microservice` (3200) - Target for imported products
 - `warehouse-microservice` (3201) - Target for imported stock
-

@@ -12,3 +12,4 @@
 - [x] 2026-06-12 Add curl to production Docker image
 - [x] 2026-06-12 Supplier contract and credential safety
 - [x] 2026-06-12 Import validation and idempotency
+- [x] 2026-06-13 Category mapping completeness and Catalog boundary

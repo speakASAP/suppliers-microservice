@@ -41,3 +41,15 @@ Boundary decision: no supplier-specific TASK-002 adapter, Catalog product write,
 Validation evidence: python3 scripts/pre_coding_gate.py --root . passed before source edits. npm run build passed. Synthetic payload validator check passed with one valid item and two invalid synthetic items. Synthetic duplicate-run check passed with one saved job and replay metadata showing created false and shouldRun false. python3 scripts/deployment_readiness_gate.py --root . passed.
 
 Next unfinished chunk: Goal 4 - Category Mapping Completeness And Catalog Boundary. Operational follow-ups remain: deploy the production image so the live pod receives curl, and add an owner-approved database migration before deploying the new import job idempotency columns to production.
+
+## 2026-06-13 - Goal 4 Category Mapping Completeness And Catalog Boundary
+
+Precondition decision: prepare the Goal 3 import-job database migration before production deployment because production disables TypeORM synchronization. The migration was added as a source artifact only and was not applied to production.
+
+Change: added request DTO validation for mapping upserts and mapping completeness checks, made `catalogCategoryId` required on new mapping writes, preserved deterministic upsert behavior for duplicate supplier-category mappings, and added a service/API completeness check for caller-supplied supplier category IDs. Documented that missing mappings block safe Catalog import, stale mappings require reviewed updates, and Suppliers references Catalog category IDs without owning Catalog taxonomy.
+
+Boundary decision: no production data query, production migration execution, deployment, Catalog category mutation, automatic mapping approval, supplier-specific adapter, Catalog product write, or Warehouse stock mutation was performed.
+
+Validation evidence: python3 scripts/pre_coding_gate.py --root . passed before source edits. npm run build passed. Synthetic compiled-service mapping check passed with one deterministic upsert row and one reported missing category. python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues passed. python3 scripts/deployment_readiness_gate.py --root . passed.
+
+Next unfinished chunk: Goal 5 - Warehouse Stock Update Boundary. Operational follow-ups remain: apply the owner-approved import-job migration and deploy the production image only after owner approval.

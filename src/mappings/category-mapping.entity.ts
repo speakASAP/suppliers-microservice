@@ -15,11 +15,10 @@ export class CategoryMapping {
   @Column({ length: 500, nullable: true })
   supplierCategoryName: string;
 
-  // Target category ID in catalog-microservice
+  // Catalog owns category identity; Suppliers only stores the selected Catalog category ID.
   @Column({ nullable: true })
   catalogCategoryId: string;
 
   @CreateDateColumn()
   createdAt: Date;
 }
-
