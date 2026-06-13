@@ -253,3 +253,13 @@ Validation evidence: `node --check reports/validation/verify-runtime-evidence-bu
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed and the bundle verifier passes against the generated manifest.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then perform owner-approved deployment and guarded runtime evidence regeneration before claiming completion.
+
+## 2026-06-13 - Clean Source Runtime Handoff Gate
+
+Change: committed Suppliers `34aa626` and `81857bc` so `create-runtime-handoff-checklist.js` now refuses to produce a ready-for-owner-approval runtime handoff unless Warehouse, Catalog, and Suppliers all have clean worktrees. The rendered handoff now explicitly tells operators to commit or remove dirty source and regenerate the handoff before approval.
+
+Validation evidence: `node --check reports/validation/create-runtime-handoff-checklist.js`, `node reports/validation/create-runtime-handoff-checklist.js --self-test`, `node reports/validation/cross-service-preflight-check.js`, `git diff --check`, handoff regeneration, and deployment-evidence template regeneration passed. Regenerated `/tmp/stock-traceability-runtime-handoff-current.md` recorded Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, Suppliers `81857bc54469e5f82e6feaa4d94a8ce43b11df19`, and dirty lines `0` for all services.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
+
+Next unfinished chunk: owner-approved deployment and guarded runtime evidence regeneration for Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and Suppliers `81857bc54469e5f82e6feaa4d94a8ce43b11df19`.
