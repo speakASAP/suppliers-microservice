@@ -70,7 +70,7 @@ const checks = [
   {
     service: 'catalog',
     file: 'src/flipflop-projection/flipflop-projection.service.ts',
-    patterns: ['availability.warehouses', 'availability.logistics'],
+    patterns: ['availability.warehouses', 'availability.logistics', 'hasSellableWarehouseAvailability', 'canReserveFromWarehouse'],
   },
   {
     service: 'catalog',
@@ -80,7 +80,7 @@ const checks = [
   {
     service: 'catalog',
     file: 'src/flipflop-projection/flipflop-projection.service.spec.ts',
-    patterns: ['availability:', 'logistics:', 'legs:', 'OWN-PRG', 'to: "customer"', 'responsibility: "warehouse"'],
+    patterns: ['availability:', 'logistics:', 'legs:', 'OWN-PRG', 'to: "customer"', 'responsibility: "warehouse"', 'no reservable Warehouse logistics route', 'includeUnavailable: true'],
   },
   {
     service: 'suppliers',

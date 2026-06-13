@@ -323,3 +323,13 @@ Validation evidence: before commit, `node --check reports/validation/run-runtime
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Catalog Downstream Route Gate Alignment
+
+Change: updated Suppliers cross-service preflight after Catalog `ecc19a9` so the integration contract now requires FlipFlop projection to exclude products by default when they have positive Warehouse stock but no reservable Warehouse logistics route. This aligns downstream projection with the mandatory Warehouse-backed stock-and-route requirement from Catalog coverage.
+
+Validation evidence before commit: `node reports/validation/cross-service-preflight-check.js`, `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues`, and `git diff --check` passed. Preflight verified Catalog `src/flipflop-projection/flipflop-projection.service.ts` contains `hasSellableWarehouseAvailability` and `canReserveFromWarehouse`, and the focused spec contains the no-reservable-route/default-filtering case. Full clean-worktree validation and handoff regeneration must run after this source/doc change is committed.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
+
+Next unfinished chunk: validate and commit this Suppliers preflight alignment, regenerate handoff and deployment evidence for the latest clean Warehouse, Catalog, and Suppliers heads, then request owner-approved deployment and guarded runtime evidence regeneration.
