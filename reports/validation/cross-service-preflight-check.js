@@ -175,7 +175,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-readiness-bundle.js',
-    patterns: ['RUNTIME_READINESS_MANIFEST', 'stock-traceability-runtime-readiness-manifest.json', 'ready-for-owner-approval', 'incomplete-runtime-pending', 'sha256 mismatch', 'byte count mismatch', 'readiness manifest serviceHeads', 'assertNoCredentialValues', 'credentialLeakRejected', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE', 'tamperedHashRejected', 'dirtyWorktreeRejected', 'staleHeadRejected'],
+    patterns: ['RUNTIME_READINESS_MANIFEST', 'stock-traceability-runtime-readiness-manifest.json', 'ready-for-owner-approval', 'incomplete-runtime-pending', 'sha256 mismatch', 'byte count mismatch', 'readiness manifest serviceHeads', 'assertNoCredentialValues', 'credentialLeakRejected', 'approval request artifact must require', 'approvedTraceInputs', 'TRACE_CLEANUP_EVIDENCE', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE', 'tamperedHashRejected', 'dirtyWorktreeRejected', 'staleHeadRejected'],
   },
   {
     service: 'suppliers',
@@ -246,7 +246,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-runtime-approval-request.js',
-    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'RUNTIME_APPROVAL_REQUEST_OUTPUT', 'Approve exactly these three actions', 'runtime approval request requires clean Warehouse, Catalog, and Suppliers worktrees', 'dirtyRowsRejected', 'approval request self-test must reject dirty source snapshots', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'warehouse and supplier IDs match the approved trace command', 'Fixture and approved smoke commands use the same TRACE_PRODUCT_ID', 'source fingerprint matching TRACE_PRODUCT_ID, TRACE_SUPPLIER_WAREHOUSE_ID, TRACE_DROPSHIP_WAREHOUSE_ID, TRACE_SUPPLIER_STOCK_QTY, and TRACE_SUPPLIER_SKU', 'stock-traceability-runtime-readiness-manifest.json', 'RUNTIME_READINESS_MANIFEST_FILE', 'verify-runtime-approval-artifact.js', 'This approval request is not completion evidence', 'verify-stock-traceability-completion.js'],
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', 'RUNTIME_APPROVAL_REQUEST_OUTPUT', 'Approve exactly these three actions', 'runtime approval request requires clean Warehouse, Catalog, and Suppliers worktrees', 'dirtyRowsRejected', 'approval request self-test must reject dirty source snapshots', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'warehouse and supplier IDs match the approved trace command', 'Fixture and approved smoke commands use the same TRACE_PRODUCT_ID', 'exact approvedTraceInputs before mutation', 'TRACE_CLEANUP_EVIDENCE must be a completed cleanup record or an explicit owner-approved deferral reference', 'source fingerprint matching TRACE_PRODUCT_ID, TRACE_SUPPLIER_WAREHOUSE_ID, TRACE_DROPSHIP_WAREHOUSE_ID, TRACE_SUPPLIER_STOCK_QTY, and TRACE_SUPPLIER_SKU', 'stock-traceability-runtime-readiness-manifest.json', 'RUNTIME_READINESS_MANIFEST_FILE', 'verify-runtime-approval-artifact.js', 'This approval request is not completion evidence', 'verify-stock-traceability-completion.js'],
   },
   {
     service: 'suppliers',

@@ -110,6 +110,9 @@ function verifyReadinessManifest(filePath, serviceRoot = root) {
   assertNoCredentialValues('runtime handoff', handoff);
   assertNoCredentialValues('runtime plan', planText);
   assert(approvalRequest.includes('STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST'), 'approval request artifact must include approval request id');
+  for (const token of ['approvedTraceInputs', 'TRACE_PRODUCT_ID', 'TRACE_SUPPLIER_ID', 'TRACE_IMPORT_IDEMPOTENCY_KEY', 'TRACE_SUPPLIER_STOCK_QTY', 'TRACE_SUPPLIER_SKU', 'TRACE_CLEANUP_EVIDENCE']) {
+    assert(approvalRequest.includes(token), 'approval request artifact must require ' + token);
+  }
   assert(deploymentTemplate.includes('generatedFromCurrentHeads'), 'deployment template artifact must include generatedFromCurrentHeads marker');
   assert(handoff.includes('STOCK-TRACEABILITY-RUNTIME-HANDOFF'), 'handoff artifact must include handoff id');
   assert(handoff.includes('create-runtime-readiness-bundle.js'), 'handoff artifact must preserve readiness bundle command');
@@ -143,7 +146,7 @@ function writeSelfTestBundle(serviceRoot) {
     plan: path.join(dir, 'stock-traceability-runtime-plan.json'),
   };
   const heads = rows.map((row) => `${row.name}:${row.head}`).join('\n');
-  fs.writeFileSync(files.approvalRequest, `STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n${heads}\n`);
+  fs.writeFileSync(files.approvalRequest, `STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n${heads}\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n`);
   fs.writeFileSync(files.deploymentTemplate, JSON.stringify({ generatedFromCurrentHeads: true, heads: Object.fromEntries(rows.map((row) => [row.name, row.head])) }, null, 2) + '\n');
   fs.writeFileSync(files.handoff, `STOCK-TRACEABILITY-RUNTIME-HANDOFF\ncreate-runtime-readiness-bundle.js\n${heads}\n`);
   fs.writeFileSync(files.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE'] }, null, 2) + '\n');

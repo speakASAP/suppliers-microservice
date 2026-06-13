@@ -406,7 +406,7 @@ function writeReadinessBundle(dir, serviceHeads) {
     plan: path.join(dir, 'stock-traceability-runtime-plan.json'),
   };
   const heads = Object.entries(serviceHeads).map(([service, head]) => service + ':' + head).join('\n');
-  fs.writeFileSync(files.approvalRequest, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + heads + '\n');
+  fs.writeFileSync(files.approvalRequest, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + heads + '\napprovedTraceInputs TRACE_PRODUCT_ID TRACE_SUPPLIER_ID TRACE_IMPORT_IDEMPOTENCY_KEY TRACE_SUPPLIER_STOCK_QTY TRACE_SUPPLIER_SKU TRACE_CLEANUP_EVIDENCE\n');
   fs.writeFileSync(files.deploymentTemplate, JSON.stringify({ generatedFromCurrentHeads: true, heads: serviceHeads }, null, 2) + '\n');
   fs.writeFileSync(files.handoff, 'STOCK-TRACEABILITY-RUNTIME-HANDOFF\ncreate-runtime-readiness-bundle.js\n' + heads + '\n');
   fs.writeFileSync(files.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE'] }, null, 2) + '\n');
