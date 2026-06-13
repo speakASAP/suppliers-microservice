@@ -41,7 +41,7 @@ SMOKE_TIMEOUT_MS=30000 WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=ht
 | FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=c0de0000-0000-4000-8000-000000000001, source=warehouse, stockQuantity=11, routeCount=2, routeTypes=local_fulfillment,supplier_dropship | passed-runtime |
 | Suppliers import preserves Warehouse authority. | status=completed, idempotencyKey=manual:traceability-20260613-003, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=1 | passed-runtime |
 | Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11 | passed-runtime |
-| Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:stock-traceability-runbook-20260613 | passed-runtime |
+| Cleanup or archival evidence is recorded. | cleanupEvidence=completed:synthetic-traceability-records-removed-20260613 | passed-runtime |
 
 ## Smoke Output Summary
 
@@ -52,7 +52,7 @@ SMOKE_TIMEOUT_MS=30000 WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=ht
 - routes: local_fulfillment,supplier_dropship
 - coverage: covered / mixed_stock
 - supplier job: status=completed, idempotencyKey=manual:traceability-20260613-003, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=1
-- cleanup evidence: deferred:stock-traceability-runbook-20260613
+- cleanup evidence: completed:synthetic-traceability-records-removed-20260613
 
 ## Completion Decision
 
@@ -66,3 +66,7 @@ Runtime complete
 - Warehouse remained the stock and logistics authority;
 - mutation was limited to approved synthetic traceability records;
 - any cleanup requiring hard delete or compensating stock mutation had separate approval or remained deferred by recorded evidence.
+
+## Post-Run Cleanup Evidence
+
+Synthetic traceability records were removed after evidence capture and report verification. Verified remaining row counts are zero for Catalog product `c0de0000-0000-4000-8000-000000000001`, Suppliers supplier/import jobs for `c0de0000-0000-4000-8000-000000000002`, Warehouse warehouses `c0de0000-0000-4000-8000-000000000003` and `c0de0000-0000-4000-8000-000000000004`, related stock rows, and related supplier reconciliation rows.
