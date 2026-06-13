@@ -70,6 +70,7 @@ function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root =
   };
   const readinessManifest = writeReadinessManifestForApproval(dir, serviceHeads, root);
   const deployment = {
+    generatedAt: new Date().toISOString(),
     generatedFromCurrentHeads: true,
     readinessManifest,
     completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
@@ -385,7 +386,7 @@ const cases = [
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
     TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
     TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
-    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ warehouse: { commitSha: 'not-a-sha' } }),
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({ warehouse: { commitSha: 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' } }),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'warehouse head must match deployment commitSha'),
