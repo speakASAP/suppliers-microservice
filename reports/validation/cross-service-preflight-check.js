@@ -75,7 +75,7 @@ const checks = [
   {
     service: 'catalog',
     file: 'src/flipflop-projection/flipflop-projection.service.ts',
-    patterns: ['availability.warehouses', 'availability.logistics', 'hasSellableWarehouseAvailability', 'canReserveFromWarehouse', 'hasRequiredSupplierOwnership', 'supplier_replenishment', 'supplier_dropship'],
+    patterns: ['availability.warehouses', 'availability.logistics', 'hasSellableWarehouseAvailability', 'canReserveFromWarehouse', 'hasRequiredSupplierOwnership', 'supplier_replenishment', 'supplier_dropship', 'sumTraceableReservableAvailability', 'stockQuantity: this.sumTraceableReservableAvailability'],
   },
   {
     service: 'catalog',
@@ -95,7 +95,7 @@ const checks = [
   {
     service: 'catalog',
     file: 'src/flipflop-projection/flipflop-projection.service.spec.ts',
-    patterns: ['availability:', 'logistics:', 'legs:', 'OWN-PRG', 'to: "customer"', 'responsibility: "warehouse"', 'no reservable Warehouse logistics route', 'includeUnavailable: true', 'filters supplier stock without Warehouse-owned supplier route linkage by default'],
+    patterns: ['availability:', 'logistics:', 'legs:', 'OWN-PRG', 'to: "customer"', 'responsibility: "warehouse"', 'no reservable Warehouse logistics route', 'includeUnavailable: true', 'filters supplier stock without Warehouse-owned supplier route linkage by default', 'projects only traceable reservable route availability as channel stock quantity', 'stockQuantity: 0'],
   },
   {
     service: 'suppliers',

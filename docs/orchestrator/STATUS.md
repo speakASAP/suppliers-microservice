@@ -1,5 +1,13 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - FlipFlop Sellable Route Quantity Preflight Gate
+
+Change: aligned Suppliers cross-service preflight with Catalog's FlipFlop channel stock quantity contract. Preflight now requires FlipFlop stockQuantity to be derived from traceable reservable Warehouse logistics route availability instead of raw Warehouse totalAvailable, with coverage for mixed local plus non-reservable supplier diagnostic stock.
+
+Validation evidence: node reports/validation/cross-service-preflight-check.js passed after Catalog source hardening and before commit. This was source-side only; no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse mutation, or cleanup mutation was performed.
+
+Next unfinished chunk: owner-approved current-head deployment and guarded runtime evidence regeneration remains required before stock traceability can be marked complete.
+
 ## 2026-06-13 - Warehouse Fulfillment Supplier Linkage Preflight Gate
 
 Change: aligned Suppliers cross-service preflight with the Warehouse fulfillment supplier-linkage guard. Preflight now requires Warehouse to reject fulfillment from supplier-managed stock rows missing supplier ownership, while still allowing cleanup flows for legacy holds.
