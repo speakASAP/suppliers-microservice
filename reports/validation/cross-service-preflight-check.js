@@ -161,6 +161,9 @@ const checks = [
     service: 'suppliers',
     file: 'reports/validation/run-runtime-evidence-flow.js',
     patterns: ['--fixture-check', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'fixture-ready', 'RUNTIME_APPROVAL_ARTIFACT_FILE, and deployment evidence to continue', 'validateApprovedSmokeConfig', 'validateDeploymentEvidenceFile', 'generatedFromCurrentHeads', 'completion verifier reminder', 'assertCleanWorktreeForService', 'worktree must be clean before approved runtime evidence', 'currentHeadForService', 'commitSha must match current', 'OWNER_APPROVAL=explicit', 'SMOKE_ALLOW_MUTATION=true', 'TRACE_OWN_WAREHOUSE_ID', 'TRACE_SUPPLIER_STOCK_QTY', 'TRACE_SUPPLIER_SKU', 'sourceFingerprintEvidence', 'FIXTURE_CHECK_RESULT_FILE', 'generate-runtime-evidence-report.js', 'verify-runtime-evidence-report.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'verify-stock-traceability-completion.js', 'RUNTIME_EVIDENCE_MANIFEST', 'stock-traceability-runtime-evidence-manifest.json', 'sha256', 'dirtyWorktreeRejected', 'manifest self-test must reject dirty service worktrees before writing runtime evidence', '--manifest-self-test'],
+    exactPatternCounts: {
+      "['SMOKE_ALLOW_MUTATION', 'true']": 1,
+    },
   },
   {
     service: 'suppliers',
@@ -201,6 +204,9 @@ const checks = [
     service: 'suppliers',
     file: 'reports/validation/runtime-evidence-flow-negative-check.js',
     patterns: ['approved-smoke-missing-deployment-evidence', 'approved-smoke-missing-own-warehouse-id', 'approved-smoke-missing-owner-approval', 'approved-smoke-missing-mutation-allowance', 'approved-smoke-invalid-deployment-evidence', 'approved-smoke-deployment-sha-not-current-head', 'approved-smoke-missing-current-head-deployment-marker', 'approved-smoke-dirty-service-worktree', 'approved-smoke-missing-protected-endpoint-evidence', 'approved-smoke-health-evidence-still-placeholder', 'approved-smoke-template-not-complete-evidence', 'approved-smoke-trace-inputs-differ-from-approval', 'approved-smoke-cleanup-evidence-differs-from-approval', 'approved runtime smoke trace inputs must match', 'RUN_APPROVED_RUNTIME_SMOKE', 'DEPLOYMENT_EVIDENCE_FILE', 'generatedFromCurrentHeads', 'verify-stock-traceability-completion.js', 'verify-runtime-evidence-manifest.js', 'verify-runtime-evidence-bundle.js', 'mixedTraceProductRejected', 'mixedSupplierWarehouseRejected', 'mismatchedSupplierRejected', 'missingCatalogOwnRouteRejected', 'nonReservableSupplierRouteRejected', 'mismatchedSupplierJobFingerprintRejected', 'missingSupplierJobCatalogValidationRejected', 'mismatchedStockAuthorityRejected', 'cleanupPlaceholderRejected', 'missingProjectionOwnRouteRejected', '--manifest-self-test'],
+    exactPatternCounts: {
+      "manifest-bundle-self-test-cross-checks-deployment": 1,
+    },
   },
   {
     service: 'suppliers',
