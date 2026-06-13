@@ -135,12 +135,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-stock-traceability-smoke.js',
-    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'fixtureCheck', 'readHealth', "service, endpoint", 'catalogRouteTypes', 'projectionRouteTypes', 'summarizeLogisticsLegs', 'hasRequiredLogisticsLegs', 'stockAuthority', 'warehouseTotalAvailable', 'assertConfiguredSupplierOwnership', 'assertConfiguredRouteSupplierOwnership', 'assertConfiguredRoute', 'Catalog forwarded own', 'FlipFlop forwarded own', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
+    patterns: ['TRACE_RUN_SUPPLIERS_IMPORT', 'TRACE_CLEANUP_EVIDENCE', 'TRACE_PRODUCT_SKU_PREFIX', 'CODEX-STOCK-TRACE-', 'TRACE_DROPSHIP_WAREHOUSE_ID', 'fixtureCheck', 'readHealth', "service, endpoint", 'catalogRouteTypes', 'projectionRouteTypes', 'summarizeLogisticsLegs', 'hasRequiredLogisticsLegs', 'hasRequiredReservableRoutes', 'canReserveFromWarehouse', 'stockAuthority', 'warehouseTotalAvailable', 'assertConfiguredSupplierOwnership', 'assertConfiguredRouteSupplierOwnership', 'assertConfiguredRoute', 'Catalog forwarded own', 'FlipFlop forwarded own', 'warehouses/logistics/batch', 'availability/coverage/audit', 'catalogAvailability'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/generate-runtime-evidence-report.js',
-    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'summarizeFixtureCheck', 'fixtureCheckComplete', 'FIXTURE_CHECK_RESULT_FILE', 'hasAllRequiredRouteTypes', 'hasRequiredRouteLegs', 'summarizeRouteLegs', 'deploymentEvidenceComplete', 'generatedFromCurrentHeads', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
+    patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'summarizeFixtureCheck', 'fixtureCheckComplete', 'FIXTURE_CHECK_RESULT_FILE', 'hasAllRequiredRouteTypes', 'hasRequiredRouteLegs', 'hasRequiredReservableRoutes', 'available=', 'reservable=', 'summarizeRouteLegs', 'deploymentEvidenceComplete', 'generatedFromCurrentHeads', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
   },
   {
     service: 'suppliers',
@@ -175,7 +175,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-report.js',
-    patterns: ['REQUIRED_ASSERTIONS', 'Read-only live fixture check passed before mutation', 'Suppliers import preserves Catalog identity and Warehouse authority', 'catalogProductValidation=passed', 'checkedProducts=', 'Warehouse remains stock authority across totals', 'warehouseTotalAvailable=', 'catalogCoverageTotal=', 'deployment evidence must include a commit SHA', 'TRACE_RUN_SUPPLIERS_IMPORT=true', 'TRACE_EXPECT_SUPPLIERS_JOB=true', 'TRACE_DROPSHIP_WAREHOUSE_ID=', '--fixture-check', 'fixture-ready', 'mutationEnabled=no', 'TRACE_CLEANUP_EVIDENCE=', 'warehouse:', 'catalog:', 'suppliers:', 'source=warehouse', 'expectedSkuPrefix=CODEX-STOCK-TRACE-', 'routeTypes=local_fulfillment', 'routeLegs=', 'hasSupplierOriginEvidence', 'positive availability and supplier IDs', 'customer:warehouse', 'supplier_dropship', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
+    patterns: ['REQUIRED_ASSERTIONS', 'Read-only live fixture check passed before mutation', 'Suppliers import preserves Catalog identity and Warehouse authority', 'catalogProductValidation=passed', 'checkedProducts=', 'Warehouse remains stock authority across totals', 'warehouseTotalAvailable=', 'catalogCoverageTotal=', 'deployment evidence must include a commit SHA', 'TRACE_RUN_SUPPLIERS_IMPORT=true', 'TRACE_EXPECT_SUPPLIERS_JOB=true', 'TRACE_DROPSHIP_WAREHOUSE_ID=', '--fixture-check', 'fixture-ready', 'mutationEnabled=no', 'TRACE_CLEANUP_EVIDENCE=', 'warehouse:', 'catalog:', 'suppliers:', 'source=warehouse', 'expectedSkuPrefix=CODEX-STOCK-TRACE-', 'routeTypes=local_fulfillment', 'routeLegs=', 'reservable=yes', 'available=', 'hasSupplierOriginEvidence', 'positive availability and supplier IDs', 'customer:warehouse', 'supplier_dropship', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
   },
   {
     service: 'suppliers',
@@ -185,7 +185,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/runtime-evidence-negative-check.js',
-    patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'missing-logistics-leg-evidence', 'missing-origin-supplier-id-report-evidence', 'missing-fixture-check-evidence', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'deployment-health-evidence-placeholder', 'missing-current-head-deployment-marker', 'invalid-smoke-command-import-disabled', 'failed-runtime'],
+    patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'missing-logistics-leg-evidence', 'missing-reservable-route-evidence', 'missing-origin-supplier-id-report-evidence', 'missing-fixture-check-evidence', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'deployment-health-evidence-placeholder', 'missing-current-head-deployment-marker', 'invalid-smoke-command-import-disabled', 'failed-runtime'],
   },
   {
     service: 'suppliers',

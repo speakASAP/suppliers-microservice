@@ -127,6 +127,8 @@ function summarizeLogisticsLegs(options) {
     routeType: option.routeType,
     warehouseId: option.warehouseId,
     supplierId: option.supplierId || null,
+    available: option.available,
+    canReserveFromWarehouse: option.canReserveFromWarehouse === true,
     legs: Array.isArray(option.legs) ? option.legs.map((leg) => ({
       sequence: leg.sequence,
       from: leg.from,
@@ -159,6 +161,18 @@ function hasSupplierReplenishmentPath(options) {
 
 function hasRequiredLogisticsLegs(options) {
   return hasLocalCustomerLeg(options) && hasSupplierReplenishmentPath(options) && hasSupplierDropshipCustomerPath(options);
+}
+
+function hasPositiveReservableRoute(options, routeType) {
+  return Array.isArray(options) && options.some((option) => option.routeType === routeType
+    && Number(option.available) > 0
+    && option.canReserveFromWarehouse === true);
+}
+
+function hasRequiredReservableRoutes(options) {
+  return hasPositiveReservableRoute(options, 'local_fulfillment')
+    && hasPositiveReservableRoute(options, 'supplier_replenishment')
+    && hasPositiveReservableRoute(options, 'supplier_dropship');
 }
 
 function assertConfiguredWarehouseId(label, configuredId, rows, matcher) {
@@ -444,6 +458,7 @@ if (planOnly) {
   assert(logisticsOptions.some((option) => option.routeType === 'supplier_replenishment'), 'expected supplier replenishment route');
   assert(logisticsOptions.some((option) => option.routeType === 'supplier_dropship'), 'expected supplier dropship route');
   assert(hasRequiredLogisticsLegs(logisticsOptions), 'expected Warehouse logistics legs to prove local fulfillment, supplier replenishment, and supplier dropship paths');
+  assert(hasRequiredReservableRoutes(logisticsOptions), 'expected Warehouse logistics routes to be reservable with positive availability');
   assertConfiguredRoute("own", ownWarehouseId, "local_fulfillment", logisticsOptions);
   assertConfiguredRouteSupplierOwnership("supplier replenishment", supplierId, supplierWarehouseId, "supplier_replenishment", logisticsOptions);
   assertConfiguredRouteSupplierOwnership("supplier dropship", supplierId, dropshipWarehouseId, "supplier_dropship", logisticsOptions);
@@ -454,6 +469,7 @@ if (planOnly) {
   assert(catalogRouteTypes.includes('supplier_replenishment'), 'expected Catalog availability to forward supplier replenishment route');
   assert(catalogRouteTypes.includes('supplier_dropship'), 'expected Catalog availability to forward supplier dropship route');
   assert(hasRequiredLogisticsLegs(catalogLogisticsOptions), 'expected Catalog availability to forward local, supplier replenishment, and dropship logistics legs');
+  assert(hasRequiredReservableRoutes(catalogLogisticsOptions), 'expected Catalog availability to forward reservable routes with positive availability');
   assertConfiguredRoute("Catalog forwarded own", ownWarehouseId, "local_fulfillment", catalogLogisticsOptions);
   assertConfiguredRouteSupplierOwnership("Catalog forwarded supplier replenishment", supplierId, supplierWarehouseId, "supplier_replenishment", catalogLogisticsOptions);
   assertConfiguredRouteSupplierOwnership("Catalog forwarded supplier dropship", supplierId, dropshipWarehouseId, "supplier_dropship", catalogLogisticsOptions);
@@ -467,6 +483,7 @@ if (planOnly) {
   assert(projectionRouteTypes.includes('supplier_replenishment'), 'expected FlipFlop projection to forward supplier replenishment route');
   assert(projectionRouteTypes.includes('supplier_dropship'), 'expected FlipFlop projection to forward supplier dropship route');
   assert(hasRequiredLogisticsLegs(projectionLogisticsOptions), 'expected FlipFlop projection to forward local, supplier replenishment, and dropship logistics legs');
+  assert(hasRequiredReservableRoutes(projectionLogisticsOptions), 'expected FlipFlop projection to forward reservable routes with positive availability');
   assertConfiguredRoute("FlipFlop forwarded own", ownWarehouseId, "local_fulfillment", projectionLogisticsOptions);
   assertConfiguredRouteSupplierOwnership("FlipFlop forwarded supplier replenishment", supplierId, supplierWarehouseId, "supplier_replenishment", projectionLogisticsOptions);
   assertConfiguredRouteSupplierOwnership("FlipFlop forwarded supplier dropship", supplierId, dropshipWarehouseId, "supplier_dropship", projectionLogisticsOptions);

@@ -133,7 +133,12 @@ function summarizeRouteLegs(routeLegs) {
   if (!Array.isArray(routeLegs) || routeLegs.length === 0) return '-';
   return routeLegs.map((route) => {
     const legs = Array.isArray(route.legs) ? route.legs.map((leg) => `${leg.sequence}:${leg.from}>${leg.to}:${leg.responsibility}`).join('/') : '-';
-    return `${route.routeType}[${legs}]`;
+    const routeEvidence = [
+      `available=${valueOrDash(route.available)}`,
+      `reservable=${boolWord(route.canReserveFromWarehouse === true)}`,
+      legs,
+    ].join(';');
+    return `${route.routeType}[${routeEvidence}]`;
   }).join(',');
 }
 
@@ -152,6 +157,18 @@ function hasRequiredRouteLegs(routeLegs) {
       && legs.some((leg) => leg.responsibility === 'warehouse' && leg.to === 'customer');
   });
   return local && supplierReplenishment && supplierDropship;
+}
+
+function hasPositiveReservableRoute(routeLegs, routeType) {
+  return Array.isArray(routeLegs) && routeLegs.some((route) => route.routeType === routeType
+    && Number(route.available) > 0
+    && route.canReserveFromWarehouse === true);
+}
+
+function hasRequiredReservableRoutes(routeLegs) {
+  return hasPositiveReservableRoute(routeLegs, 'local_fulfillment')
+    && hasPositiveReservableRoute(routeLegs, 'supplier_replenishment')
+    && hasPositiveReservableRoute(routeLegs, 'supplier_dropship');
 }
 
 function stockAuthorityComplete(authority) {
@@ -198,7 +215,7 @@ function buildAssertions(smoke, fixture) {
     {
       assertion: 'Warehouse logistics returns local, supplier replenishment, and dropship route options.',
       evidence: `routes=${routes.join(',') || '-'}, routeLegs=${summarizeRouteLegs(smoke.logisticsLegs)}`,
-      passed: hasAllRequiredRouteTypes(routes) && hasRequiredRouteLegs(smoke.logisticsLegs),
+      passed: hasAllRequiredRouteTypes(routes) && hasRequiredRouteLegs(smoke.logisticsLegs) && hasRequiredReservableRoutes(smoke.logisticsLegs),
     },
     {
       assertion: 'Catalog availability forwards Warehouse origin rows and logistics.',
@@ -207,7 +224,8 @@ function buildAssertions(smoke, fixture) {
         && Number(smoke.catalogAvailability?.warehouseCount || 0) >= 2
         && Number(smoke.catalogAvailability?.logisticsOptionCount || 0) >= 2
         && hasAllRequiredRouteTypes(smoke.catalogAvailability?.routeTypes)
-        && hasRequiredRouteLegs(smoke.catalogAvailability?.routeLegs),
+        && hasRequiredRouteLegs(smoke.catalogAvailability?.routeLegs)
+        && hasRequiredReservableRoutes(smoke.catalogAvailability?.routeLegs),
     },
     {
       assertion: 'Catalog coverage and audit classify covered mixed stock.',
@@ -220,7 +238,7 @@ function buildAssertions(smoke, fixture) {
     {
       assertion: 'FlipFlop projection forwards Warehouse-sourced availability and logistics.',
       evidence: `productId=${valueOrDash(smoke.projection?.productId)}, source=${valueOrDash(smoke.projection?.source)}, stockQuantity=${valueOrDash(smoke.projection?.stockQuantity)}, routeCount=${valueOrDash(smoke.projection?.routeCount)}, routeTypes=${summarizeRouteTypes(smoke.projection?.routeTypes)}, routeLegs=${summarizeRouteLegs(smoke.projection?.routeLegs)}`,
-      passed: Boolean(smoke.projection?.productId && smoke.projection?.source === 'warehouse' && Number(smoke.projection?.routeCount || 0) >= 3 && hasAllRequiredRouteTypes(smoke.projection?.routeTypes) && hasRequiredRouteLegs(smoke.projection?.routeLegs)),
+      passed: Boolean(smoke.projection?.productId && smoke.projection?.source === 'warehouse' && Number(smoke.projection?.routeCount || 0) >= 3 && hasAllRequiredRouteTypes(smoke.projection?.routeTypes) && hasRequiredRouteLegs(smoke.projection?.routeLegs) && hasRequiredReservableRoutes(smoke.projection?.routeLegs)),
     },
     {
       assertion: 'Suppliers import preserves Catalog identity and Warehouse authority.',
@@ -369,9 +387,9 @@ function sampleSmoke() {
     ],
     logisticsRoutes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
     logisticsLegs: [
-      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
     ],
     stockAuthority: {
       source: 'warehouse',
@@ -388,9 +406,9 @@ function sampleSmoke() {
       preferredRoute: 'local_fulfillment',
       routeTypes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
       routeLegs: [
-      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
     ],
       warehouseTypes: ['own', 'supplier', 'dropship'],
     },
@@ -414,9 +432,9 @@ function sampleSmoke() {
       routeCount: 3,
       routeTypes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
       routeLegs: [
-      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
     ],
     },
   };

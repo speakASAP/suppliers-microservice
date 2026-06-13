@@ -40,10 +40,10 @@ The goal can be marked complete only after the runtime smoke report proves:
 1. Warehouse, Catalog, and Suppliers health endpoints pass on deployed services.
 2. Catalog product identity exists for the approved trace product.
 3. Warehouse topology distinguishes own and supplier-managed warehouses, and availability returns positive own stock plus positive supplier and dropship stock for that product with supplier-managed origins owned by `TRACE_SUPPLIER_ID`.
-4. Warehouse logistics returns local and supplier replenishment and dropship route options with route legs proving local warehouse-to-customer and supplier-to-Alfares and supplier-to-customer movement, and supplier routes are owned by `TRACE_SUPPLIER_ID`.
-5. Catalog availability forwards both Warehouse origin rows and Warehouse logistics, including route legs.
+4. Warehouse logistics returns local and supplier replenishment and dropship route options with route legs proving local warehouse-to-customer and supplier-to-Alfares and supplier-to-customer movement, positive availability, `canReserveFromWarehouse=true`, and supplier routes are owned by `TRACE_SUPPLIER_ID`.
+5. Catalog availability forwards both Warehouse origin rows and Warehouse logistics, including route legs, positive availability, and reservability.
 6. Catalog coverage and coverage audit classify the product as `covered` and `mixed_stock`.
-7. FlipFlop projection forwards Warehouse-sourced availability and logistics, including route legs.
+7. FlipFlop projection forwards Warehouse-sourced availability and logistics, including route legs, positive availability, and reservability.
 8. Suppliers import evidence preserves Catalog product identity and Warehouse authority through an approved `synthetic-trace` import when supplier stock mutation is used.
 9. Warehouse total availability, summed Warehouse origins, Catalog availability total, Catalog coverage total, and FlipFlop stock quantity all match with Warehouse as source.
 10. Cleanup or archival evidence is recorded for synthetic records through `TRACE_CLEANUP_EVIDENCE`.

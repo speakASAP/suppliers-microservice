@@ -44,9 +44,9 @@ function baseSmoke() {
     ],
     logisticsRoutes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
     logisticsLegs: [
-      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
     ],
     stockAuthority: {
       source: 'warehouse',
@@ -63,9 +63,9 @@ function baseSmoke() {
       preferredRoute: 'local_fulfillment',
       routeTypes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
       routeLegs: [
-      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
     ],
       warehouseTypes: ['own', 'supplier', 'dropship'],
     },
@@ -88,9 +88,9 @@ function baseSmoke() {
       routeCount: 3,
       routeTypes: ['local_fulfillment', 'supplier_replenishment', 'supplier_dropship'],
       routeLegs: [
-      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+      { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+      { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
     ],
     },
   };
@@ -271,6 +271,11 @@ const cases = [
     smoke.logisticsLegs = [];
     smoke.catalogAvailability.routeLegs = [];
     smoke.projection.routeLegs = [];
+  }),
+  runCase('missing-reservable-route-evidence', (smoke) => {
+    smoke.logisticsLegs.find((route) => route.routeType === 'supplier_dropship').canReserveFromWarehouse = false;
+    smoke.catalogAvailability.routeLegs.find((route) => route.routeType === 'supplier_dropship').canReserveFromWarehouse = false;
+    smoke.projection.routeLegs.find((route) => route.routeType === 'supplier_dropship').available = 0;
   }),
   (() => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-negative-missing-fixture-check-evidence-'));
