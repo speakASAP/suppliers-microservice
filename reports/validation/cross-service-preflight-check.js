@@ -144,6 +144,9 @@ const checks = [
     service: 'suppliers',
     file: 'reports/validation/generate-runtime-evidence-report.js',
     patterns: ['VAL-CROSS-STOCK-RUNTIME-LIVE', 'Runtime complete', 'summarizeCatalogAvailability', 'summarizeStockAuthority', 'stockAuthorityComplete', 'isCompletedEvidenceText(smoke.cleanupEvidence)', 'summarizeFixtureCheck', 'fixtureCheckComplete', 'FIXTURE_CHECK_RESULT_FILE', 'hasAllRequiredRouteTypes', 'hasRequiredRouteLegs', 'hasRequiredReservableRoutes', 'available=', 'reservable=', 'summarizeRouteLegs', 'deploymentEvidenceComplete', 'generatedFromCurrentHeads', 'isCommitSha', 'namedHealthComplete', 'expectedSkuPrefix', '401|403', "source === 'warehouse'"],
+    exactPatternCounts: {
+      "passed: hasAllRequiredRouteTypes(routes) && hasRequiredRouteLegs(smoke.logisticsLegs) && hasRequiredReservableRoutes(smoke.logisticsLegs)": 1,
+    },
   },
   {
     service: 'suppliers',
@@ -202,6 +205,9 @@ const checks = [
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-evidence-report.js',
     patterns: ['REQUIRED_ASSERTIONS', 'Read-only live fixture check passed before mutation', 'Suppliers import preserves Catalog identity and Warehouse authority', 'catalogProductValidation=passed', 'checkedProducts=', 'sourceFingerprint=trace:', 'Warehouse remains stock authority across totals', 'warehouseTotalAvailable=', 'catalogCoverageTotal=', 'deployment evidence must include a commit SHA', 'TRACE_RUN_SUPPLIERS_IMPORT=true', 'TRACE_EXPECT_SUPPLIERS_JOB=true', 'TRACE_DROPSHIP_WAREHOUSE_ID=', 'TRACE_OWN_WAREHOUSE_ID=', 'sectionText', 'Smoke Command Evidence', '--fixture-check', 'fixture-ready', 'mutationEnabled=no', 'TRACE_CLEANUP_EVIDENCE=', 'RUNTIME_APPROVAL_ARTIFACT_FILE=', 'warehouse:', 'catalog:', 'suppliers:', 'source=warehouse', 'expectedSkuPrefix=CODEX-STOCK-TRACE-', 'routeTypes=local_fulfillment', 'routeLegs=', 'reservable=yes', 'available=', 'hasSupplierOriginEvidence', 'hasSupplierRouteOwnershipEvidence', 'commandEnvValue', 'assertFixtureCommandMatchesSmoke', 'must match redacted smoke command', 'fixture check command must not enable mutation', 'TRACE_PRODUCT_ID from redacted smoke command', 'TRACE_SUPPLIER_STOCK_QTY, and TRACE_SUPPLIER_SKU from redacted smoke command', 'matching supplier IDs', 'supplier routes share the same supplier ID', 'customer:warehouse', 'supplier_dropship', 'logisticsOptionCount', 'protected endpoint evidence must include 401 or 403', 'missing-runtime'],
+    exactPatternCounts: {
+      "assert(hasRouteLegEvidence(warehouseLogisticsRow), 'Warehouse logistics assertion must prove local and supplier route legs');": 1,
+    },
   },
   {
     service: 'suppliers',
