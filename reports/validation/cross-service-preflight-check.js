@@ -222,6 +222,10 @@ const checks = [
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-runtime-evidence-template.md',
     patterns: ['supplier ID matching `TRACE_SUPPLIER_ID`', 'supplier routes must be owned by `TRACE_SUPPLIER_ID`', 'route evidence must include warehouse and supplier identifiers', 'match the trace IDs from the redacted smoke command', 'fixture check command must use the same trace IDs', 'not owned by the same `TRACE_SUPPLIER_ID`', '`TRACE_SUPPLIER_STOCK_QTY`', '`TRACE_SUPPLIER_SKU`', 'sourceFingerprint` matching `trace:<TRACE_PRODUCT_ID>', 'mismatched supplier job source fingerprint', 'generator refuses dirty service worktrees', 'RUNTIME_READINESS_MANIFEST_FILE=<readiness-manifest>', 'same readiness bundle as the approval artifact', 'verified readiness manifest binding shared with the approval artifact', 'deployment rows in the final report that do not match the manifest-hashed deployment evidence artifact', 'clean Warehouse, Catalog, and Suppliers worktrees'],
+    exactPatternCounts: {
+      '"readinessManifest": {': 1,
+      'if deployment evidence is not bound to the same readiness manifest as the approval artifact': 1,
+    },
   },
   {
     service: 'suppliers',
@@ -295,12 +299,19 @@ function runCheck(check) {
   const text = fs.readFileSync(filePath, 'utf8');
   const missingPatterns = check.patterns.filter((pattern) => !text.includes(pattern));
   const presentForbiddenPatterns = (check.forbiddenPatterns || []).filter((pattern) => text.includes(pattern));
+  const wrongPatternCounts = Object.entries(check.exactPatternCounts || {})
+    .map(([pattern, expected]) => {
+      const actual = text.split(pattern).length - 1;
+      return { pattern, expected, actual, ok: actual === expected };
+    })
+    .filter((item) => !item.ok);
   return {
     service: check.service,
     file: check.file,
-    ok: missingPatterns.length === 0 && presentForbiddenPatterns.length === 0,
+    ok: missingPatterns.length === 0 && presentForbiddenPatterns.length === 0 && wrongPatternCounts.length === 0,
     missingPatterns,
     presentForbiddenPatterns,
+    wrongPatternCounts,
   };
 }
 
