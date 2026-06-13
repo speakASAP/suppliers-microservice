@@ -55,7 +55,7 @@ const checks = [
   {
     service: 'warehouse',
     file: 'test/warehouses.service.spec.ts',
-    patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', "responsibility: 'supplier'", "responsibility: 'warehouse'", 'reserved-only supplier routes visible but not reservable', 'canReserveFromWarehouse: false'],
+    patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', "responsibility: 'supplier'", "responsibility: 'warehouse'", 'reserved-only supplier routes visible but not reservable', 'canReserveFromWarehouse: false', 'supplier-managed routes without supplier linkage visible but not reservable'],
   },
   {
     service: 'catalog',
