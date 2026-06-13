@@ -30,7 +30,7 @@ const checks = [
   {
     service: 'warehouse',
     file: 'src/warehouses/warehouses.service.ts',
-    patterns: ['supplier_replenishment', 'supplier_dropship', 'getInventoryTopology', 'getBatchProductLogistics'],
+    patterns: ['supplier_replenishment', 'supplier_dropship', 'getInventoryTopology', 'getBatchProductLogistics', 'canReserveFromWarehouse: route.canReserveFromWarehouse && warehouse.totalAvailable > 0'],
   },
   {
     service: 'warehouse',
@@ -55,7 +55,7 @@ const checks = [
   {
     service: 'warehouse',
     file: 'test/warehouses.service.spec.ts',
-    patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', "responsibility: 'supplier'", "responsibility: 'warehouse'"],
+    patterns: ['supplier_replenishment', 'supplier_dropship', 'OWN-PRG', 'SUP-BETA', 'DROP-ACME', 'alfares_receiving_or_handoff', "responsibility: 'supplier'", "responsibility: 'warehouse'", 'reserved-only supplier routes visible but not reservable', 'canReserveFromWarehouse: false'],
   },
   {
     service: 'catalog',

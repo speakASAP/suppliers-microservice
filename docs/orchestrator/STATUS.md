@@ -363,3 +363,13 @@ Validation evidence: `npm run build`, `node reports/validation/synthetic-approve
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
 Next unfinished chunk: run full Suppliers validation, commit the persisted Catalog validation evidence change, regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Warehouse Reservability Contract Alignment
+
+Change: updated Suppliers cross-service preflight after Warehouse ebae680 so the source contract now requires Warehouse logistics to keep reserved-only routes visible while marking them not reservable unless positive availability exists. This aligns Warehouse route semantics with Catalog coverage and FlipFlop readiness gates.
+
+Validation evidence: Warehouse focused logistics spec, Warehouse build, Warehouse whitespace check, and Suppliers cross-service preflight passed before commit. Runtime completion remains incomplete because the live runtime bundle has not been regenerated for current heads.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
+
+Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
