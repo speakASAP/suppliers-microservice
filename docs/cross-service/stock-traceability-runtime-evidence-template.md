@@ -41,10 +41,12 @@ If the live run fails, use `status: failed-runtime`, keep `completeness_level: p
 
 ## Deployment Evidence
 
-When using the generator, provide deployment evidence as JSON in this shape. Start from `node reports/validation/create-deployment-evidence-template.js` to capture current commit SHAs, then replace all TODO evidence fields after deployment. The guarded runner rejects approved smoke when any deployment commit SHA differs from the current remote repository HEAD for the matching service:
+When using the generator, provide deployment evidence as JSON in this shape. Start from `node reports/validation/create-deployment-evidence-template.js` to capture current commit SHAs, the `generatedFromCurrentHeads` marker, and the completion-verifier reminder, then replace all TODO evidence fields after deployment. The guarded runner rejects approved smoke when deployment evidence is missing that current-head marker/reminder or when any deployment commit SHA differs from the current remote repository HEAD for the matching service:
 
 ```json
 {
+  "generatedFromCurrentHeads": true,
+  "completionReminder": "Deployment evidence is valid only when each commitSha still matches the current remote repo HEAD and verify-stock-traceability-completion.js passes against the generated runtime manifest.",
   "services": {
     "warehouse": {
       "commitSha": "40-character-git-commit-sha",
@@ -67,7 +69,7 @@ When using the generator, provide deployment evidence as JSON in this shape. Sta
 
 Capture `node reports/validation/cross-service-preflight-check.js` output before deployment and preserve it with the final report artifacts. Prefer `node reports/validation/run-runtime-evidence-flow.js` for live evidence capture because it runs fixture check before approved smoke and wires fixture/smoke JSON into the report generator. It records branch/head and dirty-line counts for Warehouse, Catalog, and Suppliers plus required source-surface checks.
 
-The generator marks the final report `Runtime incomplete` unless all three services include a SHA-shaped commit ID, deploy command, health evidence, and anonymous protected-endpoint evidence containing `401` or `403`.
+The generator marks the final report `Runtime incomplete` unless deployment evidence has `generatedFromCurrentHeads: true`, includes the completion-verifier reminder, and all three services include a SHA-shaped commit ID, deploy command, health evidence, and anonymous protected-endpoint evidence containing `401` or `403`.
 
 | Service | Commit SHA | Deploy command | Health evidence | Protected endpoint evidence |
 | --- | --- | --- | --- | --- |
@@ -164,7 +166,7 @@ The negative validation command proves unsafe evidence cannot pass:
 node reports/validation/runtime-evidence-negative-check.js
 ```
 
-It must fail generated runtime reports for a real/non-synthetic SKU, unnamed health evidence, missing forwarded supplier replenishment and dropship route types, missing logistics leg evidence, missing read-only fixture-check evidence, mismatched stock-authority totals, invalid deployment commit evidence, missing deployment service rows, placeholder deployment health evidence, protected endpoint evidence that does not contain `401` or `403`, and redacted smoke command evidence that disables the approved supplier import.
+It must fail generated runtime reports for a real/non-synthetic SKU, unnamed health evidence, missing forwarded supplier replenishment and dropship route types, missing logistics leg evidence, missing read-only fixture-check evidence, mismatched stock-authority totals, invalid deployment commit evidence, missing deployment service rows, placeholder deployment health evidence, deployment evidence missing the current-head marker, protected endpoint evidence that does not contain `401` or `403`, and redacted smoke command evidence that disables the approved supplier import.
 
 ## Boundary Evidence
 

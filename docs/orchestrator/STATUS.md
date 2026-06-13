@@ -203,3 +203,13 @@ Validation evidence: `RUNTIME_HANDOFF_OUTPUT=/tmp/stock-traceability-runtime-han
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. The prior passed runtime report remains valid only for its recorded deployed commits; it is not current-head completion evidence.
 
 Next unfinished chunk: regenerate the runtime handoff checklist, then perform owner-approved deployment of the latest clean Suppliers main HEAD followed by guarded runtime evidence regeneration for Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, and that regenerated Suppliers HEAD.
+
+## 2026-06-13 - Current-Head Deployment Evidence Consumer Hardening
+
+Change: committed Suppliers `55a1fb597df97eb63cecc1016f35affdb28f6f09` so runtime gates now require completed deployment evidence to carry the `generatedFromCurrentHeads` marker and completion-verifier reminder. The guarded runner rejects approved smoke without those fields, the report generator cannot mark evidence complete without them, and the bundle verifier rejects final bundles whose deployment artifact is missing them.
+
+Validation evidence: report generator self-test, runtime evidence negative suite, runtime evidence bundle self-test, runtime manifest self-test, cross-service preflight, completion gate, and git diff check passed. Regenerated `/tmp/stock-traceability-runtime-handoff-current.md` and `/tmp/stock-traceability-deployment-evidence-current.template.json`; both recorded Warehouse `6992122d86f7cf0926b7702185f000982395aa0b`, Catalog `890f55a35b107e2e4038281fa5c4de99232d7343`, Suppliers `55a1fb597df97eb63cecc1016f35affdb28f6f09`, and clean source state.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
+
+Next unfinished chunk: regenerate handoff and deployment evidence after any additional commit, then perform owner-approved deployment and guarded runtime evidence regeneration for the latest clean Warehouse, Catalog, and Suppliers heads.

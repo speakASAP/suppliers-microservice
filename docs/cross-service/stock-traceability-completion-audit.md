@@ -59,7 +59,7 @@ The following are not sufficient by themselves:
 - Warehouse-only, Catalog-only, or Suppliers-only checks.
 
 
-Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle.
+Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle. The bundle must include deployment evidence generated from current service heads with `generatedFromCurrentHeads: true` and the completion-verifier reminder.
 
 
 Runtime handoff checklist: generate the operator handoff with `RUNTIME_HANDOFF_OUTPUT=/tmp/stock-traceability-runtime-handoff.md node reports/validation/create-runtime-handoff-checklist.js`. The checklist records current service HEADs, completion gate state, required operator inputs, ordered deployment commands, and the final completion verifier command.
