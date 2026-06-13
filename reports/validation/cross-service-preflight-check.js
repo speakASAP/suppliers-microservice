@@ -120,7 +120,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'k8s/deployment.yaml',
-    patterns: ['CATALOG_SERVICE_TOKEN', 'name: catalog-microservice-secret', 'WAREHOUSE_SERVICE_TOKEN', 'name: warehouse-microservice-secret', 'key: JWT_TOKEN'],
+    patterns: ['CATALOG_SERVICE_TOKEN', 'WAREHOUSE_SERVICE_TOKEN', 'name: stock-traceability-runtime-token', 'key: JWT_TOKEN'],
   },
   {
     service: 'suppliers',

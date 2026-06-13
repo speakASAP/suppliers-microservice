@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Runtime Trace Role Token Secret
+
+Change: switched Suppliers approved runtime downstream token bindings to the dedicated `stock-traceability-runtime-token` Kubernetes secret. The secret is created during the owner-approved runtime evidence flow with a short-lived role-bearing JWT and is referenced by source manifests without committing token values. Cross-service preflight now checks the runtime-token secret reference.
+
+Validation evidence: a generated role-bearing JWT signed with the cluster JWT secret returned HTTP 200 for Warehouse topology, Catalog product identity, and Suppliers imports without printing token values. Full build, preflight, readiness, deployment, and guarded runtime validation are rerun after this entry is committed and Suppliers is redeployed.
+
+Boundary decision: no token value was checked into source. The previous guarded runtime run stopped before mutation because Warehouse topology returned 401 with the non-role service secret token, so no production supplier import or Warehouse stock mutation happened before this fix.
+
+Next unfinished chunk: create the runtime token secret, redeploy Suppliers at the new head, regenerate approval/deployment evidence, and rerun the guarded runtime smoke.
+
 ## 2026-06-13 - Suppliers Runtime Service Token Wiring
 
 Change: wired Suppliers production Kubernetes runtime to call Catalog and Warehouse during the approved stock traceability import. The ConfigMap now sets in-cluster `CATALOG_SERVICE_URL` and `WAREHOUSE_SERVICE_URL`, and the Deployment injects `CATALOG_SERVICE_TOKEN` from `catalog-microservice-secret` plus `WAREHOUSE_SERVICE_TOKEN` from `warehouse-microservice-secret` without exposing token values. Cross-service preflight now checks these bindings before runtime handoff.

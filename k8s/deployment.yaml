@@ -37,12 +37,12 @@ spec:
             - name: CATALOG_SERVICE_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: catalog-microservice-secret
+                  name: stock-traceability-runtime-token
                   key: JWT_TOKEN
             - name: WAREHOUSE_SERVICE_TOKEN
               valueFrom:
                 secretKeyRef:
-                  name: warehouse-microservice-secret
+                  name: stock-traceability-runtime-token
                   key: JWT_TOKEN
           envFrom:
             - configMapRef:
