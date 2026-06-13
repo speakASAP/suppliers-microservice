@@ -87,7 +87,7 @@ export class ImportsService {
     return this.importJobRepository.findOne({ where: { id } });
   }
 
-  async runImport(jobId: string, supplierId: string, _options: RunImportDto = {}): Promise<void> {
+  async runImport(jobId: string, supplierId: string, options: RunImportDto = {}): Promise<void> {
     const job = await this.importJobRepository.findOne({ where: { id: jobId, supplierId } });
     if (!job) throw new NotFoundException("Import job " + jobId + " not found");
     if (job.status === "running") return;
@@ -168,8 +168,8 @@ export class ImportsService {
           actor: "suppliers-microservice",
           reason: "supplier-import",
           idempotencyKey: job.idempotencyKey,
-          approvedForMutation: false,
-          mutationAttempted: false,
+          approvedForMutation: options.warehouseStockUpdateMode === "apply_with_owner_approval" && options.ownerApproval === "explicit",
+          mutationAttempted: options.warehouseStockUpdateMode === "apply_with_owner_approval",
         },
       );
 

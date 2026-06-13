@@ -1,4 +1,5 @@
 const { ImportsService } = require('../../dist/imports/imports.service.js');
+const { SyntheticTraceSupplierAdapter } = require('../../dist/imports/adapters/synthetic-trace-supplier-adapter.js');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -25,7 +26,7 @@ function createHarness() {
     },
   };
   const supplierRepository = {
-    findOne: async ({ where }) => where?.id === job.supplierId ? { id: job.supplierId, code: 'SYN', isActive: true } : null,
+    findOne: async ({ where }) => where?.id === job.supplierId ? { id: job.supplierId, code: 'SYN', apiType: 'synthetic', isActive: true } : null,
   };
   const httpService = {
     post: (url, body, options) => {
@@ -33,22 +34,24 @@ function createHarness() {
       return { subscribe: (observer) => { observer.next({ data: { success: true } }); observer.complete(); } };
     },
   };
-  const adapterRegistry = {
-    requireForSupplier: () => ({
-      fetchNormalizedItems: async () => ({
-        adapterKey: 'synthetic-adapter',
-        sourceFingerprint: 'source-fingerprint-synthetic',
-        items: [{
-          sourceRecordId: 'source-record-synthetic',
-          replayKey: 'replay-key-synthetic',
-          supplierSku: 'SUP-SKU-SYNTHETIC',
-          productId: 'product-synthetic',
-          warehouseId: 'warehouse-supplier',
-          stockQuantity: 7,
-          observedAt: '2026-06-13T10:00:00.000Z',
-        }],
-      }),
+  const adapter = {
+    fetchNormalizedItems: async () => ({
+      adapterKey: 'synthetic-adapter',
+      sourceFingerprint: 'source-fingerprint-synthetic',
+      items: [{
+        sourceRecordId: 'source-record-synthetic',
+        replayKey: 'replay-key-synthetic',
+        supplierSku: 'SUP-SKU-SYNTHETIC',
+        productId: 'product-synthetic',
+        warehouseId: 'warehouse-supplier',
+        stockQuantity: 7,
+        observedAt: '2026-06-13T10:00:00.000Z',
+      }],
     }),
+  };
+  const adapterRegistry = {
+    get: () => undefined,
+    requireForSupplier: () => adapter,
   };
 
   return { service: new ImportsService(importJobRepository, supplierRepository, httpService, adapterRegistry), job, updates, posts };
@@ -62,7 +65,22 @@ async function runScenario(options) {
   return harness;
 }
 
+async function assertSyntheticTraceAdapter() {
+  const adapter = new SyntheticTraceSupplierAdapter();
+  const result = await adapter.fetchNormalizedItems({
+    supplierId: 'supplier-synthetic',
+    idempotencyKey: 'manual:traceability-synthetic',
+    sourceFingerprint: 'trace:product-synthetic:warehouse-supplier:7:SUP-SKU-SYNTHETIC',
+  });
+  assert(result.adapterKey === 'synthetic-trace', 'synthetic trace adapter key must be stable');
+  assert(result.items.length === 1, 'synthetic trace adapter must emit one item');
+  assert(result.items[0].productId === 'product-synthetic', 'synthetic trace adapter must preserve product ID');
+  assert(result.items[0].warehouseId === 'warehouse-supplier', 'synthetic trace adapter must preserve warehouse ID');
+  assert(result.items[0].stockQuantity === 7, 'synthetic trace adapter must preserve stock quantity');
+}
+
 (async () => {
+  await assertSyntheticTraceAdapter();
   const validateOnly = await runScenario({});
   const validateOnlyCompletion = validateOnly.updates.at(-1);
   assert(validateOnly.posts.length === 0, 'validate-only import must not call Warehouse');
@@ -89,6 +107,7 @@ async function runScenario(options) {
 
   console.log(JSON.stringify({
     status: 'passed',
+    syntheticAdapter: 'passed',
     validateOnly: {
       warehouseCalls: validateOnly.posts.length,
       attempted: validateOnlyCompletion.warehouseStockUpdateAttempted,

@@ -7,7 +7,7 @@ Metadata:
 - created: 2026-06-13
 - last_updated: 2026-06-13
 - completeness_level: executable-plan
-- upstream: docs/cross-service/stock-traceability-flow.md, docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md
+- upstream: docs/cross-service/stock-traceability-flow.md, docs/cross-service/stock-traceability-live-runbook.md, docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md
 
 ## Purpose
 
@@ -32,10 +32,12 @@ Approved mutation scope must be limited to synthetic traceability records:
 - one synthetic Catalog product with a `CODEX-STOCK-TRACE-` SKU prefix;
 - one existing or synthetic Alfares-owned Warehouse location;
 - one existing or synthetic supplier/dropship Warehouse location;
-- one synthetic Suppliers reconciliation/import job or approved direct supplier reconciliation path;
+- one synthetic Suppliers import job for a supplier whose `code` resolves to the `synthetic-trace` adapter;
 - cleanup or archival instructions recorded before mutation starts.
 
 ## Deployment Order
+
+The concrete operator command sequence is maintained in `docs/cross-service/stock-traceability-live-runbook.md`.
 
 1. Record pre-deploy commit SHA and dirty state for Warehouse, Catalog, and Suppliers.
 2. Deploy Warehouse first so origin metadata and batch logistics are available.
@@ -49,6 +51,22 @@ Approved mutation scope must be limited to synthetic traceability records:
 ## Runtime Smoke Assertions
 
 The full requirement audit is maintained in `docs/cross-service/stock-traceability-completion-audit.md`.
+
+When owner-approved mutation is allowed, run the smoke with a synthetic Suppliers import:
+
+- `OWNER_APPROVAL=explicit`
+- `SMOKE_ALLOW_MUTATION=true`
+- `TRACE_RUN_SUPPLIERS_IMPORT=true`
+- `TRACE_SUPPLIER_ID=<active supplier id>`
+- `TRACE_SUPPLIER_WAREHOUSE_ID=<supplier or dropship warehouse id>`
+- `TRACE_IMPORT_IDEMPOTENCY_KEY=<stable replay key>`
+- `TRACE_CLEANUP_EVIDENCE=<cleanup result or deferred cleanup reference>`
+
+The approved supplier must be active and must use supplier `code` value `synthetic-trace`, which maps to the registered synthetic adapter. The smoke sends `sourceFingerprint` as `trace:<TRACE_PRODUCT_ID>:<TRACE_SUPPLIER_WAREHOUSE_ID>:<TRACE_SUPPLIER_STOCK_QTY>:<TRACE_SUPPLIER_SKU>`, waits for the async import job to complete, and verifies the Warehouse policy fields before checking Catalog and Warehouse read models.
+
+When `SMOKE_ALLOW_MUTATION=true`, `TRACE_CLEANUP_EVIDENCE` is mandatory. It may point to completed cleanup evidence or to an explicit owner-approved deferral such as `deferred:<ticket-or-runbook>`. Hard deletes or compensating stock changes remain separate approved actions.
+
+For read-only rehearsal, keep `SMOKE_ALLOW_MUTATION` unset and run `node reports/validation/runtime-stock-traceability-smoke.js --plan-only`.
 
 
 The runtime smoke is complete only when current production responses prove all assertions below:

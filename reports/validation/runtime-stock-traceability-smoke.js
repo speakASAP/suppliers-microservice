@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 const DEFAULT_TIMEOUT_MS = Number(process.env.SMOKE_TIMEOUT_MS || 8000);
+const DEFAULT_IMPORT_POLL_MS = Number(process.env.TRACE_IMPORT_POLL_MS || 15000);
 const args = new Set(process.argv.slice(2));
 const planOnly = args.has('--plan-only') || process.env.SMOKE_PLAN_ONLY === 'true';
+const configOnly = args.has('--config-only') || process.env.SMOKE_CONFIG_ONLY === 'true';
 const approvedMutation = process.env.OWNER_APPROVAL === 'explicit' && process.env.SMOKE_ALLOW_MUTATION === 'true';
 
 function assert(condition, message) {
@@ -56,6 +58,10 @@ function authHeaders(token) {
   };
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 function assertHealth(health) {
   const failed = health.find((item) => item && item.error);
   assert(!failed, `health check failed: ${failed?.error}`);
@@ -102,6 +108,41 @@ function summarizeTopology(topology) {
   };
 }
 
+async function readSupplierJob({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey }) {
+  const supplierJobs = await requestJson('Suppliers import jobs', `${suppliersUrl}/api/imports?supplierId=${encodeURIComponent(supplierId)}`, {
+    method: 'GET',
+    headers: authHeaders(suppliersToken),
+  });
+  return (supplierJobs.data || []).find((job) => job.idempotencyKey === importIdempotencyKey) || null;
+}
+
+async function pollSupplierJob(options) {
+  const startedAt = Date.now();
+  let lastJob = null;
+
+  while (Date.now() - startedAt <= DEFAULT_IMPORT_POLL_MS) {
+    lastJob = await readSupplierJob(options);
+    if (lastJob && !['pending', 'running'].includes(lastJob.status)) return lastJob;
+    await sleep(750);
+  }
+
+  return lastJob;
+}
+
+async function runApprovedSyntheticSupplierImport({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey, sourceFingerprint }) {
+  return requestJson('Suppliers approved synthetic import', `${suppliersUrl}/api/imports/run/${encodeURIComponent(supplierId)}`, {
+    method: 'POST',
+    headers: authHeaders(suppliersToken),
+    body: JSON.stringify({
+      triggerType: 'manual',
+      idempotencyKey: importIdempotencyKey,
+      sourceFingerprint,
+      warehouseStockUpdateMode: 'apply_with_owner_approval',
+      ownerApproval: 'explicit',
+    }),
+  });
+}
+
 const stages = [
   'Verify service health endpoints for Warehouse, Catalog, and Suppliers.',
   'Verify protected endpoint auth rejection without tokens where safe.',
@@ -128,6 +169,11 @@ if (planOnly) {
       'TRACE_PRODUCT_ID',
     ],
     optionalRuntimeEnv: [
+      'TRACE_RUN_SUPPLIERS_IMPORT=true',
+      'TRACE_SUPPLIER_WAREHOUSE_ID',
+      'TRACE_SUPPLIER_STOCK_QTY=7',
+      'TRACE_SUPPLIER_SKU=SUP-SKU-TRACE',
+      'TRACE_CLEANUP_EVIDENCE=deferred:<ticket-or-runbook>',
       'TRACE_AUDIT_PAGE=1',
       'TRACE_AUDIT_LIMIT=100',
       'TRACE_SUPPLIER_ID',
@@ -137,6 +183,7 @@ if (planOnly) {
       'TRACE_SUPPLIER_WAREHOUSE_ID',
       'OWNER_APPROVAL=explicit',
       'SMOKE_ALLOW_MUTATION=true',
+      'TRACE_IMPORT_POLL_MS=15000',
     ],
     stages,
   }, null, 2));
@@ -153,9 +200,55 @@ if (planOnly) {
   const productId = requiredEnv('TRACE_PRODUCT_ID');
   const auditPage = optionalEnv('TRACE_AUDIT_PAGE', '1');
   const auditLimit = optionalEnv('TRACE_AUDIT_LIMIT', '100');
+  const runSuppliersImport = optionalBoolean('TRACE_RUN_SUPPLIERS_IMPORT', approvedMutation);
   const expectSuppliersJob = optionalBoolean('TRACE_EXPECT_SUPPLIERS_JOB', approvedMutation);
   const supplierId = optionalEnv('TRACE_SUPPLIER_ID', '');
-  const importIdempotencyKey = optionalEnv('TRACE_IMPORT_IDEMPOTENCY_KEY', '');
+  const supplierWarehouseId = optionalEnv('TRACE_SUPPLIER_WAREHOUSE_ID', '');
+  const supplierStockQty = optionalEnv('TRACE_SUPPLIER_STOCK_QTY', '7');
+  const supplierSku = optionalEnv('TRACE_SUPPLIER_SKU', 'SUP-SKU-TRACE');
+  const cleanupEvidence = optionalEnv('TRACE_CLEANUP_EVIDENCE', '');
+  const importIdempotencyKey = optionalEnv('TRACE_IMPORT_IDEMPOTENCY_KEY', `manual:trace:${productId}`);
+  const sourceFingerprint = `trace:${productId}:${supplierWarehouseId}:${supplierStockQty}:${supplierSku}`;
+
+  if (approvedMutation) {
+    assert(cleanupEvidence, 'TRACE_CLEANUP_EVIDENCE is required when approved mutation is enabled');
+  }
+  if (runSuppliersImport) {
+    assert(approvedMutation, 'TRACE_RUN_SUPPLIERS_IMPORT requires OWNER_APPROVAL=explicit and SMOKE_ALLOW_MUTATION=true');
+    assert(supplierId, 'TRACE_SUPPLIER_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
+    assert(supplierWarehouseId, 'TRACE_SUPPLIER_WAREHOUSE_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
+    assert(Number.isInteger(Number(supplierStockQty)) && Number(supplierStockQty) >= 0, 'TRACE_SUPPLIER_STOCK_QTY must be a non-negative integer');
+  }
+  if (expectSuppliersJob) {
+    assert(supplierId, 'TRACE_SUPPLIER_ID is required when TRACE_EXPECT_SUPPLIERS_JOB=true');
+    assert(importIdempotencyKey, 'TRACE_IMPORT_IDEMPOTENCY_KEY is required when TRACE_EXPECT_SUPPLIERS_JOB=true');
+  }
+
+  if (configOnly) {
+    console.log(JSON.stringify({
+      status: 'config-only',
+      mutationEnabled: approvedMutation,
+      supplierImport: {
+        enabled: runSuppliersImport,
+        supplierId,
+        supplierWarehouseId,
+        sourceFingerprint,
+      },
+      suppliersJobExpected: expectSuppliersJob,
+      cleanupEvidencePresent: Boolean(cleanupEvidence),
+      urls: {
+        warehouse: warehouseUrl,
+        catalog: catalogUrl,
+        suppliers: suppliersUrl,
+      },
+      tokens: {
+        catalog: redact(catalogToken),
+        warehouse: redact(warehouseToken),
+        suppliers: redact(suppliersToken),
+      },
+    }, null, 2));
+    return;
+  }
 
   const health = await Promise.all([
     requestJson('Warehouse health', `${warehouseUrl}/api/health`).catch((error) => ({ error: error.message })),
@@ -164,25 +257,17 @@ if (planOnly) {
   ]);
   assertHealth(health);
 
-  if (approvedMutation) {
-    assert(process.env.TRACE_SUPPLIER_ID, 'TRACE_SUPPLIER_ID is required for approved mutation smoke');
-    assert(process.env.TRACE_SUPPLIER_WAREHOUSE_ID, 'TRACE_SUPPLIER_WAREHOUSE_ID is required for approved mutation smoke');
-  }
-  if (expectSuppliersJob) {
-    assert(supplierId, 'TRACE_SUPPLIER_ID is required when TRACE_EXPECT_SUPPLIERS_JOB=true');
-    assert(importIdempotencyKey, 'TRACE_IMPORT_IDEMPOTENCY_KEY is required when TRACE_EXPECT_SUPPLIERS_JOB=true');
+  if (runSuppliersImport) {
+    await runApprovedSyntheticSupplierImport({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey, sourceFingerprint });
   }
 
   const auditQuery = new URLSearchParams({ page: auditPage, limit: auditLimit, isActive: 'true' });
   let supplierJob = null;
 
   if (expectSuppliersJob) {
-    const supplierJobs = await requestJson('Suppliers import jobs', `${suppliersUrl}/api/imports?supplierId=${encodeURIComponent(supplierId)}`, {
-      method: 'GET',
-      headers: authHeaders(suppliersToken),
-    });
-    supplierJob = (supplierJobs.data || []).find((job) => job.idempotencyKey === importIdempotencyKey);
+    supplierJob = await pollSupplierJob({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey });
     assert(supplierJob, 'expected Suppliers import job evidence for TRACE_IMPORT_IDEMPOTENCY_KEY');
+    assert(supplierJob.status === 'completed', 'expected Suppliers import job to complete before traceability assertions');
     assert(supplierJob.warehouseStockUpdateAttempted === true, 'expected Suppliers job to record Warehouse stock update attempted');
     assert(supplierJob.warehouseStockUpdateApproved === true, 'expected Suppliers job to record approved Warehouse stock update');
     assert(supplierJob.warehouseStockUpdatePolicy?.warehouseAuthority === 'warehouse-microservice', 'expected Suppliers job to preserve Warehouse authority policy');
@@ -267,6 +352,12 @@ if (planOnly) {
     },
     health,
     productId,
+    supplierImport: {
+      triggered: runSuppliersImport,
+      supplierId: supplierId || null,
+      sourceFingerprint: runSuppliersImport ? sourceFingerprint : null,
+    },
+    cleanupEvidence: cleanupEvidence || null,
     catalogProduct: {
       id: catalogProductData.id,
       sku: catalogProductData.sku,
@@ -280,6 +371,13 @@ if (planOnly) {
       available: row.available,
     })),
     logisticsRoutes: logisticsOptions.map((option) => option.routeType),
+    catalogAvailability: {
+      source: catalogItem.source,
+      warehouseCount: catalogItem.warehouses?.length || 0,
+      logisticsOptionCount: catalogItem.logistics?.options?.length || 0,
+      preferredRoute: catalogItem.logistics?.preferredRoute || null,
+      warehouseTypes: (catalogItem.warehouses || []).map((row) => row.warehouseType),
+    },
     coverage: summarizeCoverage(coverageItem),
     coverageAudit: {
       page: catalogCoverageAudit.data?.pagination?.page,
@@ -290,6 +388,7 @@ if (planOnly) {
     supplierJob: summarizeSupplierJob(supplierJob),
     projection: {
       productId: projectionItem.productId,
+      source: projectionItem.availability?.source,
       stockQuantity: projectionItem.stockQuantity,
       routeCount: projectionItem.availability?.logistics?.options?.length || 0,
     },

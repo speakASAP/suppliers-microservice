@@ -20,14 +20,15 @@ Suppliers validated Warehouse supplier reconciliation client path.
 | npm run build | passed | Nest build completed after source changes. |
 | synthetic boundary validation | passed | Compiled validation blocked malformed candidates and unapproved mutation, and accepted an approved synthetic candidate. |
 | synthetic ImportsService Warehouse client validation | passed | Mocked HttpService received one POST to /api/supplier-reconciliations with bearer token and idempotency-derived externalReference. |
-| node reports/validation/synthetic-approved-import-run-check.js | passed | Import run defaults to validate-only, blocks unapproved mutation attempts, and calls Warehouse only with `warehouseStockUpdateMode: apply_with_owner_approval` plus `ownerApproval: explicit`. |
+| node reports/validation/synthetic-approved-import-run-check.js | passed | Import run defaults to validate-only, validates the registered `synthetic-trace` adapter, blocks unapproved mutation attempts, and calls Warehouse only with `warehouseStockUpdateMode: apply_with_owner_approval` plus `ownerApproval: explicit`. |
+| node reports/validation/synthetic-production-rest-json-adapter-check.js | passed | Generic REST/JSON adapter resolves credential references from runtime env, normalizes supplier stock items, preserves deterministic replay/fingerprint behavior, and blocks malformed payloads without external calls. |
 | python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues | passed | 100/100 after creating missing adapter-directory placeholder referenced by TASK-006 docs. |
 | python3 scripts/deployment_readiness_gate.py --root . | passed | Gate report: reports/validation/ips-deployment-readiness-gate.json |
 | git diff --check | passed | No whitespace errors. |
 
 ## Boundary Evidence
 
-Suppliers now has a service-local path for validated supplier stock candidates to call Warehouse supplier reconciliation. Default import execution remains non-mutating; Warehouse mutation requires `warehouseStockUpdateMode: apply_with_owner_approval` plus `ownerApproval: explicit`. No supplier-specific adapter, Catalog write, production import, Warehouse production mutation, schema change, deployment, or secret change was performed.
+Suppliers now has a service-local path for validated supplier stock candidates to call Warehouse supplier reconciliation. Default import execution remains non-mutating; Warehouse mutation requires `warehouseStockUpdateMode: apply_with_owner_approval` plus `ownerApproval: explicit`. The registered `synthetic-trace` adapter exists only for approved traceability smoke imports. The generic REST/JSON adapter is validated with synthetic data and runtime credential references only. No Catalog write, production import, Warehouse production mutation, schema change, deployment, or secret change was performed.
 
 ## Contract Evidence
 
