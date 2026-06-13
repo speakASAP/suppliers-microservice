@@ -1,22 +1,22 @@
 # Suppliers Implementation State
 
-Stage: production. Health: verified healthy during Goal 6 read-only smoke on 2026-06-13.
+Stage: production. Health: verified healthy after the owner-approved cross-service runtime evidence flow and post-smoke token cleanup on 2026-06-13.
 
-Current owner-selected task: SUP-G7 cross-service stock integration slice. Latest follow-up: Warehouse reconciliation client source implementation on 2026-06-13. Runtime source changes: validation-first Warehouse supplier reconciliation client path was added; no deployment or production stock mutation was performed. Goal 5 service-local Warehouse stock-boundary validation and import-job evidence fields were deployed on 2026-06-13.
+Current owner-selected task: SUP-G7 cross-service stock integration slice. Latest follow-up: owner-approved guarded runtime evidence completed on 2026-06-13. Warehouse, Catalog, and Suppliers were deployed at recorded commits, one synthetic Suppliers import updated Warehouse-managed supplier/dropship stock, and the temporary Suppliers WAREHOUSE_SERVICE_TOKEN used for the smoke was removed after validation. Goal 5 service-local Warehouse stock-boundary validation and import-job evidence fields were deployed on 2026-06-13.
 
 Preserved intent: Suppliers is the validation-first supplier import service. It preserves supplier metadata, import jobs, supplier-to-Catalog category mappings, supplier payload validation, and idempotent import orchestration while avoiding credential leakage, unvalidated Catalog writes, unsafe Warehouse stock mutation, and ownership drift.
 
 Completed goals: Goal 1 - Intent Preservation System, complete on 2026-06-12. Goal 2 - Supplier Contract And Credential Safety, complete on 2026-06-12. Goal 3 - Import Validation And Idempotency, complete on 2026-06-12. Goal 4 - Category Mapping Completeness And Catalog Boundary, complete on 2026-06-13. Goal 5 - Warehouse Stock Update Boundary, complete on 2026-06-13. Goal 6 - Operational Smoke And Documentation Ingestion, complete on 2026-06-13. Goal 7 - Warehouse Reconciliation Client, source complete on 2026-06-13.
 
-Active goal: none. Latest completed source goal: Goal 7 - Warehouse Reconciliation Client.
+Active goal: none. Latest completed runtime goal: owner-approved cross-service stock traceability runtime evidence.
 
-Next recommended goal: owner-approved guarded runtime evidence flow for Warehouse, Catalog, and Suppliers stock traceability using approved synthetic fixture IDs, service tokens, deployment evidence, and cleanup evidence. TASK-006 supplier-specific adapter remains blocked pending owner-supplied supplier API contract details.
+Next recommended goal: TASK-002 supplier-specific API integration remains blocked pending owner-supplied supplier API contract details. The cross-service runtime traceability proof is complete for the approved synthetic fixture.
 
 Known blockers: no real supplier identity, private endpoint, credential shape, or production payload contract exists. A real supplier adapter remains blocked until owner-supplied contract details are supplied. No npm audit findings remain after the Nest major dependency upgrade.
 
-Cross-service completion audit: `docs/cross-service/stock-traceability-completion-audit.md` maps original requirements to source evidence and runtime proof still needed. Current status remains source-complete/runtime-pending. On 2026-06-13 the source-side runtime evidence hardening passed Warehouse, Catalog, and Suppliers non-mutating validation, including Catalog stale/duplicate/unrequested Warehouse logistics guard coverage and Suppliers preflight alignment.
+Cross-service completion audit: `docs/cross-service/stock-traceability-completion-audit.md` maps original requirements to source evidence and runtime proof. Current status is runtime-complete for the approved synthetic traceability fixture. On 2026-06-13 the source-side runtime evidence hardening passed Warehouse, Catalog, and Suppliers non-mutating validation, including Catalog stale/duplicate/unrequested Warehouse logistics guard coverage and Suppliers preflight alignment. The subsequent approved runtime smoke generated `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md` with status `passed-runtime`.
 
-Cross-service runtime rollout plan: `docs/cross-service/stock-traceability-runtime-rollout.md` and `reports/validation/runtime-stock-traceability-smoke.js` were added on 2026-06-13. Plan-only validation passed; production deployment and mutation remain approval-gated.
+Cross-service runtime rollout plan: `docs/cross-service/stock-traceability-runtime-rollout.md` and `reports/validation/runtime-stock-traceability-smoke.js` were added on 2026-06-13. Plan-only validation passed earlier; owner-approved production deployment and synthetic mutation smoke later completed and were independently verified.
 
 Cross-service stock traceability source evidence: `docs/cross-service/stock-traceability-flow.md`, `reports/validation/synthetic-stock-traceability-check.js`, and `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md` were updated on 2026-06-13 to include Warehouse-owned logistics routes forwarded through Catalog/FlipFlop projection. Synthetic validation passed without production mutation.
 

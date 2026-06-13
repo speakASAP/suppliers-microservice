@@ -24,3 +24,4 @@
 - [x] 2026-06-13 Owner-approved Nest major dependency upgrade
 - [x] 2026-06-13 TASK-006 production REST JSON supplier adapter contract and implementation (goal_id: TASK-006, priority: 2)
 - [x] 2026-06-13 Cross-service runtime evidence source hardening validated Catalog logistics consistency and Suppliers preflight alignment (goal_id: CROSS-STOCK-RUNTIME-SOURCE-HARDENING, priority: 1)
+- [x] 2026-06-13 Cross-service runtime stock traceability evidence completed with approved synthetic Warehouse mutation (goal_id: CROSS-STOCK-RUNTIME-LIVE, priority: 1)

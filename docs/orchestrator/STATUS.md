@@ -171,3 +171,15 @@ Validation evidence: Warehouse focused tests passed for warehouse DTO/service tr
 Boundary decision: no deployment, live fixture creation, production supplier import, Warehouse mutation, runtime token inspection, or final runtime-complete claim was performed. The completion gate remains incomplete until owner-approved live fixture IDs, service tokens, deployment evidence, cleanup evidence, and a guarded approved runtime smoke are supplied and executed.
 
 Next unfinished chunk: owner-approved guarded runtime evidence flow using `RUN_APPROVED_RUNTIME_SMOKE=true` with complete deployment evidence, approved synthetic fixture IDs, service tokens, and cleanup evidence.
+
+## 2026-06-13 - Cross-Service Runtime Evidence Flow Complete
+
+Approval: owner approved deploying Warehouse, Catalog, and Suppliers source, creating/reusing synthetic traceability fixtures only, and running one guarded Suppliers synthetic import that mutates Warehouse supplier/dropship stock.
+
+Deployment evidence: Warehouse commit 6992122d86f7cf0926b7702185f000982395aa0b, Catalog commit 890f55a35b107e2e4038281fa5c4de99232d7343, and Suppliers commit a6fc69d220e04aa055345c2ee1606bad21cc5a06 were deployed and health/access checks were recorded in /tmp/stock-traceability-deployment-evidence.json. A temporary Suppliers WAREHOUSE_SERVICE_TOKEN was installed only for the approved smoke and removed after the runtime evidence passed; Suppliers health was verified healthy after cleanup.
+
+Runtime evidence: reports/validation/run-runtime-evidence-flow.js completed with RUN_APPROVED_RUNTIME_SMOKE=true for synthetic product c0de0000-0000-4000-8000-000000000011, supplier c0de0000-0000-4000-8000-000000000012, own warehouse c0de0000-0000-4000-8000-000000000013, supplier warehouse c0de0000-0000-4000-8000-000000000014, and dropship warehouse c0de0000-0000-4000-8000-000000000015. The approved Suppliers import completed with idempotency key manual:traceability-20260613-012, Warehouse authority, mutation attempted and approved, and updatedProducts=2.
+
+Validation evidence: verify-runtime-evidence-report.js passed with 12 assertion rows; verify-runtime-evidence-manifest.js passed with 4 artifacts; verify-runtime-evidence-bundle.js passed across 3 services; verify-stock-traceability-completion.js returned complete. Runtime report docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md is status passed-runtime and completeness runtime-complete.
+
+Next unfinished chunk: TASK-002 supplier-specific API integration remains blocked pending owner-supplied supplier API contract details.

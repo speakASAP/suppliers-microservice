@@ -1,13 +1,12 @@
 {
   "blockers": [
-    "No active production supplier row, private endpoint, or runtime credential references have been supplied for onboarding",
-    "Approved live traceability fixture IDs, service tokens, deployment evidence, and cleanup evidence are required before guarded runtime mutation smoke"
+    "No active real production supplier row, private endpoint, or runtime credential references have been supplied for onboarding"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
-  "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "cross-service-runtime-source-hardening",
+  "last_cycle_at": "2026-06-13T10:35:00Z",
+  "last_milestone": "cross-service-runtime-evidence-complete",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -28,7 +27,7 @@
       "compatible_dependency_audit_remediation": "done_package_lock_only",
       "npm_audit_remaining_findings": "0_total",
       "compatible_dependency_audit_remediation_deployed": "done_sha256_663539137f10c53665d1e122a031026b4a96ccdbda3be5d178b8cd91bcc02bce",
-      "latest_pod_health": "healthy_suppliers-microservice-6d5fdf4f5-k6lp7",
+      "latest_pod_health": "healthy_after_runtime_evidence_token_cleanup",
       "nest_major_dependency_upgrade": "done_11_x_deployed_sha256_f4049681685f9068c16b989664ffa8b9a2cc8d8beaa3709b13058b65b08f7264",
       "supplier_contract_discovery": "none_found_repo_runtime_or_sanitized_production_metadata",
       "production_supplier_count": 0,
@@ -42,10 +41,14 @@
       "production_supplier_onboarding": "pending_owner_supplied_metadata_and_runtime_secret_refs",
       "production_rest_json_supplier_adapter_deployed": "done_sha256_eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34",
       "cross_service_runtime_source_hardening": "done_non_mutating_validation_passed",
-      "cross_service_runtime_completion": "pending_owner_approved_fixture_tokens_deployment_cleanup_evidence"
+      "cross_service_runtime_completion": "complete_passed_runtime_synthetic_fixture",
+      "cross_service_runtime_report": "docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md",
+      "cross_service_runtime_manifest": "/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json",
+      "cross_service_runtime_import": "completed_manual_traceability_20260613_012_updatedProducts_2",
+      "cross_service_runtime_token_cleanup": "temporary_suppliers_WAREHOUSE_SERVICE_TOKEN_removed_and_health_verified"
     }
   },
-  "next_focus": "Owner-approved guarded runtime evidence flow with approved synthetic fixture IDs, service tokens, deployment evidence, cleanup evidence, and RUN_APPROVED_RUNTIME_SMOKE=true",
+  "next_focus": "TASK-002 supplier-specific API integration remains blocked pending owner-supplied supplier API contract details; cross-service synthetic runtime traceability evidence is complete",
   "open_task_ids": [
     "TASK-002"
   ],

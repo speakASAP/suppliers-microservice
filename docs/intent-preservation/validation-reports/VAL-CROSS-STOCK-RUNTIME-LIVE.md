@@ -2,66 +2,70 @@
 
 Metadata:
 - id: VAL-CROSS-STOCK-RUNTIME-LIVE
-- status: failed-runtime
+- status: passed-runtime
 - owner: commerce-platform
 - created: 2026-06-13
 - last_updated: 2026-06-13
-- completeness_level: partial
+- completeness_level: runtime-complete
 - upstream: docs/cross-service/stock-traceability-live-runbook.md, docs/cross-service/stock-traceability-completion-audit.md, reports/validation/runtime-stock-traceability-smoke.js
 
 ## Artifact Validated
 
-Superseded runtime traceability attempt for one synthetic Catalog good. This report is retained as non-completion evidence because it does not satisfy the current approved supplier-import and route-leg evidence gates.
+Owner-approved deployed Warehouse, Catalog, and Suppliers runtime traceability path for one synthetic Catalog good.
 
 ## Deployment Evidence
 
 | Service | Commit SHA | Deploy command | Health evidence | Protected endpoint evidence |
 | --- | --- | --- | --- | --- |
-| Warehouse | a99e270b2cf3f66b96b54b08e6260e42fda83bfb | ./scripts/deploy.sh | https://warehouse.alfares.cz/api/health returned 200 | anonymous /api/warehouses/topology returned 401 |
-| Catalog | 314d440a53fba90d6cf72fb83c16ca005de4475e | ./scripts/deploy.sh | https://catalog.alfares.cz/health returned 200 | anonymous /api/products/availability/coverage returned 401 |
-| Suppliers | 9bf0fe4637db8c2c6b680a11c9c51b139ba4a0ee | ./scripts/deploy.sh plus smoke-only WAREHOUSE_SERVICE_TOKEN env rollout | https://suppliers.alfares.cz/api/health returned 200 | anonymous /api/imports returned 401 |
+| Warehouse | 6992122d86f7cf0926b7702185f000982395aa0b | ./scripts/deploy.sh | https://warehouse.alfares.cz/api/health returned healthy warehouse-microservice after deployment | anonymous GET https://warehouse.alfares.cz/api/warehouses/topology returned 401 |
+| Catalog | 890f55a35b107e2e4038281fa5c4de99232d7343 | ./scripts/deploy.sh; rollout completed; manual health check used because script selected a completed cronjob pod during health phase | https://catalog.alfares.cz/health returned healthy catalog-microservice after deployment | anonymous POST https://catalog.alfares.cz/api/products/availability/coverage returned 401 |
+| Suppliers | a6fc69d220e04aa055345c2ee1606bad21cc5a06 | ./scripts/deploy.sh plus kubectl rollout restart deployment/suppliers-microservice -n statex-apps because deployment uses mutable latest tag | https://suppliers.alfares.cz/api/health returned healthy suppliers-microservice after deployment | anonymous GET https://suppliers.alfares.cz/api/imports returned 401 |
+
+## Fixture Check Command Evidence
+
+```bash
+WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=c0de0000-0000-4000-8000-000000000011 TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=c0de0000-0000-4000-8000-000000000013 TRACE_SUPPLIER_WAREHOUSE_ID=c0de0000-0000-4000-8000-000000000014 TRACE_DROPSHIP_WAREHOUSE_ID=c0de0000-0000-4000-8000-000000000015 node reports/validation/runtime-stock-traceability-smoke.js --fixture-check
+```
 
 ## Smoke Command Evidence
 
 ```bash
-SMOKE_TIMEOUT_MS=30000 WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=c0de0000-0000-4000-8000-000000000001 TRACE_SUPPLIER_ID=c0de0000-0000-4000-8000-000000000002 TRACE_SUPPLIER_WAREHOUSE_ID=c0de0000-0000-4000-8000-000000000004 TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-20260613-003 TRACE_RUN_SUPPLIERS_IMPORT=false TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js
+WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=c0de0000-0000-4000-8000-000000000011 TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=c0de0000-0000-4000-8000-000000000012 TRACE_SUPPLIER_WAREHOUSE_ID=c0de0000-0000-4000-8000-000000000014 TRACE_DROPSHIP_WAREHOUSE_ID=c0de0000-0000-4000-8000-000000000015 TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-20260613-012 TRACE_CLEANUP_EVIDENCE=deferred:owner-approved-synthetic-traceability-fixture-20260613 TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js
 ```
 
 ## Runtime Assertions
 
 | Assertion | Evidence summary | Status |
 | --- | --- | --- |
+| Read-only live fixture check passed before mutation. | status=fixture-ready, fixtureCheck=yes, mutationEnabled=no, importTriggered=no, own=c0de0000-0000-4000-8000-000000000013, supplier=c0de0000-0000-4000-8000-000000000014, dropship=c0de0000-0000-4000-8000-000000000015, routes=local_fulfillment,supplier_replenishment,supplier_dropship | passed-runtime |
 | Warehouse, Catalog, and Suppliers health endpoints passed. | warehouse: healthy; catalog: healthy; suppliers: healthy | passed-runtime |
-| Catalog product identity exists. | productId=c0de0000-0000-4000-8000-000000000001, sku=CODEX-STOCK-TRACE-001, expectedSkuPrefix=CODEX-STOCK-TRACE- | passed-runtime |
-| Warehouse topology distinguishes own and supplier-managed warehouses. | own=2, supplierManaged=1, totalAvailable=11 | passed-runtime |
-| Warehouse availability returns own plus supplier or dropship stock. | own:c0de0000-0000-4000-8000-000000000003:available=4:supplier=-; dropship:c0de0000-0000-4000-8000-000000000004:available=7:supplier=c0de0000-0000-4000-8000-000000000002 | passed-runtime |
-| Warehouse logistics returns local and supplier route options. | routes=local_fulfillment,supplier_dropship, routeLegs=missing in captured evidence | missing-runtime |
-| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=2, logisticsOptionCount=2, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_dropship, routeLegs=missing in captured evidence | missing-runtime |
+| Catalog product identity exists. | productId=c0de0000-0000-4000-8000-000000000011, sku=CODEX-STOCK-TRACE-011, expectedSkuPrefix=CODEX-STOCK-TRACE- | passed-runtime |
+| Warehouse topology distinguishes own and supplier-managed warehouses. | own=2, supplierManaged=2, totalAvailable=18 | passed-runtime |
+| Warehouse availability returns own plus supplier and dropship stock. | own:c0de0000-0000-4000-8000-000000000013:available=4:supplier=-; supplier:c0de0000-0000-4000-8000-000000000014:available=7:supplier=c0de0000-0000-4000-8000-000000000012; dropship:c0de0000-0000-4000-8000-000000000015:available=7:supplier=c0de0000-0000-4000-8000-000000000012 | passed-runtime |
+| Warehouse logistics returns local, supplier replenishment, and dropship route options. | routes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | passed-runtime |
+| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | passed-runtime |
 | Catalog coverage and audit classify covered mixed stock. | coverage=covered, origin=mixed_stock, audit=covered/mixed_stock | passed-runtime |
-| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=c0de0000-0000-4000-8000-000000000001, source=warehouse, stockQuantity=11, routeCount=2, routeTypes=local_fulfillment,supplier_dropship, routeLegs=missing in captured evidence | missing-runtime |
-| Suppliers import preserves Warehouse authority. | Smoke command evidence used TRACE_RUN_SUPPLIERS_IMPORT=false, so this report cannot prove the approved supplier import path even though a historical job row was observed. | missing-runtime |
-| Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11 | passed-runtime |
-| Cleanup or archival evidence is recorded. | cleanupEvidence=completed:synthetic-traceability-records-removed-20260613 | passed-runtime |
+| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=c0de0000-0000-4000-8000-000000000011, source=warehouse, stockQuantity=18, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | passed-runtime |
+| Suppliers import preserves Warehouse authority. | status=completed, idempotencyKey=manual:traceability-20260613-012, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=2 | passed-runtime |
+| Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=18, warehouseOriginAvailable=18, catalogAvailabilityTotal=18, catalogCoverageTotal=18, projectionStockQuantity=18 | passed-runtime |
+| Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:owner-approved-synthetic-traceability-fixture-20260613 | passed-runtime |
 
 ## Smoke Output Summary
 
-- product: c0de0000-0000-4000-8000-000000000001 / CODEX-STOCK-TRACE-001
+- product: c0de0000-0000-4000-8000-000000000011 / CODEX-STOCK-TRACE-011
+- fixture check: status=fixture-ready, fixtureCheck=yes, mutationEnabled=no, importTriggered=no, own=c0de0000-0000-4000-8000-000000000013, supplier=c0de0000-0000-4000-8000-000000000014, dropship=c0de0000-0000-4000-8000-000000000015, routes=local_fulfillment,supplier_replenishment,supplier_dropship
 - health: warehouse: healthy; catalog: healthy; suppliers: healthy
-- warehouse topology: own=2, supplierManaged=1, totalAvailable=11
-- warehouse origins: own:c0de0000-0000-4000-8000-000000000003:available=4:supplier=-; dropship:c0de0000-0000-4000-8000-000000000004:available=7:supplier=c0de0000-0000-4000-8000-000000000002
-- routes: local_fulfillment,supplier_dropship
-- route legs: missing in captured evidence
+- warehouse topology: own=2, supplierManaged=2, totalAvailable=18
+- warehouse origins: own:c0de0000-0000-4000-8000-000000000013:available=4:supplier=-; supplier:c0de0000-0000-4000-8000-000000000014:available=7:supplier=c0de0000-0000-4000-8000-000000000012; dropship:c0de0000-0000-4000-8000-000000000015:available=7:supplier=c0de0000-0000-4000-8000-000000000012
+- routes: local_fulfillment,supplier_replenishment,supplier_dropship
+- route legs: local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier]
 - coverage: covered / mixed_stock
-- supplier job: status=completed, idempotencyKey=manual:traceability-20260613-003, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=1
-- cleanup evidence: completed:synthetic-traceability-records-removed-20260613
+- supplier job: status=completed, idempotencyKey=manual:traceability-20260613-012, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=2
+- cleanup evidence: deferred:owner-approved-synthetic-traceability-fixture-20260613
 
 ## Completion Decision
 
-Runtime incomplete
-
-## Supersession Note
-
-This tracked report predates the current completion gate. It is not valid completion evidence because the captured smoke command used `TRACE_RUN_SUPPLIERS_IMPORT=false`, and the captured Warehouse, Catalog, and FlipFlop logistics assertions did not include route-leg evidence. A new owner-approved live smoke must regenerate this file with `passed-runtime`, `runtime-complete`, `TRACE_RUN_SUPPLIERS_IMPORT=true`, cleanup evidence, deployment evidence, and route legs before the goal can be marked complete.
+Runtime complete
 
 ## Boundary Evidence
 
@@ -69,9 +73,5 @@ This tracked report predates the current completion gate. It is not valid comple
 - no customer data was captured;
 - no Catalog or Suppliers stock authority was introduced;
 - Warehouse remained the stock and logistics authority;
-- mutation boundary cannot be proven from this report because the captured smoke command disabled `TRACE_RUN_SUPPLIERS_IMPORT`;
+- mutation was limited to approved synthetic traceability records;
 - any cleanup requiring hard delete or compensating stock mutation had separate approval or remained deferred by recorded evidence.
-
-## Post-Run Cleanup Evidence
-
-Synthetic traceability records were removed after evidence capture and report verification. Verified remaining row counts are zero for Catalog product `c0de0000-0000-4000-8000-000000000001`, Suppliers supplier/import jobs for `c0de0000-0000-4000-8000-000000000002`, Warehouse warehouses `c0de0000-0000-4000-8000-000000000003` and `c0de0000-0000-4000-8000-000000000004`, related stock rows, and related supplier reconciliation rows.
