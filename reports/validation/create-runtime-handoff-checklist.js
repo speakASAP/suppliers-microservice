@@ -128,7 +128,7 @@ function assertSelfTestContent(markdown) {
   const required = [
     'STOCK-TRACEABILITY-RUNTIME-HANDOFF',
     'completionGate',
-    'runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees',
+    'Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees',
     'TRACE_SUPPLIER_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID',
     'DEPLOYMENT_EVIDENCE_FILE',
     'Deploy Warehouse first',
