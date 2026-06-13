@@ -62,6 +62,7 @@ function baseSmoke() {
       catalogAvailabilityTotal: 14,
       catalogCoverageTotal: 14,
       projectionStockQuantity: 14,
+      projectionSellableRouteAvailable: 14,
     },
     catalogAvailability: {
       source: 'warehouse',

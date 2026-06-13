@@ -21,7 +21,7 @@ Source-level cross-service traceability path from Suppliers normalized stock can
 
 ## Evidence Summary
 
-The synthetic check produced one Catalog product ID and SKU, one idempotency-derived supplier import externalReference, one own stock row, one supplier warehouse stock row, and one dropship supplier stock row. The final projection preserved all origin rows under Warehouse-sourced availability, preserved Warehouse-owned logistics routes and route legs under availability.logistics, kept stockQuantity equal to totalAvailable, and the Catalog coverage read model classified the product as covered mixed_stock with local, supplier, and dropship availability totals intact.
+The synthetic check produced one Catalog product ID and SKU, one idempotency-derived supplier import externalReference, one own stock row, one supplier warehouse stock row, and one dropship supplier stock row. The final projection preserved all origin rows under Warehouse-sourced availability, preserved Warehouse-owned logistics routes and route legs under availability.logistics, kept FlipFlop stockQuantity equal to traceable reservable route availability while raw Warehouse totals stayed under availability, and the Catalog coverage read model classified the product as covered mixed_stock with local, supplier, and dropship availability totals intact.
 
 ## Boundary Evidence
 

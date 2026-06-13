@@ -93,6 +93,25 @@ function hasRouteForWarehouse(routes, warehouseId, routeType, supplierId) {
     && route.legs.length > 0);
 }
 
+function hasRequiredSupplierOwnership(route) {
+  if (!['supplier_replenishment', 'supplier_dropship'].includes(route.routeType)) return true;
+  return typeof route.supplierId === 'string' && route.supplierId.trim().length > 0;
+}
+
+function sumTraceableReservableAvailability(routes) {
+  if (!Array.isArray(routes)) return 0;
+  return routes.reduce((total, route) => {
+    if (Number(route.available ?? 0) <= 0
+      || route.canReserveFromWarehouse !== true
+      || !hasRequiredSupplierOwnership(route)
+      || !Array.isArray(route.legs)
+      || route.legs.length === 0) {
+      return total;
+    }
+    return total + Number(route.available ?? 0);
+  }, 0);
+}
+
 function supplierIdForOrigin(artifact, warehouseId, warehouseType) {
   if (!warehouseId) return null;
   return (artifact.warehouseOrigins || []).find((row) => row.warehouseId === warehouseId && row.warehouseType === warehouseType)?.supplierId || null;
@@ -210,7 +229,10 @@ function assertStockAuthorityMatchesTrace(smoke) {
   assert(Number(authority.warehouseOriginAvailable) === warehouseTotal, 'smoke artifact stock authority origin total must match Warehouse total');
   assert(Number(authority.catalogAvailabilityTotal) === warehouseTotal, 'smoke artifact stock authority Catalog availability total must match Warehouse total');
   assert(Number(authority.catalogCoverageTotal) === warehouseTotal, 'smoke artifact stock authority Catalog coverage total must match Warehouse total');
-  assert(Number(authority.projectionStockQuantity) === warehouseTotal, 'smoke artifact stock authority FlipFlop projection total must match Warehouse total');
+  const projectionSellableRouteAvailable = sumTraceableReservableAvailability(smoke.projection?.routeLegs);
+  assert(projectionSellableRouteAvailable > 0, 'smoke artifact stock authority must include positive FlipFlop sellable route availability');
+  assert(Number(authority.projectionSellableRouteAvailable) === projectionSellableRouteAvailable, 'smoke artifact stock authority FlipFlop sellable route total must match projection route evidence');
+  assert(Number(authority.projectionStockQuantity) === projectionSellableRouteAvailable, 'smoke artifact stock authority FlipFlop stockQuantity must match sellable route availability');
 }
 
 function verifyTraceArtifactConsistency(manifest) {
@@ -388,6 +410,7 @@ function sampleSmoke() {
       catalogAvailabilityTotal: 14,
       catalogCoverageTotal: 14,
       projectionStockQuantity: 14,
+      projectionSellableRouteAvailable: 14,
     },
   };
 }

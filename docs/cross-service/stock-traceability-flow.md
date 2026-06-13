@@ -50,7 +50,7 @@ The validation script `reports/validation/synthetic-stock-traceability-check.js`
 - Suppliers validation accepts a complete approved candidate and blocks malformed or unapproved candidates.
 - The expected Warehouse reconciliation request contains the required Warehouse contract fields and an idempotency-derived external reference.
 - The expected Warehouse availability response carries local and supplier replenishment and dropship rows with origin metadata.
-- The expected Catalog projection preserves Warehouse-origin rows under `availability.warehouses[]`, preserves Warehouse-owned route options and route legs under `availability.logistics`, and keeps `stockQuantity` equal to Warehouse `totalAvailable`.
+- The expected Catalog projection preserves Warehouse-origin rows under `availability.warehouses[]`, preserves Warehouse-owned route options and route legs under `availability.logistics`, and keeps FlipFlop `stockQuantity` equal to traceable reservable route availability while raw Warehouse totals remain under `availability` for diagnostics.
 - The expected Catalog coverage read model marks the mixed local plus dropship product as `covered`, `mixed_stock`, and sellable only because Warehouse reports positive available stock and a reservable route.
 
 ## Runtime Evidence Needed Later

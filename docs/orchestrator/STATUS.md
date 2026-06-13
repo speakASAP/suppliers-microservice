@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - FlipFlop Sellable Quantity Runtime Evidence Gate
+
+Change: aligned the runtime smoke, report generator, report verifier, bundle verifier, completion audit, and source traceability docs with Catalog's hardened FlipFlop sellable stock contract. Runtime evidence now records raw Warehouse totals separately from `projectionSellableRouteAvailable`, and verifies FlipFlop `stockQuantity` against traceable reservable route availability instead of raw Warehouse `totalAvailable`.
+
+Validation evidence: before commit, node reports/validation/verify-runtime-evidence-report.js --self-test passed, node reports/validation/runtime-evidence-negative-check.js passed, node reports/validation/cross-service-preflight-check.js passed, python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues passed, and git diff --check passed. Bundle self-tests that require clean current service worktrees are rerun after commit.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse mutation, or cleanup mutation was performed.
+
+Next unfinished chunk: owner-approved current-head deployment and guarded runtime evidence regeneration remains required before stock traceability can be marked complete.
+
 ## 2026-06-13 - FlipFlop Sellable Route Quantity Preflight Gate
 
 Change: aligned Suppliers cross-service preflight with Catalog's FlipFlop channel stock quantity contract. Preflight now requires FlipFlop stockQuantity to be derived from traceable reservable Warehouse logistics route availability instead of raw Warehouse totalAvailable, with coverage for mixed local plus non-reservable supplier diagnostic stock.

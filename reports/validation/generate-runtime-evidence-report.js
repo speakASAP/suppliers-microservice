@@ -92,7 +92,7 @@ function fixtureCheckComplete(fixture) {
 
 function summarizeStockAuthority(authority) {
   if (!authority) return 'Stock authority evidence missing.';
-  return `source=${valueOrDash(authority.source)}, warehouseTotalAvailable=${valueOrDash(authority.warehouseTotalAvailable)}, warehouseOriginAvailable=${valueOrDash(authority.warehouseOriginAvailable)}, catalogAvailabilityTotal=${valueOrDash(authority.catalogAvailabilityTotal)}, catalogCoverageTotal=${valueOrDash(authority.catalogCoverageTotal)}, projectionStockQuantity=${valueOrDash(authority.projectionStockQuantity)}`;
+  return `source=${valueOrDash(authority.source)}, warehouseTotalAvailable=${valueOrDash(authority.warehouseTotalAvailable)}, warehouseOriginAvailable=${valueOrDash(authority.warehouseOriginAvailable)}, catalogAvailabilityTotal=${valueOrDash(authority.catalogAvailabilityTotal)}, catalogCoverageTotal=${valueOrDash(authority.catalogCoverageTotal)}, projectionStockQuantity=${valueOrDash(authority.projectionStockQuantity)}, projectionSellableRouteAvailable=${valueOrDash(authority.projectionSellableRouteAvailable)}`;
 }
 
 function summarizeCatalogAvailability(availability) {
@@ -176,11 +176,16 @@ function hasRequiredReservableRoutes(routeLegs) {
 function stockAuthorityComplete(authority) {
   if (!authority || authority.source !== 'warehouse') return false;
   const warehouseTotal = Number(authority.warehouseTotalAvailable);
+  const projectionStock = Number(authority.projectionStockQuantity);
+  const projectionSellable = Number(authority.projectionSellableRouteAvailable);
   return Number.isFinite(warehouseTotal)
+    && Number.isFinite(projectionSellable)
     && Number(authority.warehouseOriginAvailable) === warehouseTotal
     && Number(authority.catalogAvailabilityTotal) === warehouseTotal
     && Number(authority.catalogCoverageTotal) === warehouseTotal
-    && Number(authority.projectionStockQuantity) === warehouseTotal;
+    && projectionSellable > 0
+    && projectionSellable <= warehouseTotal
+    && projectionStock === projectionSellable;
 }
 
 function buildAssertions(smoke, fixture) {
@@ -408,6 +413,7 @@ function sampleSmoke() {
       catalogAvailabilityTotal: 14,
       catalogCoverageTotal: 14,
       projectionStockQuantity: 14,
+      projectionSellableRouteAvailable: 14,
     },
     catalogAvailability: {
       source: 'warehouse',

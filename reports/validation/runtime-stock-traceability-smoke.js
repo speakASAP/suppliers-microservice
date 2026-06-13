@@ -180,6 +180,25 @@ function hasRequiredReservableRoutes(options) {
     && hasPositiveReservableRoute(options, 'supplier_dropship');
 }
 
+function hasRequiredSupplierOwnership(option) {
+  if (!['supplier_replenishment', 'supplier_dropship'].includes(option.routeType)) return true;
+  return typeof option.supplierId === 'string' && option.supplierId.trim().length > 0;
+}
+
+function sumTraceableReservableAvailability(options) {
+  if (!Array.isArray(options)) return 0;
+  return options.reduce((total, option) => {
+    if (Number(option.available ?? 0) <= 0
+      || option.canReserveFromWarehouse !== true
+      || !hasRequiredSupplierOwnership(option)
+      || !Array.isArray(option.legs)
+      || option.legs.length === 0) {
+      return total;
+    }
+    return total + Number(option.available ?? 0);
+  }, 0);
+}
+
 function assertConfiguredWarehouseId(label, configuredId, rows, matcher) {
   if (!configuredId) return;
   assert(rows.some((row) => row.warehouseId === configuredId && matcher(row)), `expected ${label} fixture warehouse ${configuredId} in runtime evidence`);
@@ -445,6 +464,7 @@ if (planOnly) {
   const catalogAvailabilityTotal = Number(catalogItem?.totalAvailable ?? 0);
   const catalogCoverageTotal = Number(coverageItem?.totalAvailable ?? 0);
   const projectionStockQuantity = Number(projectionItem?.stockQuantity ?? 0);
+  const projectionSellableRouteAvailable = sumTraceableReservableAvailability(projectionLogisticsOptions);
 
   assert(catalogProductData?.id === productId, 'expected Catalog product identity to match TRACE_PRODUCT_ID');
   assert(catalogProductData?.sku, 'expected Catalog product identity to include SKU');
@@ -496,7 +516,8 @@ if (planOnly) {
   assert(warehouseTotalAvailable === warehouseOriginAvailable, 'expected Warehouse totalAvailable to equal summed Warehouse origin availability');
   assert(catalogAvailabilityTotal === warehouseTotalAvailable, 'expected Catalog availability totalAvailable to match Warehouse totalAvailable');
   assert(catalogCoverageTotal === warehouseTotalAvailable, 'expected Catalog coverage totalAvailable to match Warehouse totalAvailable');
-  assert(projectionStockQuantity === warehouseTotalAvailable, 'expected FlipFlop stockQuantity to match Warehouse totalAvailable');
+  assert(projectionSellableRouteAvailable > 0, 'expected FlipFlop projection to expose positive sellable route availability');
+  assert(projectionStockQuantity === projectionSellableRouteAvailable, 'expected FlipFlop stockQuantity to match traceable reservable route availability');
 
   console.log(JSON.stringify({
     status: fixtureCheck ? 'fixture-ready' : 'passed',
@@ -539,6 +560,7 @@ if (planOnly) {
       catalogAvailabilityTotal,
       catalogCoverageTotal,
       projectionStockQuantity,
+      projectionSellableRouteAvailable,
     },
     catalogAvailability: {
       source: catalogItem.source,

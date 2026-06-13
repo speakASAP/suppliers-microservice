@@ -77,7 +77,7 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 | Catalog coverage and audit classify covered mixed stock. | covered/mixed_stock | passed-runtime |
 | FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=product-synthetic, source=warehouse, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[available=4;reservable=yes;warehouse=warehouse-own;supplier=-;1:OWN>customer:warehouse],supplier_replenishment[available=3;reservable=yes;warehouse=warehouse-supplier;supplier=supplier-synthetic;1:SUP>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[available=7;reservable=yes;warehouse=warehouse-dropship;supplier=supplier-synthetic;1:DROP>customer:supplier] | passed-runtime |
 | Suppliers import preserves Catalog identity and Warehouse authority. | catalogProductValidation=passed, checkedProducts=product-synthetic, sourceFingerprint=trace:product-synthetic:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE, authority=warehouse-microservice | passed-runtime |
-| Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11 | passed-runtime |
+| Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=11, warehouseOriginAvailable=11, catalogAvailabilityTotal=11, catalogCoverageTotal=11, projectionStockQuantity=11, projectionSellableRouteAvailable=11 | passed-runtime |
 | Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:traceability-runbook | passed-runtime |
 
 ## Completion Decision
@@ -277,7 +277,7 @@ function verify(report) {
 
   const stockAuthorityRow = rows.find((line) => line.startsWith('| Warehouse remains stock authority across totals. |'));
   assert(stockAuthorityRow.includes('source=warehouse'), 'stock authority assertion must prove Warehouse source');
-  for (const field of ['warehouseTotalAvailable=', 'warehouseOriginAvailable=', 'catalogAvailabilityTotal=', 'catalogCoverageTotal=', 'projectionStockQuantity=']) {
+  for (const field of ['warehouseTotalAvailable=', 'warehouseOriginAvailable=', 'catalogAvailabilityTotal=', 'catalogCoverageTotal=', 'projectionStockQuantity=', 'projectionSellableRouteAvailable=']) {
     assert(stockAuthorityRow.includes(field), `stock authority assertion must include ${field}`);
   }
 
