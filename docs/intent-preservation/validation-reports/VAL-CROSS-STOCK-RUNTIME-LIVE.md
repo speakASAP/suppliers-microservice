@@ -2,16 +2,20 @@
 
 Metadata:
 - id: VAL-CROSS-STOCK-RUNTIME-LIVE
-- status: passed-runtime
+- status: failed-runtime
 - owner: commerce-platform
 - created: 2026-06-13
 - last_updated: 2026-06-13
-- completeness_level: runtime-complete
+- completeness_level: partial
 - upstream: docs/cross-service/stock-traceability-live-runbook.md, docs/cross-service/stock-traceability-completion-audit.md, reports/validation/runtime-stock-traceability-smoke.js
 
 ## Artifact Validated
 
-Owner-approved deployed Warehouse, Catalog, and Suppliers runtime traceability path for one synthetic Catalog good.
+Historical owner-approved deployed Warehouse, Catalog, and Suppliers runtime traceability path for one synthetic Catalog good. This report predates the current Catalog identity and Warehouse authority evidence requirements and is retained only as stale historical evidence.
+
+## Current Verification Status
+
+This checked-in report is not current completion evidence. Current verification requires a fresh guarded runtime evidence bundle whose Suppliers import assertion is named `Suppliers import preserves Catalog identity and Warehouse authority.` and whose evidence summary includes `catalogProductValidation=passed`, checked Catalog product IDs, the approved trace `sourceFingerprint`, Warehouse authority, owner-approved mutation, and applied update count. Regenerate this report through `node reports/validation/run-runtime-evidence-flow.js` after owner-approved deployment and mutation approval.
 
 ## Deployment Evidence
 
@@ -37,18 +41,18 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 
 | Assertion | Evidence summary | Status |
 | --- | --- | --- |
-| Read-only live fixture check passed before mutation. | status=fixture-ready, fixtureCheck=yes, mutationEnabled=no, importTriggered=no, own=c0de0000-0000-4000-8000-000000000013, supplier=c0de0000-0000-4000-8000-000000000014, dropship=c0de0000-0000-4000-8000-000000000015, routes=local_fulfillment,supplier_replenishment,supplier_dropship | passed-runtime |
-| Warehouse, Catalog, and Suppliers health endpoints passed. | warehouse: healthy; catalog: healthy; suppliers: healthy | passed-runtime |
-| Catalog product identity exists. | productId=c0de0000-0000-4000-8000-000000000011, sku=CODEX-STOCK-TRACE-011, expectedSkuPrefix=CODEX-STOCK-TRACE- | passed-runtime |
-| Warehouse topology distinguishes own and supplier-managed warehouses. | own=2, supplierManaged=2, totalAvailable=18 | passed-runtime |
-| Warehouse availability returns own plus supplier and dropship stock. | own:c0de0000-0000-4000-8000-000000000013:available=4:supplier=-; supplier:c0de0000-0000-4000-8000-000000000014:available=7:supplier=c0de0000-0000-4000-8000-000000000012; dropship:c0de0000-0000-4000-8000-000000000015:available=7:supplier=c0de0000-0000-4000-8000-000000000012 | passed-runtime |
-| Warehouse logistics returns local, supplier replenishment, and dropship route options. | routes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | passed-runtime |
-| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | passed-runtime |
-| Catalog coverage and audit classify covered mixed stock. | coverage=covered, origin=mixed_stock, audit=covered/mixed_stock | passed-runtime |
-| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=c0de0000-0000-4000-8000-000000000011, source=warehouse, stockQuantity=18, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | passed-runtime |
-| Suppliers import preserves Warehouse authority. | status=completed, idempotencyKey=manual:traceability-20260613-012, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=2 | passed-runtime |
-| Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=18, warehouseOriginAvailable=18, catalogAvailabilityTotal=18, catalogCoverageTotal=18, projectionStockQuantity=18 | passed-runtime |
-| Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:owner-approved-synthetic-traceability-fixture-20260613 | passed-runtime |
+| Read-only live fixture check passed before mutation. | status=fixture-ready, fixtureCheck=yes, mutationEnabled=no, importTriggered=no, own=c0de0000-0000-4000-8000-000000000013, supplier=c0de0000-0000-4000-8000-000000000014, dropship=c0de0000-0000-4000-8000-000000000015, routes=local_fulfillment,supplier_replenishment,supplier_dropship | stale-runtime |
+| Warehouse, Catalog, and Suppliers health endpoints passed. | warehouse: healthy; catalog: healthy; suppliers: healthy | stale-runtime |
+| Catalog product identity exists. | productId=c0de0000-0000-4000-8000-000000000011, sku=CODEX-STOCK-TRACE-011, expectedSkuPrefix=CODEX-STOCK-TRACE- | stale-runtime |
+| Warehouse topology distinguishes own and supplier-managed warehouses. | own=2, supplierManaged=2, totalAvailable=18 | stale-runtime |
+| Warehouse availability returns own plus supplier and dropship stock. | own:c0de0000-0000-4000-8000-000000000013:available=4:supplier=-; supplier:c0de0000-0000-4000-8000-000000000014:available=7:supplier=c0de0000-0000-4000-8000-000000000012; dropship:c0de0000-0000-4000-8000-000000000015:available=7:supplier=c0de0000-0000-4000-8000-000000000012 | stale-runtime |
+| Warehouse logistics returns local, supplier replenishment, and dropship route options. | routes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | stale-runtime |
+| Catalog availability forwards Warehouse origin rows and logistics. | source=warehouse, warehouseCount=3, logisticsOptionCount=3, preferredRoute=local_fulfillment, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | stale-runtime |
+| Catalog coverage and audit classify covered mixed stock. | coverage=covered, origin=mixed_stock, audit=covered/mixed_stock | stale-runtime |
+| FlipFlop projection forwards Warehouse-sourced availability and logistics. | productId=c0de0000-0000-4000-8000-000000000011, source=warehouse, stockQuantity=18, routeCount=3, routeTypes=local_fulfillment,supplier_replenishment,supplier_dropship, routeLegs=local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier] | stale-runtime |
+| Suppliers import preserves Warehouse authority. | status=completed, idempotencyKey=manual:traceability-20260613-012, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=2 | stale-runtime |
+| Warehouse remains stock authority across totals. | source=warehouse, warehouseTotalAvailable=18, warehouseOriginAvailable=18, catalogAvailabilityTotal=18, catalogCoverageTotal=18, projectionStockQuantity=18 | stale-runtime |
+| Cleanup or archival evidence is recorded. | cleanupEvidence=deferred:owner-approved-synthetic-traceability-fixture-20260613 | stale-runtime |
 
 ## Smoke Output Summary
 
@@ -60,12 +64,12 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 - routes: local_fulfillment,supplier_replenishment,supplier_dropship
 - route legs: local_fulfillment[1:CODEX-OWN-011>customer:warehouse],supplier_replenishment[1:CODEX-SUP-011>alfares_receiving_or_handoff:supplier/2:alfares_receiving_or_handoff>customer:warehouse],supplier_dropship[1:CODEX-DROP-011>customer:supplier]
 - coverage: covered / mixed_stock
-- supplier job: status=completed, idempotencyKey=manual:traceability-20260613-012, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=2
+- supplier job: historical status=completed, idempotencyKey=manual:traceability-20260613-012, authority=warehouse-microservice, attempted=yes, approved=yes, updatedProducts=2; missing current Catalog validation evidence required for completion
 - cleanup evidence: deferred:owner-approved-synthetic-traceability-fixture-20260613
 
 ## Completion Decision
 
-Runtime complete
+Runtime incomplete
 
 ## Boundary Evidence
 
