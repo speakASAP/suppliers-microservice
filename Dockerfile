@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
 WORKDIR /app
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/public ./public
 COPY --from=builder /app/package*.json ./
 ENV NODE_ENV=production
 EXPOSE 3202

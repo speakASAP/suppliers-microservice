@@ -1,5 +1,7 @@
 const TOKEN_KEY = 'suppliersAdminToken';
 const EMAIL_KEY = 'suppliersAdminEmail';
+const REFRESH_TOKEN_KEY = 'suppliersRefreshToken';
+const AUTH_LOGIN_URL = window.SUPPLIERS_AUTH_LOGIN_URL || 'https://auth.alfares.cz/auth/login';
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -10,6 +12,38 @@ function getToken() {
 function setMessage(selector, text) {
   const element = $(selector);
   if (element) element.textContent = text;
+}
+
+function resolveAuthToken(body) {
+  return body?.accessToken || body?.access_token || body?.token || body?.data?.accessToken || body?.data?.access_token;
+}
+
+function resolveAuthEmail(body, fallback) {
+  return body?.user?.email || body?.data?.user?.email || fallback;
+}
+
+async function loginWithPassword(email, password) {
+  const response = await fetch(AUTH_LOGIN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  });
+
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(body.message || 'Invalid email or password.');
+  }
+
+  const accessToken = resolveAuthToken(body);
+  if (!accessToken) {
+    throw new Error('Auth service did not return an access token.');
+  }
+
+  return {
+    accessToken,
+    refreshToken: body.refreshToken || body.refresh_token || body.data?.refreshToken || body.data?.refresh_token || '',
+    email: resolveAuthEmail(body, email),
+  };
 }
 
 async function api(path, options = {}) {
@@ -39,17 +73,34 @@ async function api(path, options = {}) {
 function initLogin() {
   const form = $('#loginForm');
   if (!form) return;
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const token = $('#tokenInput').value.trim().replace(/^Bearer\s+/i, '');
     const email = $('#emailInput').value.trim();
-    if (!token) {
-      setMessage('.form-note', 'Paste a bearer token before opening the dashboard.');
+    const password = $('#passwordInput').value;
+    const submitButton = form.querySelector('button[type="submit"]');
+
+    if (!email || !password) {
+      setMessage('.form-note', 'Enter email and password before opening the dashboard.');
       return;
     }
-    localStorage.setItem(TOKEN_KEY, token);
-    if (email) localStorage.setItem(EMAIL_KEY, email);
-    window.location.href = '/admin/';
+
+    submitButton.disabled = true;
+    submitButton.textContent = 'Signing in...';
+    setMessage('.form-note', 'Authenticating with Auth service...');
+
+    try {
+      const session = await loginWithPassword(email, password);
+      localStorage.setItem(TOKEN_KEY, session.accessToken);
+      localStorage.setItem(EMAIL_KEY, session.email);
+      if (session.refreshToken) localStorage.setItem(REFRESH_TOKEN_KEY, session.refreshToken);
+      window.location.href = '/admin/';
+    } catch (error) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
+      setMessage('.form-note', error.message);
+      submitButton.disabled = false;
+      submitButton.textContent = 'Sign in and open dashboard';
+    }
   });
 }
 
@@ -189,6 +240,7 @@ function initAdmin() {
 
   $('#logoutButton').addEventListener('click', () => {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     window.location.href = '/login/';
   });
   $('#refreshButton').addEventListener('click', () => loadDashboard(state).catch((error) => setMessage('#actionResult', error.message)));
