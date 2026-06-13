@@ -33,6 +33,10 @@ function optionalBoolean(name, fallback = false) {
   return value === 'true' || value === '1' || value === 'yes';
 }
 
+function isCompletedEvidenceText(value) {
+  return typeof value === 'string' && value.trim().length > 0 && !/TODO|placeholder/i.test(value);
+}
+
 async function requestJson(label, url, options = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
@@ -310,7 +314,7 @@ if (planOnly) {
   const sourceFingerprint = `trace:${productId}:${supplierWarehouseId}:${dropshipWarehouseId}:${supplierStockQty}:${supplierSku}`;
 
   if (approvedMutation) {
-    assert(cleanupEvidence, 'TRACE_CLEANUP_EVIDENCE is required when approved mutation is enabled');
+    assert(isCompletedEvidenceText(cleanupEvidence), 'TRACE_CLEANUP_EVIDENCE must be completed and must not contain TODO or placeholder when approved mutation is enabled');
   }
   if (fixtureCheck) {
     assert(!approvedMutation, '--fixture-check must be read-only; unset OWNER_APPROVAL or SMOKE_ALLOW_MUTATION');
