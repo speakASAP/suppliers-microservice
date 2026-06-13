@@ -505,6 +505,8 @@ function runSelfTest() {
   const mixedWarehouseSmokeFile = path.join(dir, 'smoke-mixed-warehouse.json');
   const mixedWarehouseSmoke = sampleSmoke();
   mixedWarehouseSmoke.supplierImport.supplierWarehouseId = 'warehouse-other-supplier';
+  mixedWarehouseSmoke.supplierImport.sourceFingerprint = 'trace:product-synthetic:warehouse-other-supplier:warehouse-dropship:7:SUP-SKU-TRACE';
+  mixedWarehouseSmoke.supplierJob.sourceFingerprint = mixedWarehouseSmoke.supplierImport.sourceFingerprint;
   mixedWarehouseSmoke.warehouseOrigins = mixedWarehouseSmoke.warehouseOrigins.map((row) => row.warehouseId === 'warehouse-supplier' ? { ...row, warehouseId: 'warehouse-other-supplier' } : row);
   mixedWarehouseSmoke.logisticsLegs = mixedWarehouseSmoke.logisticsLegs.map((route) => route.warehouseId === 'warehouse-supplier' ? { ...route, warehouseId: 'warehouse-other-supplier' } : route);
   mixedWarehouseSmoke.catalogAvailability.routeLegs = mixedWarehouseSmoke.logisticsLegs;
@@ -755,9 +757,21 @@ function runSelfTest() {
   assert(staleApprovalArtifactRejected, 'bundle verifier must reject approval artifact for different service heads');
 
   const mismatchedCommandProductReportFile = path.join(dir, 'report-mismatched-command-product.md');
+  const mismatchedCommandProductFixtureFile = path.join(dir, 'fixture-mismatched-command-product.json');
+  const mismatchedCommandProductSmokeFile = path.join(dir, 'smoke-mismatched-command-product.json');
+  const mismatchedCommandProductFixture = sampleFixture();
+  const mismatchedCommandProductSmoke = sampleSmoke();
+  mismatchedCommandProductFixture.productId = 'product-other';
+  mismatchedCommandProductSmoke.productId = 'product-other';
+  mismatchedCommandProductSmoke.catalogProduct.id = 'product-other';
+  mismatchedCommandProductSmoke.supplierImport.sourceFingerprint = 'trace:product-other:warehouse-supplier:warehouse-dropship:7:SUP-SKU-TRACE';
+  mismatchedCommandProductSmoke.supplierJob.sourceFingerprint = mismatchedCommandProductSmoke.supplierImport.sourceFingerprint;
+  mismatchedCommandProductSmoke.supplierJob.catalogProductIdsChecked = ['product-other'];
+  writeJson(mismatchedCommandProductFixtureFile, mismatchedCommandProductFixture);
+  writeJson(mismatchedCommandProductSmokeFile, mismatchedCommandProductSmoke);
   runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
-    FIXTURE_CHECK_RESULT_FILE: fixtureFile,
-    SMOKE_RESULT_FILE: smokeFile,
+    FIXTURE_CHECK_RESULT_FILE: mismatchedCommandProductFixtureFile,
+    SMOKE_RESULT_FILE: mismatchedCommandProductSmokeFile,
     DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
     RUNTIME_EVIDENCE_OUTPUT: mismatchedCommandProductReportFile,
     REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',

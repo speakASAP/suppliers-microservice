@@ -269,6 +269,14 @@ const cases = [
     "supplier=supplier-synthetic;1:DROP>customer:supplier",
     "supplier=supplier-other;1:DROP>customer:supplier"
   )),
+  runReportTextCase("mismatched-command-warehouse-report-evidence", (report) => report.replaceAll(
+    "warehouse=warehouse-dropship",
+    "warehouse=warehouse-other-dropship"
+  )),
+  runReportTextCase("mismatched-command-source-fingerprint-report-evidence", (report) => report.replace(
+    "sourceFingerprint=trace:product-synthetic:warehouse-supplier:warehouse-dropship",
+    "sourceFingerprint=trace:product-synthetic:warehouse-other:warehouse-dropship"
+  )),
   runCase('bad-sku-prefix', (smoke) => {
     smoke.catalogProduct.sku = 'REAL-SKU-001';
   }),

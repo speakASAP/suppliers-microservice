@@ -116,6 +116,20 @@ function sectionText(report, heading) {
   return next === -1 ? report.slice(start) : report.slice(start, next);
 }
 
+function commandEnvValue(section, key) {
+  const token = section.split(/\s+/).find((part) => part.startsWith(key + '='));
+  if (!token) return null;
+  return token.slice(key.length + 1).replace(/^['"]|['"]$/g, '');
+}
+
+function assertReportIncludesTraceWarehouseIds(row, commandEvidence, label) {
+  for (const key of ['TRACE_OWN_WAREHOUSE_ID', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'TRACE_DROPSHIP_WAREHOUSE_ID']) {
+    const value = commandEnvValue(commandEvidence, key);
+    assert(value, 'redacted smoke command must include ' + key);
+    assert(row.includes('warehouse=' + value), label + ' assertion must include ' + key + ' from redacted smoke command');
+  }
+}
+
 function hasRouteLegEvidence(row) {
   return row.includes('routeLegs=')
     && /local_fulfillment\[available=[1-9]\d*;reservable=yes;/.test(row)
@@ -160,6 +174,9 @@ function verify(report) {
   assert(!report.includes('Runtime incomplete'), 'runtime report is marked incomplete');
   const smokeCommandEvidence = sectionText(report, 'Smoke Command Evidence');
   assert(smokeCommandEvidence.includes('runtime-stock-traceability-smoke.js'), 'smoke command evidence section must include the runtime smoke command');
+  const traceProductId = commandEnvValue(smokeCommandEvidence, 'TRACE_PRODUCT_ID');
+  const supplierWarehouseId = commandEnvValue(smokeCommandEvidence, 'TRACE_SUPPLIER_WAREHOUSE_ID');
+  const dropshipWarehouseId = commandEnvValue(smokeCommandEvidence, 'TRACE_DROPSHIP_WAREHOUSE_ID');
 
   for (const token of ['CATALOG_TOKEN=[REDACTED]', 'WAREHOUSE_TOKEN=[REDACTED]', 'SUPPLIERS_TOKEN=[REDACTED]']) {
     assert(smokeCommandEvidence.includes(token), `redacted smoke command must include ${token}`);
@@ -204,6 +221,7 @@ function verify(report) {
   const warehouseLogisticsRow = rows.find((line) => line.startsWith('| Warehouse logistics returns local, supplier replenishment, and dropship route options. |'));
   assert(hasRouteLegEvidence(warehouseLogisticsRow), 'Warehouse logistics assertion must prove local and supplier route legs');
   assert(hasSupplierRouteOwnershipEvidence(warehouseLogisticsRow), 'Warehouse logistics assertion must prove supplier routes share the same supplier ID');
+  assertReportIncludesTraceWarehouseIds(warehouseLogisticsRow, smokeCommandEvidence, 'Warehouse logistics');
 
   const catalogForwardingRow = rows.find((line) => line.startsWith('| Catalog availability forwards Warehouse origin rows and logistics. |'));
   assert(catalogForwardingRow.includes('source=warehouse'), 'Catalog availability assertion must prove Warehouse source');
@@ -214,6 +232,7 @@ function verify(report) {
   assert(catalogForwardingRow.includes('supplier_dropship'), 'Catalog availability assertion must include supplier dropship route type');
   assert(hasRouteLegEvidence(catalogForwardingRow), 'Catalog availability assertion must include forwarded local and supplier route legs');
   assert(hasSupplierRouteOwnershipEvidence(catalogForwardingRow), 'Catalog availability assertion must prove supplier routes share the same supplier ID');
+  assertReportIncludesTraceWarehouseIds(catalogForwardingRow, smokeCommandEvidence, 'Catalog availability');
 
   const projectionRow = rows.find((line) => line.startsWith('| FlipFlop projection forwards Warehouse-sourced availability and logistics. |'));
   assert(projectionRow.includes('source=warehouse'), 'FlipFlop projection assertion must prove Warehouse source');
@@ -222,14 +241,18 @@ function verify(report) {
   assert(projectionRow.includes('supplier_dropship'), 'FlipFlop projection assertion must include supplier dropship route type');
   assert(hasRouteLegEvidence(projectionRow), 'FlipFlop projection assertion must include forwarded local and supplier route legs');
   assert(hasSupplierRouteOwnershipEvidence(projectionRow), 'FlipFlop projection assertion must prove supplier routes share the same supplier ID');
+  assertReportIncludesTraceWarehouseIds(projectionRow, smokeCommandEvidence, 'FlipFlop projection');
 
   const productIdentityRow = rows.find((line) => line.startsWith('| Catalog product identity exists. |'));
   assert(productIdentityRow.includes('expectedSkuPrefix=CODEX-STOCK-TRACE-'), 'Catalog product identity assertion must prove synthetic SKU prefix');
+  assert(traceProductId && productIdentityRow.includes('productId=' + traceProductId), 'Catalog product identity assertion must match TRACE_PRODUCT_ID from redacted smoke command');
 
   const suppliersImportRow = rows.find((line) => line.startsWith('| Suppliers import preserves Catalog identity and Warehouse authority. |'));
   assert(suppliersImportRow.includes('catalogProductValidation=passed'), 'Suppliers import assertion must prove Catalog product validation passed');
   assert(suppliersImportRow.includes('checkedProducts='), 'Suppliers import assertion must include checked Catalog product IDs');
+  assert(traceProductId && suppliersImportRow.includes('checkedProducts=' + traceProductId), 'Suppliers import assertion must include TRACE_PRODUCT_ID in checked Catalog product IDs');
   assert(suppliersImportRow.includes('sourceFingerprint=trace:'), 'Suppliers import assertion must include approved import source fingerprint');
+  assert(supplierWarehouseId && dropshipWarehouseId && suppliersImportRow.includes('sourceFingerprint=trace:' + traceProductId + ':' + supplierWarehouseId + ':' + dropshipWarehouseId), 'Suppliers import source fingerprint must match TRACE_PRODUCT_ID and supplier warehouse IDs from redacted smoke command');
   assert(suppliersImportRow.includes('authority=warehouse-microservice'), 'Suppliers import assertion must prove Warehouse authority');
 
   const stockAuthorityRow = rows.find((line) => line.startsWith('| Warehouse remains stock authority across totals. |'));
