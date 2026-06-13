@@ -170,7 +170,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-runtime-readiness-bundle.js',
-    patterns: ['RUNTIME_READINESS_BUNDLE_DIR', 'stock-traceability-runtime-readiness-manifest.json', 'create-runtime-approval-request.js', 'create-deployment-evidence-template.js', 'create-runtime-handoff-checklist.js', 'run-runtime-evidence-flow.js', 'verify-runtime-readiness-bundle.js', 'written-and-verified', 'sha256', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE', 'dirtyRowsRejected', 'missingHeadRejected'],
+    patterns: ['RUNTIME_READINESS_BUNDLE_DIR', 'stock-traceability-runtime-readiness-manifest.json', 'create-runtime-approval-request.js', 'create-deployment-evidence-template.js', 'create-runtime-handoff-checklist.js', 'run-runtime-evidence-flow.js', 'verify-runtime-readiness-bundle.js', 'written-and-verified', 'sha256', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE', 'dirtyRowsRejected', 'missingHeadRejected', 'missingManifestVerificationRejected'],
   },
   {
     service: 'suppliers',

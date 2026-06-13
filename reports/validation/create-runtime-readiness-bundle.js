@@ -171,7 +171,14 @@ function assertSelfTestContent() {
     missingHeadRejected = /does not include current/.test(error.message);
   }
   assert(missingHeadRejected, 'readiness bundle self-test must reject artifacts missing service heads');
-  console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingHeadRejected }, null, 2));
+  let missingManifestVerificationRejected = false;
+  try {
+    verifyBundle(path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'readiness-missing-manifest-')), 'missing-manifest.json'));
+  } catch (error) {
+    missingManifestVerificationRejected = /readiness bundle verifier failed/.test(error.message) && /readiness manifest is missing/.test(error.message);
+  }
+  assert(missingManifestVerificationRejected, 'readiness bundle self-test must fail closed when verifier rejects the generated manifest');
+  console.log(JSON.stringify({ status: 'passed', services: rows.length, dirtyRowsRejected, missingHeadRejected, missingManifestVerificationRejected }, null, 2));
 }
 
 try {
