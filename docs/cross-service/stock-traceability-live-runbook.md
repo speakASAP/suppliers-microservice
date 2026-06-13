@@ -193,6 +193,7 @@ TRACE_DROPSHIP_WAREHOUSE_ID="<supplier-dropship-warehouse-id>" \
 TRACE_IMPORT_IDEMPOTENCY_KEY="manual:traceability-20260613-001" \
 TRACE_CLEANUP_EVIDENCE="deferred:stock-traceability-runbook-20260613" \
 DEPLOYMENT_EVIDENCE_FILE="/tmp/stock-traceability-deployment-evidence.json" \
+RUNTIME_APPROVAL_ARTIFACT_FILE="/tmp/stock-traceability-runtime-approval.json" \
 RUN_APPROVED_RUNTIME_SMOKE=true \
 OWNER_APPROVAL=explicit \
 SMOKE_ALLOW_MUTATION=true \
