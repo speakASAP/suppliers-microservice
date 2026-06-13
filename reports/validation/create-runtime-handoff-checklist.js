@@ -78,8 +78,8 @@ Do not deploy, create runtime records, or run the approved supplier import unles
 - TRACE_PRODUCT_ID with CODEX-STOCK-TRACE- SKU prefix
 - TRACE_SUPPLIER_ID using supplier code synthetic-trace
 - TRACE_OWN_WAREHOUSE_ID
-- TRACE_SUPPLIER_WAREHOUSE_ID
-- TRACE_DROPSHIP_WAREHOUSE_ID
+- TRACE_SUPPLIER_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID
+- TRACE_DROPSHIP_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID
 - TRACE_IMPORT_IDEMPOTENCY_KEY
 - TRACE_CLEANUP_EVIDENCE
 - DEPLOYMENT_EVIDENCE_FILE pointing to completed deployment evidence JSON
@@ -95,7 +95,8 @@ Do not deploy, create runtime records, or run the approved supplier import unles
 6. Replace deployment evidence TODO fields with completed health and anonymous protected-endpoint 401/403 evidence for Warehouse, Catalog, and Suppliers.
 7. Run \`node reports/validation/run-runtime-evidence-flow.js --config-only\` with RUN_APPROVED_RUNTIME_SMOKE=true, OWNER_APPROVAL=explicit, SMOKE_ALLOW_MUTATION=true, cleanup evidence, and the completed deployment evidence file.
 8. Run the guarded evidence flow without --config-only to capture fixture JSON, approved smoke JSON, final report, manifest, and verified bundle.
-9. Run the final verification commands below and require status complete before claiming the goal is done.
+9. Confirm the bundle verifier proves the same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options in fixture and smoke evidence.
+10. Run the final verification commands below and require status complete before claiming the goal is done.
 
 ## Final Verification Commands
 
@@ -106,7 +107,7 @@ Do not deploy, create runtime records, or run the approved supplier import unles
 
 ## Non-Completion Reminder
 
-A deployment alone is not completion. A source-only synthetic check is not completion. The goal is complete only after the final report, manifest, and bundle verifier prove Warehouse-owned local, supplier replenishment, dropship stock, and logistics route legs through Catalog and Suppliers.
+A deployment alone is not completion. A source-only synthetic check is not completion. The goal is complete only after the final report, manifest, and bundle verifier prove Warehouse-owned local, supplier replenishment, dropship stock, supplier identity ownership, and logistics route legs through Catalog and Suppliers.
 `;
 }
 
@@ -114,13 +115,14 @@ function assertSelfTestContent(markdown) {
   const required = [
     'STOCK-TRACEABILITY-RUNTIME-HANDOFF',
     'completionGate',
-    'TRACE_SUPPLIER_WAREHOUSE_ID',
+    'TRACE_SUPPLIER_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID',
     'DEPLOYMENT_EVIDENCE_FILE',
     'Deploy Warehouse first',
     'RUN_APPROVED_RUNTIME_SMOKE=true',
     'verify-runtime-evidence-report.js',
     'verify-runtime-evidence-manifest.js <manifest-file>',
     'verify-runtime-evidence-bundle.js <manifest-file> <report-file>',
+    'same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options',
     'verify-stock-traceability-completion.js <report-file> <manifest-file>',
   ];
   const missing = required.filter((pattern) => !markdown.includes(pattern));

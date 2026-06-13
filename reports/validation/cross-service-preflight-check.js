@@ -145,7 +145,7 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/create-runtime-handoff-checklist.js',
-    patterns: ['STOCK-TRACEABILITY-RUNTIME-HANDOFF', 'RUNTIME_HANDOFF_OUTPUT', 'completionGate', 'TRACE_SUPPLIER_WAREHOUSE_ID', 'Deploy Warehouse first', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'verify-runtime-evidence-manifest.js <manifest-file>', 'verify-runtime-evidence-bundle.js <manifest-file> <report-file>', 'verify-stock-traceability-completion.js <report-file> <manifest-file>', 'run-runtime-evidence-flow.js'],
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-HANDOFF', 'RUNTIME_HANDOFF_OUTPUT', 'completionGate', 'TRACE_SUPPLIER_WAREHOUSE_ID linked to TRACE_SUPPLIER_ID', 'same TRACE_SUPPLIER_ID owns the supplier replenishment and dropship warehouse origins and route options', 'Deploy Warehouse first', 'RUN_APPROVED_RUNTIME_SMOKE=true', 'verify-runtime-evidence-manifest.js <manifest-file>', 'verify-runtime-evidence-bundle.js <manifest-file> <report-file>', 'verify-stock-traceability-completion.js <report-file> <manifest-file>', 'run-runtime-evidence-flow.js'],
   },
   {
     service: 'suppliers',
@@ -176,6 +176,21 @@ const checks = [
     service: 'suppliers',
     file: 'reports/validation/runtime-evidence-negative-check.js',
     patterns: ['bad-sku-prefix', 'unnamed-health', 'missing-forwarded-supplier-route', 'missing-logistics-leg-evidence', 'missing-fixture-check-evidence', 'mismatched-stock-authority-total', 'invalid-deployment-commit-sha', 'missing-deployment-service-row', 'missing-protected-endpoint-auth-evidence', 'deployment-health-evidence-placeholder', 'invalid-smoke-command-import-disabled', 'failed-runtime'],
+  },
+  {
+    service: 'suppliers',
+    file: 'docs/cross-service/stock-traceability-live-runbook.md',
+    patterns: ['`TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes', 'supplier/dropship warehouse IDs'],
+  },
+  {
+    service: 'suppliers',
+    file: 'docs/cross-service/stock-traceability-runtime-evidence-template.md',
+    patterns: ['supplier ID matching `TRACE_SUPPLIER_ID`', 'supplier routes owned by `TRACE_SUPPLIER_ID`', 'not owned by the same `TRACE_SUPPLIER_ID`'],
+  },
+  {
+    service: 'suppliers',
+    file: 'docs/cross-service/stock-traceability-completion-audit.md',
+    patterns: ['supplier IDs match `TRACE_SUPPLIER_ID`', 'supplier routes are owned by `TRACE_SUPPLIER_ID`'],
   },
   {
     service: 'suppliers',
