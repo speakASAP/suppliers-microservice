@@ -75,7 +75,7 @@ function verifyManifest(manifestFile) {
     assert(head === currentHeadForService(service), `manifest ${service} head must match current ${deploymentRepos[service]} HEAD`);
     assertCleanWorktreeForService(service);
   }
-  for (const artifact of ['fixture', 'smoke', 'deployment', 'report']) {
+  for (const artifact of ['fixture', 'smoke', 'deployment', 'approval', 'report']) {
     validateArtifact(manifest, artifact);
   }
   return { status: 'passed', manifestFile, artifacts: Object.keys(manifest.artifacts || {}).length };
@@ -102,11 +102,13 @@ function runSelfTest() {
     fixture: path.join(dir, "fixture.json"),
     smoke: path.join(dir, "smoke.json"),
     deployment: path.join(dir, "deployment.json"),
+    approval: path.join(dir, "approval.json"),
     report: path.join(dir, "report.md"),
   };
   fs.writeFileSync(files.fixture, JSON.stringify({ status: "fixture-ready" }));
   fs.writeFileSync(files.smoke, JSON.stringify({ status: "passed-runtime" }));
   fs.writeFileSync(files.deployment, JSON.stringify({ services: deploymentRepos }));
+  fs.writeFileSync(files.approval, JSON.stringify({ id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL', status: 'approved' }));
   fs.writeFileSync(files.report, "# Runtime report\n- status: passed-runtime\n");
   const artifacts = {};
   for (const [key, artifactFile] of Object.entries(files)) {

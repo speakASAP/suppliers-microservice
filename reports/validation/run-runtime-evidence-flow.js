@@ -110,7 +110,7 @@ function initSelfTestRepo(root, repo) {
   return repoPath;
 }
 
-function writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, reportFile, manifestFile }) {
+function writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, approvalFile, reportFile, manifestFile }) {
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
     assertCleanWorktreeForService(service);
   }
@@ -126,6 +126,7 @@ function writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, reportF
       fixture: fileEvidence(fixtureFile),
       smoke: fileEvidence(smokeFile),
       deployment: fileEvidence(deploymentFile),
+      approval: fileEvidence(approvalFile),
       report: fileEvidence(reportFile),
     },
   };
@@ -144,25 +145,27 @@ function runManifestSelfTest() {
   const smokeFile = path.join(dir, 'smoke.json');
   const deploymentFile = path.join(dir, 'deployment.json');
   const reportFile = path.join(dir, 'report.md');
+  const approvalFile = path.join(dir, 'approval.json');
   const manifestFile = path.join(dir, 'manifest.json');
   fs.writeFileSync(fixtureFile, JSON.stringify({ status: 'fixture-ready' }));
   fs.writeFileSync(smokeFile, JSON.stringify({ status: 'passed-runtime' }));
   fs.writeFileSync(deploymentFile, JSON.stringify({ services: deploymentRepos }));
+  fs.writeFileSync(approvalFile, JSON.stringify({ id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL', status: 'approved' }));
   fs.writeFileSync(reportFile, '# Runtime report\n- status: passed-runtime\n');
-  const manifest = writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, reportFile, manifestFile });
+  const manifest = writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, approvalFile, reportFile, manifestFile });
   const parsed = readJsonFile(manifestFile, 'manifest self-test output');
   assert(parsed.status === 'runtime-complete-evidence-bundle', 'manifest self-test status mismatch');
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
     assert(parsed.serviceHeads[service] === manifest.serviceHeads[service], `manifest self-test missing ${service} head`);
   }
-  for (const artifact of ['fixture', 'smoke', 'deployment', 'report']) {
+  for (const artifact of ['fixture', 'smoke', 'deployment', 'approval', 'report']) {
     assert(parsed.artifacts[artifact].bytes > 0, `manifest self-test ${artifact} bytes missing`);
     assert(/^[0-9a-f]{64}$/.test(parsed.artifacts[artifact].sha256), `manifest self-test ${artifact} sha256 invalid`);
   }
   fs.writeFileSync(path.join(repoPathForService('suppliers'), 'dirty.txt'), 'dirty\n');
   let dirtyWorktreeRejected = false;
   try {
-    writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, reportFile, manifestFile: path.join(dir, 'dirty-manifest.json') });
+    writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, approvalFile, reportFile, manifestFile: path.join(dir, 'dirty-manifest.json') });
   } catch (error) {
     dirtyWorktreeRejected = /worktree must be clean/.test(error.message);
   }
@@ -328,6 +331,7 @@ function printPlan() {
       fixture: path.join(outputDir, 'stock-traceability-fixture-check-result.json'),
       smoke: path.join(outputDir, 'stock-traceability-smoke-result.json'),
       report: envValue('RUNTIME_EVIDENCE_OUTPUT', 'docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md'),
+      approval: envValue('RUNTIME_APPROVAL_ARTIFACT_FILE', '/tmp/stock-traceability-runtime-approval.json'),
       manifest: envValue('RUNTIME_EVIDENCE_MANIFEST', path.join(outputDir, 'stock-traceability-runtime-evidence-manifest.json')),
     },
     order: [
@@ -437,6 +441,7 @@ try {
     fixtureFile,
     smokeFile,
     deploymentFile: envValue('DEPLOYMENT_EVIDENCE_FILE'),
+    approvalFile: envValue('RUNTIME_APPROVAL_ARTIFACT_FILE'),
     reportFile: reportEnv.RUNTIME_EVIDENCE_OUTPUT,
     manifestFile,
   });

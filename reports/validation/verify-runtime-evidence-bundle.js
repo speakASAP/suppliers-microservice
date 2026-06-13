@@ -105,6 +105,26 @@ function assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId) {
   assert(Number(job.updatedProducts || 0) > 0, 'smoke artifact supplier job must record updated products');
 }
 
+function assertApprovalArtifactMatchesManifest(manifest, approval) {
+  for (const service of ['warehouse', 'catalog', 'suppliers']) {
+    assert(approval.serviceHeads?.[service] === manifest.serviceHeads?.[service], 'approval artifact ' + service + ' head must match manifest service head');
+  }
+  assert(approval.scope?.syntheticRecordsOnly === true, 'approval artifact must preserve synthetic-only runtime scope');
+  assert(approval.scope?.oneGuardedSyntheticImport === true, 'approval artifact must preserve one guarded synthetic import scope');
+  assert(approval.scope?.ownerApproval === 'explicit', 'approval artifact must preserve explicit owner approval scope');
+  assert(approval.scope?.smokeAllowMutation === true, 'approval artifact must preserve approved smoke mutation scope');
+}
+
+function verifyRuntimeApprovalArtifact(manifest) {
+  const approvalFile = manifest.artifacts?.approval?.file;
+  assert(approvalFile, 'bundle manifest missing approval artifact');
+  const approval = runNodeJson(['reports/validation/verify-runtime-approval-artifact.js', approvalFile]);
+  assert(approval.status === 'approved', 'runtime approval artifact verifier must return approved');
+  const approvalJson = readJson(approvalFile, 'runtime approval artifact');
+  assertApprovalArtifactMatchesManifest(manifest, approvalJson);
+  return approvalJson;
+}
+
 function isCompletedEvidenceText(value) {
   return typeof value === 'string' && value.trim().length > 0 && !/TODO/i.test(value);
 }
@@ -167,6 +187,7 @@ function verifyBundle({ manifestFile, reportFile }) {
 
   runNodeJson(['reports/validation/verify-runtime-evidence-manifest.js', manifestPath]);
   runNodeJson(['reports/validation/verify-runtime-evidence-report.js'], { RUNTIME_EVIDENCE_REPORT: reportPath });
+  verifyRuntimeApprovalArtifact(manifest);
 
   const reportResolved = path.resolve(reportPath);
   const manifestReportResolved = path.resolve(manifest.artifacts.report.file);
@@ -185,7 +206,7 @@ function verifyBundle({ manifestFile, reportFile }) {
     assertCleanWorktreeForService(service);
     assert(report.includes(deploymentSha), `${service} deployment commit must be present in runtime report`);
   }
-  for (const artifact of ['fixture', 'smoke', 'deployment', 'report']) {
+  for (const artifact of ['fixture', 'smoke', 'deployment', 'approval', 'report']) {
     assert(manifest.artifacts?.[artifact], `bundle manifest missing ${artifact} artifact`);
   }
   assert(report.includes('Runtime complete'), 'runtime report must declare Runtime complete');
@@ -307,6 +328,54 @@ function sampleDeployment() {
   };
 }
 
+function writeReadinessBundle(dir, serviceHeads) {
+  const files = {
+    approvalRequest: path.join(dir, 'stock-traceability-runtime-approval-request.md'),
+    deploymentTemplate: path.join(dir, 'stock-traceability-deployment-evidence.template.json'),
+    handoff: path.join(dir, 'stock-traceability-runtime-handoff.md'),
+    plan: path.join(dir, 'stock-traceability-runtime-plan.json'),
+  };
+  const heads = Object.entries(serviceHeads).map(([service, head]) => service + ':' + head).join('\n');
+  fs.writeFileSync(files.approvalRequest, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + heads + '\n');
+  fs.writeFileSync(files.deploymentTemplate, JSON.stringify({ generatedFromCurrentHeads: true, heads: serviceHeads }, null, 2) + '\n');
+  fs.writeFileSync(files.handoff, 'STOCK-TRACEABILITY-RUNTIME-HANDOFF\ncreate-runtime-readiness-bundle.js\n' + heads + '\n');
+  fs.writeFileSync(files.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE'] }, null, 2) + '\n');
+  const artifacts = Object.fromEntries(Object.entries(files).map(([key, file]) => [key, { file, ...fileEvidence(file) }]));
+  const manifest = {
+    status: 'ready-for-owner-approval',
+    generatedAt: new Date().toISOString(),
+    completionGate: 'incomplete-runtime-pending',
+    serviceHeads,
+    artifacts,
+    nextRequiredAction: 'Owner approval, deployment, completed deployment evidence, and guarded runtime smoke are still required before completion.',
+  };
+  const manifestFile = path.join(dir, 'stock-traceability-runtime-readiness-manifest.json');
+  writeJson(manifestFile, manifest);
+  return { file: manifestFile, ...fileEvidence(manifestFile), status: 'verified', serviceHeads };
+}
+
+function writeApprovalArtifact(filePath, readinessManifest, serviceHeads) {
+  writeJson(filePath, {
+    id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
+    status: 'approved',
+    approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvedBy: 'owner@example.test',
+    approvedAt: new Date().toISOString(),
+    approvedForCurrentCleanHeads: true,
+    serviceHeads,
+    readinessManifest,
+    scope: {
+      syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
+      syntheticRecordsOnly: true,
+      oneGuardedSyntheticImport: true,
+      runApprovedRuntimeSmoke: true,
+      ownerApproval: 'explicit',
+      smokeAllowMutation: true,
+    },
+    forbiddenActionsAcknowledged: ['real supplier imports', 'production payload ingestion', 'customer data capture', 'hard deletes', 'compensating stock changes', 'token disclosure'],
+  });
+}
+
 function writeManifest(filePath, files, serviceHeads) {
   const artifacts = Object.fromEntries(Object.entries(files).map(([key, file]) => [key, { file, ...fileEvidence(file) }]));
   writeJson(filePath, {
@@ -324,7 +393,11 @@ function runSelfTest() {
   const deploymentFile = path.join(dir, 'deployment.json');
   const reportFile = path.join(dir, 'report.md');
   const manifestFile = path.join(dir, 'manifest.json');
+  const approvalFile = path.join(dir, 'approval.json');
   const deployment = sampleDeployment();
+  const serviceHeads = Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha]));
+  const readinessManifest = writeReadinessBundle(path.join(dir, 'readiness'), serviceHeads);
+  writeApprovalArtifact(approvalFile, readinessManifest, serviceHeads);
   writeJson(fixtureFile, sampleFixture());
   writeJson(smokeFile, sampleSmoke());
   writeJson(deploymentFile, deployment);
@@ -336,7 +409,7 @@ function runSelfTest() {
     REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
-  writeManifest(manifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(manifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   const passed = verifyBundle({ manifestFile, reportFile });
 
   const mixedProductSmokeFile = path.join(dir, 'smoke-mixed-product.json');
@@ -354,7 +427,7 @@ function runSelfTest() {
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   const mixedProductManifestFile = path.join(dir, 'manifest-mixed-product.json');
-  writeManifest(mixedProductManifestFile, { fixture: fixtureFile, smoke: mixedProductSmokeFile, deployment: deploymentFile, report: mixedProductReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(mixedProductManifestFile, { fixture: fixtureFile, smoke: mixedProductSmokeFile, deployment: deploymentFile, approval: approvalFile, report: mixedProductReportFile }, serviceHeads);
   let mixedProductRejected = false;
   try {
     verifyBundle({ manifestFile: mixedProductManifestFile, reportFile: mixedProductReportFile });
@@ -381,7 +454,7 @@ function runSelfTest() {
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-other-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   const mixedWarehouseManifestFile = path.join(dir, 'manifest-mixed-warehouse.json');
-  writeManifest(mixedWarehouseManifestFile, { fixture: fixtureFile, smoke: mixedWarehouseSmokeFile, deployment: deploymentFile, report: mixedWarehouseReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(mixedWarehouseManifestFile, { fixture: fixtureFile, smoke: mixedWarehouseSmokeFile, deployment: deploymentFile, approval: approvalFile, report: mixedWarehouseReportFile }, serviceHeads);
   let mixedWarehouseRejected = false;
   try {
     verifyBundle({ manifestFile: mixedWarehouseManifestFile, reportFile: mixedWarehouseReportFile });
@@ -405,7 +478,7 @@ function runSelfTest() {
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-other TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   const mismatchedSupplierManifestFile = path.join(dir, 'manifest-mismatched-supplier.json');
-  writeManifest(mismatchedSupplierManifestFile, { fixture: fixtureFile, smoke: mismatchedSupplierSmokeFile, deployment: deploymentFile, report: mismatchedSupplierReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(mismatchedSupplierManifestFile, { fixture: fixtureFile, smoke: mismatchedSupplierSmokeFile, deployment: deploymentFile, approval: approvalFile, report: mismatchedSupplierReportFile }, serviceHeads);
   let mismatchedSupplierRejected = false;
   try {
     verifyBundle({ manifestFile: mismatchedSupplierManifestFile, reportFile: mismatchedSupplierReportFile });
@@ -428,7 +501,7 @@ function runSelfTest() {
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   const missingCatalogOwnRouteManifestFile = path.join(dir, 'manifest-missing-catalog-own-route.json');
-  writeManifest(missingCatalogOwnRouteManifestFile, { fixture: fixtureFile, smoke: missingCatalogOwnRouteSmokeFile, deployment: deploymentFile, report: missingCatalogOwnRouteReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(missingCatalogOwnRouteManifestFile, { fixture: fixtureFile, smoke: missingCatalogOwnRouteSmokeFile, deployment: deploymentFile, approval: approvalFile, report: missingCatalogOwnRouteReportFile }, serviceHeads);
   let missingCatalogOwnRouteRejected = false;
   try {
     verifyBundle({ manifestFile: missingCatalogOwnRouteManifestFile, reportFile: missingCatalogOwnRouteReportFile });
@@ -444,7 +517,7 @@ function runSelfTest() {
   nonReservableSupplierRouteSmoke.projection.routeLegs = nonReservableSupplierRouteSmoke.projection.routeLegs.map((route) => route.routeType === 'supplier_replenishment' ? { ...route, canReserveFromWarehouse: false } : route);
   writeJson(nonReservableSupplierRouteSmokeFile, nonReservableSupplierRouteSmoke);
   const nonReservableSupplierRouteManifestFile = path.join(dir, 'manifest-non-reservable-supplier-route.json');
-  writeManifest(nonReservableSupplierRouteManifestFile, { fixture: fixtureFile, smoke: nonReservableSupplierRouteSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(nonReservableSupplierRouteManifestFile, { fixture: fixtureFile, smoke: nonReservableSupplierRouteSmokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   let nonReservableSupplierRouteRejected = false;
   try {
     verifyBundle({ manifestFile: nonReservableSupplierRouteManifestFile, reportFile: reportFile });
@@ -459,7 +532,7 @@ function runSelfTest() {
   mismatchedSupplierJobFingerprintSmoke.supplierJob.sourceFingerprint = 'trace:product-synthetic:warehouse-other:warehouse-dropship:7:SUP-SKU-TRACE';
   writeJson(mismatchedSupplierJobFingerprintSmokeFile, mismatchedSupplierJobFingerprintSmoke);
   const mismatchedSupplierJobFingerprintManifestFile = path.join(dir, 'manifest-mismatched-supplier-job-fingerprint.json');
-  writeManifest(mismatchedSupplierJobFingerprintManifestFile, { fixture: fixtureFile, smoke: mismatchedSupplierJobFingerprintSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(mismatchedSupplierJobFingerprintManifestFile, { fixture: fixtureFile, smoke: mismatchedSupplierJobFingerprintSmokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   let mismatchedSupplierJobFingerprintRejected = false;
   try {
     verifyBundle({ manifestFile: mismatchedSupplierJobFingerprintManifestFile, reportFile: reportFile });
@@ -473,7 +546,7 @@ function runSelfTest() {
   missingSupplierJobCatalogValidationSmoke.supplierJob.catalogProductIdsChecked = [];
   writeJson(missingSupplierJobCatalogValidationSmokeFile, missingSupplierJobCatalogValidationSmoke);
   const missingSupplierJobCatalogValidationManifestFile = path.join(dir, 'manifest-missing-supplier-job-catalog-validation.json');
-  writeManifest(missingSupplierJobCatalogValidationManifestFile, { fixture: fixtureFile, smoke: missingSupplierJobCatalogValidationSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(missingSupplierJobCatalogValidationManifestFile, { fixture: fixtureFile, smoke: missingSupplierJobCatalogValidationSmokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   let missingSupplierJobCatalogValidationRejected = false;
   try {
     verifyBundle({ manifestFile: missingSupplierJobCatalogValidationManifestFile, reportFile: reportFile });
@@ -487,7 +560,7 @@ function runSelfTest() {
   mismatchedStockAuthoritySmoke.stockAuthority.catalogCoverageTotal = 10;
   writeJson(mismatchedStockAuthoritySmokeFile, mismatchedStockAuthoritySmoke);
   const mismatchedStockAuthorityManifestFile = path.join(dir, 'manifest-mismatched-stock-authority.json');
-  writeManifest(mismatchedStockAuthorityManifestFile, { fixture: fixtureFile, smoke: mismatchedStockAuthoritySmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(mismatchedStockAuthorityManifestFile, { fixture: fixtureFile, smoke: mismatchedStockAuthoritySmokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   let mismatchedStockAuthorityRejected = false;
   try {
     verifyBundle({ manifestFile: mismatchedStockAuthorityManifestFile, reportFile });
@@ -501,7 +574,7 @@ function runSelfTest() {
   cleanupPlaceholderSmoke.cleanupEvidence = 'TODO: record cleanup evidence after run';
   writeJson(cleanupPlaceholderSmokeFile, cleanupPlaceholderSmoke);
   const cleanupPlaceholderManifestFile = path.join(dir, 'manifest-cleanup-placeholder.json');
-  writeManifest(cleanupPlaceholderManifestFile, { fixture: fixtureFile, smoke: cleanupPlaceholderSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(cleanupPlaceholderManifestFile, { fixture: fixtureFile, smoke: cleanupPlaceholderSmokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   let cleanupPlaceholderRejected = false;
   try {
     verifyBundle({ manifestFile: cleanupPlaceholderManifestFile, reportFile });
@@ -524,7 +597,7 @@ function runSelfTest() {
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   const missingProjectionOwnRouteManifestFile = path.join(dir, 'manifest-missing-projection-own-route.json');
-  writeManifest(missingProjectionOwnRouteManifestFile, { fixture: fixtureFile, smoke: missingProjectionOwnRouteSmokeFile, deployment: deploymentFile, report: missingProjectionOwnRouteReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(missingProjectionOwnRouteManifestFile, { fixture: fixtureFile, smoke: missingProjectionOwnRouteSmokeFile, deployment: deploymentFile, approval: approvalFile, report: missingProjectionOwnRouteReportFile }, serviceHeads);
   let missingProjectionOwnRouteRejected = false;
   try {
     verifyBundle({ manifestFile: missingProjectionOwnRouteManifestFile, reportFile: missingProjectionOwnRouteReportFile });
@@ -538,7 +611,7 @@ function runSelfTest() {
   delete missingCurrentHeadMarkerDeployment.generatedFromCurrentHeads;
   writeJson(missingCurrentHeadMarkerFile, missingCurrentHeadMarkerDeployment);
   const missingCurrentHeadMarkerManifestFile = path.join(dir, 'manifest-missing-current-head-marker.json');
-  writeManifest(missingCurrentHeadMarkerManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: missingCurrentHeadMarkerFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(missingCurrentHeadMarkerManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: missingCurrentHeadMarkerFile, approval: approvalFile, report: reportFile }, serviceHeads);
   let missingCurrentHeadDeploymentMarkerRejected = false;
   try {
     verifyBundle({ manifestFile: missingCurrentHeadMarkerManifestFile, reportFile });
@@ -552,7 +625,7 @@ function runSelfTest() {
   mismatchedDeployment.services.catalog.commitSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   writeJson(mismatchedDeploymentFile, mismatchedDeployment);
   const mismatchedManifestFile = path.join(dir, 'manifest-mismatched.json');
-  writeManifest(mismatchedManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: mismatchedDeploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  writeManifest(mismatchedManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: mismatchedDeploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   let mismatchRejected = false;
   try {
     verifyBundle({ manifestFile: mismatchedManifestFile, reportFile });
@@ -560,7 +633,30 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
+
+  const missingApprovalManifestFile = path.join(dir, 'manifest-missing-approval.json');
+  writeManifest(missingApprovalManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, report: reportFile }, serviceHeads);
+  let missingApprovalArtifactRejected = false;
+  try {
+    verifyBundle({ manifestFile: missingApprovalManifestFile, reportFile });
+  } catch (error) {
+    missingApprovalArtifactRejected = /missing artifact approval|missing approval artifact/.test(error.message);
+  }
+  assert(missingApprovalArtifactRejected, 'bundle verifier must reject runtime evidence without approval artifact');
+
+  const staleApprovalFile = path.join(dir, 'approval-stale.json');
+  writeApprovalArtifact(staleApprovalFile, readinessManifest, { ...serviceHeads, suppliers: 'cccccccccccccccccccccccccccccccccccccccc' });
+  const staleApprovalManifestFile = path.join(dir, 'manifest-stale-approval.json');
+  writeManifest(staleApprovalManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: staleApprovalFile, report: reportFile }, serviceHeads);
+  let staleApprovalArtifactRejected = false;
+  try {
+    verifyBundle({ manifestFile: staleApprovalManifestFile, reportFile });
+  } catch (error) {
+    staleApprovalArtifactRejected = /approval artifact .*head must match|head must match current/.test(error.message);
+  }
+  assert(staleApprovalArtifactRejected, 'bundle verifier must reject approval artifact for different service heads');
+
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true };
 }
 
 try {

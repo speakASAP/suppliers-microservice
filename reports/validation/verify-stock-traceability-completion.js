@@ -118,6 +118,7 @@ function runSelfTest() {
   const fixtureFile = path.join(bundleDir, 'fixture.json');
   const smokeFile = path.join(bundleDir, 'smoke.json');
   const deploymentFile = path.join(bundleDir, 'deployment.json');
+  const approvalFile = path.join(bundleDir, 'approval.json');
   const reportFile = path.join(bundleDir, 'report.md');
   const manifestFile = path.join(bundleDir, 'manifest.json');
   const legs = [
@@ -182,16 +183,52 @@ function runSelfTest() {
     REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=/tmp/stock-traceability-runtime-approval.json TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
   });
   runNodeJson(['reports/validation/run-runtime-evidence-flow.js', '--manifest-self-test'], { CROSS_SERVICE_ROOT: selfTestRoot });
+  const readinessDir = path.join(dir, 'readiness');
+  fs.mkdirSync(readinessDir, { recursive: true });
+  const readinessFiles = {
+    approvalRequest: path.join(readinessDir, 'stock-traceability-runtime-approval-request.md'),
+    deploymentTemplate: path.join(readinessDir, 'stock-traceability-deployment-evidence.template.json'),
+    handoff: path.join(readinessDir, 'stock-traceability-runtime-handoff.md'),
+    plan: path.join(readinessDir, 'stock-traceability-runtime-plan.json'),
+  };
+  const headsText = Object.entries(services).map(([service, item]) => service + ':' + item.commitSha).join('\n');
+  fs.writeFileSync(readinessFiles.approvalRequest, 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST\n' + headsText + '\n');
+  fs.writeFileSync(readinessFiles.deploymentTemplate, JSON.stringify({ generatedFromCurrentHeads: true, heads: Object.fromEntries(Object.entries(services).map(([service, item]) => [service, item.commitSha])) }, null, 2) + '\n');
+  fs.writeFileSync(readinessFiles.handoff, 'STOCK-TRACEABILITY-RUNTIME-HANDOFF\ncreate-runtime-readiness-bundle.js\n' + headsText + '\n');
+  fs.writeFileSync(readinessFiles.plan, JSON.stringify({ status: 'plan-only', requiredApprovedSmokeEnv: ['RUNTIME_APPROVAL_ARTIFACT_FILE', 'DEPLOYMENT_EVIDENCE_FILE'] }, null, 2) + '\n');
   const crypto = require('crypto');
   const artifact = (file) => {
     const buffer = fs.readFileSync(file);
     return { file, bytes: buffer.length, sha256: crypto.createHash('sha256').update(buffer).digest('hex') };
   };
+  const readinessManifestFile = path.join(readinessDir, 'stock-traceability-runtime-readiness-manifest.json');
+  const readinessArtifacts = Object.fromEntries(Object.entries(readinessFiles).map(([key, file]) => [key, artifact(file)]));
+  const serviceHeads = Object.fromEntries(Object.entries(services).map(([service, item]) => [service, item.commitSha]));
+  writeJson(readinessManifestFile, {
+    status: 'ready-for-owner-approval',
+    generatedAt: new Date().toISOString(),
+    completionGate: 'incomplete-runtime-pending',
+    serviceHeads,
+    artifacts: readinessArtifacts,
+    nextRequiredAction: 'Owner approval, deployment, completed deployment evidence, and guarded runtime smoke are still required before completion.',
+  });
+  writeJson(approvalFile, {
+    id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
+    status: 'approved',
+    approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
+    approvedBy: 'owner@example.test',
+    approvedAt: new Date().toISOString(),
+    approvedForCurrentCleanHeads: true,
+    serviceHeads,
+    readinessManifest: { file: readinessManifestFile, ...artifact(readinessManifestFile), status: 'verified', serviceHeads },
+    scope: { syntheticSkuPrefix: 'CODEX-STOCK-TRACE-', syntheticRecordsOnly: true, oneGuardedSyntheticImport: true, runApprovedRuntimeSmoke: true, ownerApproval: 'explicit', smokeAllowMutation: true },
+    forbiddenActionsAcknowledged: ['real supplier imports', 'production payload ingestion', 'customer data capture', 'hard deletes', 'compensating stock changes', 'token disclosure'],
+  });
   writeJson(manifestFile, {
     status: 'runtime-complete-evidence-bundle',
     generatedAt: new Date().toISOString(),
-    serviceHeads: Object.fromEntries(Object.entries(services).map(([service, item]) => [service, item.commitSha])),
-    artifacts: { fixture: artifact(fixtureFile), smoke: artifact(smokeFile), deployment: artifact(deploymentFile), report: artifact(reportFile) },
+    serviceHeads,
+    artifacts: { fixture: artifact(fixtureFile), smoke: artifact(smokeFile), deployment: artifact(deploymentFile), approval: artifact(approvalFile), report: artifact(reportFile) },
   });
   const previousRoot = process.env.CROSS_SERVICE_ROOT;
   process.env.CROSS_SERVICE_ROOT = selfTestRoot;
