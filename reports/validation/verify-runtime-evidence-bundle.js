@@ -191,7 +191,7 @@ function assertReportCommandEvidenceMatchesArtifacts(report, fixture, smoke, app
 }
 
 function isCompletedEvidenceText(value) {
-  return typeof value === 'string' && value.trim().length > 0 && !/TODO/i.test(value);
+  return typeof value === 'string' && value.trim().length > 0 && !/TODO|placeholder/i.test(value);
 }
 
 function assertStockAuthorityMatchesTrace(smoke) {
@@ -241,7 +241,7 @@ function verifyTraceArtifactConsistency(manifest) {
   assert(hasRouteForWarehouse(smoke.projection?.routeLegs, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route in FlipFlop projection for TRACE_SUPPLIER_ID');
   assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId);
   assertStockAuthorityMatchesTrace(smoke);
-  assert(isCompletedEvidenceText(smoke.cleanupEvidence), 'smoke artifact must include completed cleanup or archival evidence and must not contain TODO');
+  assert(isCompletedEvidenceText(smoke.cleanupEvidence), 'smoke artifact must include completed cleanup or archival evidence and must not contain TODO or placeholder');
   return { fixture, smoke };
 }
 
@@ -665,7 +665,7 @@ function runSelfTest() {
 
   const cleanupPlaceholderSmokeFile = path.join(dir, 'smoke-cleanup-placeholder.json');
   const cleanupPlaceholderSmoke = sampleSmoke();
-  cleanupPlaceholderSmoke.cleanupEvidence = 'TODO: record cleanup evidence after run';
+  cleanupPlaceholderSmoke.cleanupEvidence = 'placeholder cleanup evidence after run';
   writeJson(cleanupPlaceholderSmokeFile, cleanupPlaceholderSmoke);
   const cleanupPlaceholderManifestFile = path.join(dir, 'manifest-cleanup-placeholder.json');
   writeManifest(cleanupPlaceholderManifestFile, { fixture: fixtureFile, smoke: cleanupPlaceholderSmokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
