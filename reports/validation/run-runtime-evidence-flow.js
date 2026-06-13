@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const crypto = require('crypto');
 const { execFileSync, spawnSync } = require('child_process');
@@ -10,7 +11,7 @@ const configOnly = args.has('--config-only');
 const manifestSelfTest = args.has('--manifest-self-test');
 const runApprovedSmoke = process.env.RUN_APPROVED_RUNTIME_SMOKE === 'true';
 const outputDir = process.env.RUNTIME_EVIDENCE_DIR || '/tmp/stock-traceability-runtime';
-const crossServiceRoot = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
+let crossServiceRoot = process.env.CROSS_SERVICE_ROOT || '/home/ssf/Documents/Github';
 const deploymentRepos = {
   warehouse: 'warehouse-microservice',
   catalog: 'catalog-microservice',
@@ -98,7 +99,20 @@ function fileEvidence(filePath) {
   };
 }
 
+function initSelfTestRepo(root, repo) {
+  const repoPath = path.join(root, repo);
+  fs.mkdirSync(repoPath, { recursive: true });
+  fs.writeFileSync(path.join(repoPath, 'README.md'), '# ' + repo + '\n');
+  execFileSync('git', ['init'], { cwd: repoPath, stdio: 'pipe' });
+  execFileSync('git', ['add', 'README.md'], { cwd: repoPath, stdio: 'pipe' });
+  execFileSync('git', ['-c', 'user.email=codex@example.invalid', '-c', 'user.name=Codex', 'commit', '-m', 'self-test repo'], { cwd: repoPath, stdio: 'pipe' });
+  return repoPath;
+}
+
 function writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, reportFile, manifestFile }) {
+  for (const service of ['warehouse', 'catalog', 'suppliers']) {
+    assertCleanWorktreeForService(service);
+  }
   const manifest = {
     status: 'runtime-complete-evidence-bundle',
     generatedAt: new Date().toISOString(),
@@ -119,7 +133,12 @@ function writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, reportF
 }
 
 function runManifestSelfTest() {
-  const dir = fs.mkdtempSync(path.join('/tmp', 'stock-traceability-manifest-self-test-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-traceability-manifest-self-test-'));
+  const previousRoot = crossServiceRoot;
+  crossServiceRoot = path.join(dir, 'repos');
+  for (const repo of Object.values(deploymentRepos)) {
+    initSelfTestRepo(crossServiceRoot, repo);
+  }
   const fixtureFile = path.join(dir, 'fixture.json');
   const smokeFile = path.join(dir, 'smoke.json');
   const deploymentFile = path.join(dir, 'deployment.json');
@@ -139,7 +158,16 @@ function runManifestSelfTest() {
     assert(parsed.artifacts[artifact].bytes > 0, `manifest self-test ${artifact} bytes missing`);
     assert(/^[0-9a-f]{64}$/.test(parsed.artifacts[artifact].sha256), `manifest self-test ${artifact} sha256 invalid`);
   }
-  console.log(JSON.stringify({ status: 'manifest-self-test-passed', manifestFile }, null, 2));
+  fs.writeFileSync(path.join(repoPathForService('suppliers'), 'dirty.txt'), 'dirty\n');
+  let dirtyWorktreeRejected = false;
+  try {
+    writeEvidenceManifest({ fixtureFile, smokeFile, deploymentFile, reportFile, manifestFile: path.join(dir, 'dirty-manifest.json') });
+  } catch (error) {
+    dirtyWorktreeRejected = /worktree must be clean/.test(error.message);
+  }
+  assert(dirtyWorktreeRejected, 'manifest self-test must reject dirty service worktrees before writing runtime evidence');
+  crossServiceRoot = previousRoot;
+  console.log(JSON.stringify({ status: 'manifest-self-test-passed', manifestFile, dirtyWorktreeRejected }, null, 2));
 }
 
 function validateDeploymentEvidenceFile(filePath) {

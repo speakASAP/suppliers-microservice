@@ -313,3 +313,13 @@ Validation evidence: before commit, `node --check reports/validation/create-depl
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for the latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-13 - Runtime Manifest Writer Clean Worktree Enforcement
+
+Change: extended `run-runtime-evidence-flow.js` so `writeEvidenceManifest` rechecks clean Warehouse, Catalog, and Suppliers worktrees immediately before writing the runtime evidence manifest. The runner manifest self-test now creates temporary clean service repositories, writes a hashed manifest, dirties one service repo, and proves manifest writing is rejected before completion evidence can be produced.
+
+Validation evidence before commit: `node --check reports/validation/run-runtime-evidence-flow.js`, `node reports/validation/run-runtime-evidence-flow.js --manifest-self-test`, `node reports/validation/cross-service-preflight-check.js`, and `git diff --check` passed. The runner manifest self-test reported `dirtyWorktreeRejected: true`. The full runtime evidence flow negative suite must run after this source/doc change is committed because it now correctly depends on a clean Suppliers worktree.
+
+Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until a new approved guarded runtime evidence flow is executed.
+
+Next unfinished chunk: commit this runtime-manifest writer clean-worktree gate, run full clean-worktree validation, regenerate handoff and deployment evidence for the resulting clean Suppliers head, then request owner-approved deployment and guarded runtime evidence regeneration.
