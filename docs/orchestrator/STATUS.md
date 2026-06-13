@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Trace Source Fingerprint Length
+
+Change: widened Suppliers import sourceFingerprint validation and persistence from 128 to 256 characters. The approved stock traceability source fingerprint includes the trace product ID, supplier replenishment warehouse ID, dropship warehouse ID, supplier stock quantity, and supplier SKU, so runtime evidence can exceed the earlier 128-character limit. Added an unapplied migration artifact for the production column width change and aligned the bootstrap migration definition.
+
+Validation evidence: npm run build passed; node reports/validation/synthetic-stock-traceability-check.js passed; node reports/validation/synthetic-approved-import-run-check.js passed; node reports/validation/cross-service-preflight-check.js passed with completionGate=incomplete. Production import_jobs.sourceFingerprint was widened to varchar(256), and Suppliers c23cf74 was deployed after owner approval.
+
+Boundary decision: owner-approved production migration execution and Suppliers deployment were performed for the sourceFingerprint width fix. No production supplier import, Warehouse stock mutation, hard delete, cleanup mutation, or token disclosure was performed in this chunk.
+
+Next unfinished chunk: regenerate current-head readiness, approval, and deployment evidence for Suppliers c23cf74, then rerun the guarded runtime evidence flow.
+
 ## 2026-06-13 - Synthetic Trace Sellable Quantity Proof
 
 Change: updated the source-only synthetic stock traceability proof so FlipFlop stockQuantity is derived from traceable reservable logistics route availability instead of raw Warehouse totalAvailable. The synthetic fixture now includes a non-reservable supplier diagnostic row, proving raw Warehouse totals can stay visible under availability while channel sellable quantity remains lower.
