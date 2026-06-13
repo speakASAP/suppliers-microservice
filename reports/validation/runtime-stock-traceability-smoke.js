@@ -321,7 +321,7 @@ if (planOnly) {
     assert(supplierId, 'TRACE_SUPPLIER_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
     assert(supplierWarehouseId, 'TRACE_SUPPLIER_WAREHOUSE_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
     assert(dropshipWarehouseId, 'TRACE_DROPSHIP_WAREHOUSE_ID is required when TRACE_RUN_SUPPLIERS_IMPORT=true');
-    assert(Number.isInteger(Number(supplierStockQty)) && Number(supplierStockQty) >= 0, 'TRACE_SUPPLIER_STOCK_QTY must be a non-negative integer');
+    assert(Number.isInteger(Number(supplierStockQty)) && Number(supplierStockQty) > 0, 'TRACE_SUPPLIER_STOCK_QTY must be a positive integer');
   }
   if (expectSuppliersJob) {
     assert(supplierId, 'TRACE_SUPPLIER_ID is required when TRACE_EXPECT_SUPPLIERS_JOB=true');

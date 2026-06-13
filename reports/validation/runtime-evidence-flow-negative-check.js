@@ -323,6 +323,15 @@ const cases = [
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'approved runtime smoke trace inputs must match'),
+  runCase('low-level-smoke-rejects-zero-supplier-stock-qty', {
+    TRACE_RUN_SUPPLIERS_IMPORT: 'true',
+    TRACE_SUPPLIER_ID: 'supplier-synthetic',
+    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+    TRACE_SUPPLIER_STOCK_QTY: '0',
+    TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    OWNER_APPROVAL: 'explicit',
+    SMOKE_ALLOW_MUTATION: 'true',
+  }, 'TRACE_SUPPLIER_STOCK_QTY must be a positive integer', ['reports/validation/runtime-stock-traceability-smoke.js', '--config-only']),
   runCase('approved-smoke-cleanup-evidence-differs-from-approval', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
