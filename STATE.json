@@ -1,13 +1,12 @@
 {
   "blockers": [
-    "No real supplier identity, private endpoint, credential shape, or production payload contract exists",
-    "TASK-002 real supplier adapter remains blocked pending owner-supplied supplier contract details"
+    "No active production supplier row, private endpoint, or runtime credential references have been supplied for onboarding"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-13T00:00:00Z",
-  "last_milestone": "cross-service-stock-traceability-source-evidence",
+  "last_milestone": "production-rest-json-supplier-adapter",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -35,10 +34,14 @@
       "warehouse_reconciliation_client": "source_validated_no_deploy",
       "warehouse_reconciliation_validation": "build_synthetic_checks_doc_gates_passed",
       "cross_service_stock_traceability": "source_synthetic_passed_no_deploy",
-      "cross_service_traceability_artifacts": "docs/cross-service/stock-traceability-flow.md,reports/validation/synthetic-stock-traceability-check.js,docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md"
+      "cross_service_traceability_artifacts": "docs/cross-service/stock-traceability-flow.md,reports/validation/synthetic-stock-traceability-check.js,docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md",
+      "task_006_adapter_foundation": "complete_with_production_rest_json_adapter",
+      "production_rest_json_supplier_contract": "done_PRODUCTION_REST_JSON_V1",
+      "production_rest_json_supplier_adapter": "source_validated_no_real_supplier_onboarded",
+      "production_supplier_onboarding": "pending_owner_supplied_metadata_and_runtime_secret_refs"
     }
   },
-  "next_focus": "Owner-approved runtime deployment/smoke or Warehouse operator inventory topology/read model",
+  "next_focus": "Owner-approved supplier onboarding/runtime smoke using PRODUCTION-REST-JSON-V1, or supplier-specific adapter if a non-generic supplier contract is provided",
   "open_task_ids": [
     "TASK-002"
   ],

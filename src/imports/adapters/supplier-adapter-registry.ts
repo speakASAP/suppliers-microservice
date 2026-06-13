@@ -20,17 +20,14 @@ export class SupplierAdapterRegistry {
     return this.adapters.get(adapterKey);
   }
 
-  requireForSupplier(supplierId: string, adapterKey?: string | null): SupplierImportAdapter {
-    if (!adapterKey) {
-      throw new SupplierAdapterNotFoundError(supplierId);
+  requireForSupplier(supplierId: string, ...adapterKeys: Array<string | null | undefined>): SupplierImportAdapter {
+    for (const adapterKey of adapterKeys) {
+      if (!adapterKey) continue;
+      const adapter = this.get(adapterKey);
+      if (adapter) return adapter;
     }
 
-    const adapter = this.get(adapterKey);
-    if (!adapter) {
-      throw new SupplierAdapterNotFoundError(supplierId);
-    }
-
-    return adapter;
+    throw new SupplierAdapterNotFoundError(supplierId);
   }
 
   listMetadata(): Array<SupplierImportAdapter["metadata"]> {

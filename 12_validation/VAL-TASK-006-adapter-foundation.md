@@ -104,3 +104,14 @@ No real supplier contract exists; TASK-006 did not invent one. `scp` was not usa
 
 - 2026-06-13: Validation placeholder created with discovery evidence.
 - 2026-06-13: Adapter foundation implemented and validated with synthetic contract checks only.
+
+## Production REST JSON Adapter Evidence
+
+After the synthetic foundation, the owner confirmed no supplier contract existed and requested creating one. The reusable production contract now exists at `../docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md`, and `../src/imports/adapters/production-rest-json-supplier-adapter.ts` implements adapter key `rest` for suppliers whose reviewed metadata uses `apiType=rest`.
+
+Additional validation evidence:
+
+- `npm run build`: passed after production adapter wiring.
+- `node reports/validation/production-rest-json-adapter-check.js`: passed with deterministic replay keys, deterministic source fingerprint, runtime credential-ref resolution, defaulted `sourceRecordId`, and invalid payload blocking.
+
+Additional boundary confirmation: no private supplier URL, decoded credential, real SKU, raw production payload, Catalog mutation, Warehouse production mutation, database schema change, or Kubernetes secret change was introduced. Runtime onboarding remains a separate owner-approved step.

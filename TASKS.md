@@ -3,7 +3,7 @@
 ## Backlog
 
 - [ ] Add new supplier API integration (priority: 2)
-- [ ] TASK-006: Implement supplier integration from empty production state (priority: 2)
+- [x] TASK-006: Implement supplier integration from empty production state (priority: 2)
 - [ ] Review category mapping completeness (priority: 3)
 - [x] Plan owner-approved Nest major dependency upgrade for remaining audit findings (priority: 2)
 
@@ -22,3 +22,4 @@
 - [x] 2026-06-13 Operational smoke and documentation ingestion
 - [x] 2026-06-13 Compatible dependency audit remediation
 - [x] 2026-06-13 Owner-approved Nest major dependency upgrade
+- [x] 2026-06-13 TASK-006 production REST JSON supplier adapter contract and implementation (goal_id: TASK-006, priority: 2)

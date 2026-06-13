@@ -2,7 +2,7 @@
 
 ```yaml
 id: TASK-006
-status: pending
+status: complete
 owner: supplier-service-owner
 created: 2026-06-13
 last_updated: 2026-06-13

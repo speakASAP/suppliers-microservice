@@ -148,3 +148,13 @@ Validation evidence: `node reports/validation/synthetic-stock-traceability-check
 Boundary decision: this is not production runtime proof. No deployment, production stock mutation, real supplier payload, credential, Catalog write, or external API call was used.
 
 Next unfinished chunk: owner-approved runtime deployment/smoke or Warehouse operator inventory topology/read model.
+
+## 2026-06-13 - Production REST JSON Supplier Adapter
+
+Change: created the first reusable production supplier contract, `docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md`, and implemented a generic Suppliers-owned REST/JSON adapter registered under `rest`. Import execution now resolves supplier-code-specific adapters first and falls back to the supplier `apiType`, passing supplier metadata and credential reference names into the adapter. The adapter requires HTTPS by default, resolves runtime credential refs without storing decoded values, blocks malformed payloads, and emits deterministic replay metadata before existing payload, Catalog-boundary, and Warehouse-boundary validation.
+
+Validation evidence: `npm run build` passed. `node reports/validation/synthetic-adapter-foundation-check.js` passed. `node reports/validation/production-rest-json-adapter-check.js` passed with two normalized synthetic REST items, deterministic replay metadata, runtime credential-ref resolution, and invalid payload blocking.
+
+Boundary decision: no real supplier row, private endpoint, decoded credential, raw supplier payload, Catalog write, Warehouse production mutation, database schema change, or runtime secret change was introduced. Production supplier onboarding now requires creating an active supplier record with reviewed `apiUrl` and runtime credential refs.
+
+Next unfinished chunk: owner-approved supplier onboarding/runtime smoke using the production REST JSON contract, or a supplier-code-specific adapter if a supplier provides a non-generic contract.

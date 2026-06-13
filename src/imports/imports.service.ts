@@ -108,11 +108,18 @@ export class ImportsService {
 
     try {
       const supplier = await this.assertSupplierCanImport(supplierId);
-      const adapter = this.adapterRegistry.requireForSupplier(supplierId, supplier.code);
+      const adapter = this.adapterRegistry.requireForSupplier(supplierId, supplier.code, supplier.apiType);
       const adapterResult = await adapter.fetchNormalizedItems({
         supplierId,
         idempotencyKey: job.idempotencyKey,
         sourceFingerprint: job.sourceFingerprint,
+        supplier: {
+          id: supplier.id,
+          code: supplier.code,
+          apiType: supplier.apiType,
+          apiUrl: supplier.apiUrl,
+          apiCredentials: supplier.apiCredentials,
+        },
       });
       const adapterValidation = validateSupplierAdapterResult(adapterResult);
 

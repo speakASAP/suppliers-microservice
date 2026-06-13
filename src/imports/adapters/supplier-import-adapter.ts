@@ -7,10 +7,24 @@ export interface SupplierAdapterMetadata {
   supportsSyntheticValidation: boolean;
 }
 
+export interface SupplierAdapterRunSupplier {
+  id: string;
+  code: string;
+  apiType: SupplierAdapterSourceType;
+  apiUrl?: string | null;
+  apiCredentials?: {
+    apiKeyRef?: string;
+    usernameRef?: string;
+    passwordRef?: string;
+    tokenRef?: string;
+  } | null;
+}
+
 export interface SupplierAdapterRunContext {
   supplierId: string;
   idempotencyKey: string;
   sourceFingerprint?: string;
+  supplier?: SupplierAdapterRunSupplier;
 }
 
 export interface NormalizedSupplierImportItem {
