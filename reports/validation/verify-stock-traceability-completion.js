@@ -121,9 +121,9 @@ function runSelfTest() {
   const reportFile = path.join(bundleDir, 'report.md');
   const manifestFile = path.join(bundleDir, 'manifest.json');
   const legs = [
-    { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-    { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-    { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+    { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+    { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+    { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
   ];
   const fixture = {
     status: 'fixture-ready',
@@ -156,7 +156,7 @@ function runSelfTest() {
     coverage: { coverageStatus: 'covered', stockOrigin: 'mixed_stock' },
     coverageAudit: { matchedProduct: { coverageStatus: 'covered', stockOrigin: 'mixed_stock' } },
     projection: { productId: 'product-synthetic', source: 'warehouse', stockQuantity: 14, routeCount: 3, routeTypes: fixture.logisticsRoutes, routeLegs: legs },
-    supplierJob: { status: 'completed', idempotencyKey: 'manual:traceability-synthetic', warehouseAuthority: 'warehouse-microservice', warehouseStockUpdateAttempted: true, warehouseStockUpdateApproved: true, updatedProducts: 1 },
+    supplierJob: { status: 'completed', supplierId: 'supplier-synthetic', idempotencyKey: 'manual:traceability-synthetic', catalogProductValidationStatus: 'passed', catalogProductIdsChecked: ['product-synthetic'], catalogProductValidationErrorCount: 0, warehouseAuthority: 'warehouse-microservice', warehouseStockUpdateAttempted: true, warehouseStockUpdateApproved: true, updatedProducts: 1 },
     stockAuthority: { source: 'warehouse', warehouseTotalAvailable: 14, warehouseOriginAvailable: 14, catalogAvailabilityTotal: 14, catalogCoverageTotal: 14, projectionStockQuantity: 14 },
   };
   const repoByService = { warehouse: 'warehouse-microservice', catalog: 'catalog-microservice', suppliers: 'suppliers-microservice' };
