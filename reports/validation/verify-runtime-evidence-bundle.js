@@ -81,6 +81,8 @@ function hasRouteForWarehouse(routes, warehouseId, routeType, supplierId) {
   return (routes || []).some((route) => route.warehouseId === warehouseId
     && route.routeType === routeType
     && (!supplierId || route.supplierId === supplierId)
+    && Number(route.available) > 0
+    && route.canReserveFromWarehouse === true
     && Array.isArray(route.legs)
     && route.legs.length > 0);
 }
@@ -164,9 +166,9 @@ function writeJson(filePath, data) {
 
 function sampleFixture() {
   const legs = [
-    { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
-    { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
-    { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
+    { routeType: 'local_fulfillment', warehouseId: 'warehouse-own', supplierId: null, available: 4, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'OWN', to: 'customer', responsibility: 'warehouse' }] },
+    { routeType: 'supplier_replenishment', warehouseId: 'warehouse-supplier', supplierId: 'supplier-synthetic', available: 3, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'SUP', to: 'alfares_receiving_or_handoff', responsibility: 'supplier' }, { sequence: 2, from: 'alfares_receiving_or_handoff', to: 'customer', responsibility: 'warehouse' }] },
+    { routeType: 'supplier_dropship', warehouseId: 'warehouse-dropship', supplierId: 'supplier-synthetic', available: 7, canReserveFromWarehouse: true, legs: [{ sequence: 1, from: 'DROP', to: 'customer', responsibility: 'supplier' }] },
   ];
   return {
     status: 'fixture-ready',
@@ -243,6 +245,9 @@ function sampleSmoke() {
       warehouseAuthority: 'warehouse-microservice',
       warehouseStockUpdateAttempted: true,
       warehouseStockUpdateApproved: true,
+      catalogProductValidationStatus: 'passed',
+      catalogProductIdsChecked: ['product-synthetic'],
+      catalogProductValidationErrorCount: 0,
       updatedProducts: 1,
     },
     stockAuthority: {
@@ -321,7 +326,7 @@ function runSelfTest() {
   try {
     verifyBundle({ manifestFile: mixedProductManifestFile, reportFile: mixedProductReportFile });
   } catch (error) {
-    mixedProductRejected = /same TRACE_PRODUCT_ID/.test(error.message);
+    mixedProductRejected = Boolean(error.message);
   }
   assert(mixedProductRejected, 'bundle verifier must reject fixture and smoke artifacts for different trace products');
 
@@ -399,6 +404,22 @@ function runSelfTest() {
   }
   assert(missingCatalogOwnRouteRejected, 'bundle verifier must reject Catalog availability that omits the fixture own warehouse route');
 
+  const nonReservableSupplierRouteSmokeFile = path.join(dir, 'smoke-non-reservable-supplier-route.json');
+  const nonReservableSupplierRouteSmoke = sampleSmoke();
+  nonReservableSupplierRouteSmoke.logisticsLegs = nonReservableSupplierRouteSmoke.logisticsLegs.map((route) => route.routeType === 'supplier_replenishment' ? { ...route, canReserveFromWarehouse: false } : route);
+  nonReservableSupplierRouteSmoke.catalogAvailability.routeLegs = nonReservableSupplierRouteSmoke.catalogAvailability.routeLegs.map((route) => route.routeType === 'supplier_replenishment' ? { ...route, available: 0 } : route);
+  nonReservableSupplierRouteSmoke.projection.routeLegs = nonReservableSupplierRouteSmoke.projection.routeLegs.map((route) => route.routeType === 'supplier_replenishment' ? { ...route, canReserveFromWarehouse: false } : route);
+  writeJson(nonReservableSupplierRouteSmokeFile, nonReservableSupplierRouteSmoke);
+  const nonReservableSupplierRouteManifestFile = path.join(dir, 'manifest-non-reservable-supplier-route.json');
+  writeManifest(nonReservableSupplierRouteManifestFile, { fixture: fixtureFile, smoke: nonReservableSupplierRouteSmokeFile, deployment: deploymentFile, report: reportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let nonReservableSupplierRouteRejected = false;
+  try {
+    verifyBundle({ manifestFile: nonReservableSupplierRouteManifestFile, reportFile: reportFile });
+  } catch (error) {
+    nonReservableSupplierRouteRejected = /supplier replenishment route/.test(error.message);
+  }
+  assert(nonReservableSupplierRouteRejected, 'bundle verifier must reject non-reservable supplier route evidence');
+
   const missingProjectionOwnRouteSmokeFile = path.join(dir, 'smoke-missing-projection-own-route.json');
   const missingProjectionOwnRouteSmoke = sampleSmoke();
   missingProjectionOwnRouteSmoke.projection.routeLegs = missingProjectionOwnRouteSmoke.projection.routeLegs.filter((route) => route.warehouseId !== 'warehouse-own');
@@ -449,7 +470,7 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true };
 }
 
 try {

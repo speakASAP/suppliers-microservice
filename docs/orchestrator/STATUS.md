@@ -375,3 +375,5 @@ Boundary decision: no deployment, runtime token inspection, live fixture creatio
 Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
 
 - 2026-06-13: Tightened runtime evidence contract to require positive `available` and `canReserveFromWarehouse=true` route proof for Warehouse, Catalog availability, and FlipFlop logistics before stock traceability can be marked complete.
+
+- 2026-06-13: Extended runtime bundle verification so raw smoke artifacts must carry positive `available` and `canReserveFromWarehouse=true` route evidence for configured own, supplier replenishment, and dropship paths.
