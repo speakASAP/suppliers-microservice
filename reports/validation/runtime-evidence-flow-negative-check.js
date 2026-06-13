@@ -126,11 +126,14 @@ function writeReadinessManifestForApproval(dir, serviceHeads, root = crossServic
   });
   assert(result.status === 0, 'runtime approval helper should generate a verified readiness bundle: ' + (result.stdout + result.stderr).trim());
   const filePath = path.join(bundleDir, 'stock-traceability-runtime-readiness-manifest.json');
+  const manifest = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  const approvalRequest = manifest.artifacts && manifest.artifacts.approvalRequest;
   return {
     file: filePath,
     sha256: fileSha256(filePath),
     status: 'verified',
     serviceHeads: { ...serviceHeads },
+    approvalRequest: approvalRequest && { id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST', ...approvalRequest, serviceHeads: { ...serviceHeads } },
   };
 }
 
@@ -141,16 +144,17 @@ function writeRuntimeApprovalArtifact(root = crossServiceRoot, mutateApproval = 
     catalog: currentHeadForService('catalog', root),
     suppliers: currentHeadForService('suppliers', root),
   };
+  const readinessManifest = writeReadinessManifestForApproval(dir, serviceHeads, root);
   const approval = {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
     approvalRequestId: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
-    approvalRequest: writeApprovalRequestForApproval(dir, serviceHeads),
+    approvalRequest: readinessManifest.approvalRequest,
     approvedBy: 'owner@example.test',
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
     serviceHeads: { ...serviceHeads },
-    readinessManifest: writeReadinessManifestForApproval(dir, serviceHeads, root),
+    readinessManifest,
     approvedTraceInputs: {
       TRACE_PRODUCT_ID: baseEnv.TRACE_PRODUCT_ID,
       TRACE_PRODUCT_SKU_PREFIX: baseEnv.TRACE_PRODUCT_SKU_PREFIX,
@@ -284,7 +288,20 @@ const cases = [
     TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
     DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence(),
     RUNTIME_APPROVAL_ARTIFACT_FILE: writeRuntimeApprovalArtifact(crossServiceRoot, (approval) => {
-      approval.serviceHeads.catalog = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+      const staleCatalogHead = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
+      const currentCatalogHead = currentHeadForService('catalog', crossServiceRoot);
+      approval.serviceHeads.catalog = staleCatalogHead;
+      approval.approvalRequest.serviceHeads.catalog = staleCatalogHead;
+      const requestText = fs.readFileSync(approval.approvalRequest.file, 'utf8').replace(currentCatalogHead, staleCatalogHead);
+      fs.writeFileSync(approval.approvalRequest.file, requestText);
+      approval.approvalRequest.bytes = fs.statSync(approval.approvalRequest.file).size;
+      approval.approvalRequest.sha256 = fileSha256(approval.approvalRequest.file);
+      const readiness = JSON.parse(fs.readFileSync(approval.readinessManifest.file, 'utf8'));
+      readiness.serviceHeads.catalog = staleCatalogHead;
+      readiness.artifacts.approvalRequest = approval.approvalRequest;
+      fs.writeFileSync(approval.readinessManifest.file, JSON.stringify(readiness, null, 2));
+      approval.readinessManifest.serviceHeads.catalog = staleCatalogHead;
+      approval.readinessManifest.sha256 = fileSha256(approval.readinessManifest.file);
     }),
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',

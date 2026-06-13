@@ -85,13 +85,14 @@ function runJson(commandArgs) {
   return JSON.parse(result.stdout);
 }
 
-function approvalRequestBinding(rows) {
+function approvalRequestBinding(rows, readinessManifest) {
   if (selfTest) {
     return {
       id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
       file: '/tmp/self-test-runtime-approval-request.md',
       sha256: '0'.repeat(64),
       serviceHeads: Object.fromEntries(rows.map((row) => [row.name, row.head])),
+      approvalRequest: { sha256: '0'.repeat(64) },
     };
   }
   assert(fs.existsSync(approvalRequestFile), 'RUNTIME_APPROVAL_REQUEST_FILE does not exist: ' + approvalRequestFile);
@@ -100,10 +101,12 @@ function approvalRequestBinding(rows) {
   for (const row of rows) {
     assert(markdown.includes(row.head), 'approval request file does not contain current ' + row.name + ' head ' + row.head);
   }
+  const requestSha256 = sha256File(approvalRequestFile);
+  assert(readinessManifest.approvalRequest && readinessManifest.approvalRequest.sha256 === requestSha256, 'approval request file must match readiness manifest approvalRequest artifact');
   return {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL-REQUEST',
     file: approvalRequestFile,
-    sha256: sha256File(approvalRequestFile),
+    sha256: requestSha256,
     serviceHeads: Object.fromEntries(rows.map((row) => [row.name, row.head])),
   };
 }
@@ -153,6 +156,7 @@ function verifyReadinessManifest(rows) {
     sha256: sha256File(readinessManifestFile),
     status: parsed.status,
     serviceHeads: manifest.serviceHeads,
+    approvalRequest: manifest.artifacts && manifest.artifacts.approvalRequest,
   };
 }
 
@@ -239,8 +243,8 @@ try {
   const preflight = runJson(['reports/validation/cross-service-preflight-check.js']);
   assert(preflight.status === 'passed', 'runtime approval artifact requires passing cross-service preflight');
   assert(preflight.completionGate && preflight.completionGate.status === 'incomplete', 'runtime approval artifact must be generated only while completion gate is incomplete');
-  const approvalRequest = approvalRequestBinding(rows);
   const readinessManifest = verifyReadinessManifest(rows);
+  const approvalRequest = approvalRequestBinding(rows, readinessManifest);
   const { artifact, json } = renderArtifact(rows, readinessManifest, approvalRequest, approvedTraceInputs);
   assertSelfTestContent(artifact);
 

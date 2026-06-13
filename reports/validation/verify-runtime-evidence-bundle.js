@@ -775,7 +775,7 @@ function runSelfTest() {
   try {
     verifyBundle({ manifestFile: staleApprovalManifestFile, reportFile });
   } catch (error) {
-    staleApprovalArtifactRejected = /approval artifact .*head must match|head must match current/.test(error.message);
+    staleApprovalArtifactRejected = /head must match|approvalRequest must match readiness manifest|readiness manifest file .*head must match/.test(error.message);
   }
   assert(staleApprovalArtifactRejected, 'bundle verifier must reject approval artifact for different service heads');
 
