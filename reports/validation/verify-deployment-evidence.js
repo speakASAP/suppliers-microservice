@@ -32,6 +32,12 @@ function isCommitSha(value) {
   return typeof value === 'string' && /^[0-9a-f]{7,40}$/i.test(value.trim());
 }
 
+function isCanonicalIsoUtcTimestamp(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
+}
+
 function repoPathForService(service) {
   const repo = deploymentRepos[service];
   assert(repo, `Unknown deployment service: ${service}`);
@@ -96,6 +102,7 @@ function validateDeploymentEvidence(filePath) {
   const deploymentText = fs.readFileSync(filePath, 'utf8');
   assertNoSecrets(deploymentText);
   const deployment = readJsonFile(filePath);
+  assert(isCanonicalIsoUtcTimestamp(deployment.generatedAt), 'deployment evidence generatedAt must be a canonical UTC ISO timestamp');
   assert(deployment.generatedFromCurrentHeads === true, 'deployment evidence must be generated from current service heads');
   assertReadinessManifestBinding(deployment, path.dirname(filePath));
   assert(String(deployment.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'deployment evidence must include completion verifier reminder');
@@ -191,6 +198,17 @@ function runSelfTest() {
   const valid = validateDeploymentEvidence(validFile);
   assert(valid.generatedFromCurrentHeads === true, 'valid deployment evidence should pass');
 
+  const nonCanonicalGeneratedAt = validDeploymentForRoot(root);
+  nonCanonicalGeneratedAt.generatedAt = 'June 13 2026';
+  const nonCanonicalGeneratedAtFile = writeDeployment(path.join(dir, 'non-canonical-generated-at'), nonCanonicalGeneratedAt);
+  let nonCanonicalDeploymentGeneratedAtRejected = false;
+  try {
+    validateDeploymentEvidence(nonCanonicalGeneratedAtFile);
+  } catch (error) {
+    nonCanonicalDeploymentGeneratedAtRejected = /canonical UTC ISO timestamp/.test(error.message);
+  }
+  assert(nonCanonicalDeploymentGeneratedAtRejected, 'self-test must reject non-canonical deployment generatedAt timestamps');
+
   const stale = validDeploymentForRoot(root);
   stale.services.catalog.commitSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   const staleFile = writeDeployment(path.join(dir, 'stale'), stale);
@@ -247,6 +265,7 @@ function runSelfTest() {
   crossServiceRoot = previousRoot;
   console.log(JSON.stringify({
     status: 'passed',
+    nonCanonicalDeploymentGeneratedAtRejected,
     staleDeploymentHeadRejected,
     missingReadinessRejected,
     missingProtectedEndpointRejected,

@@ -73,6 +73,12 @@ function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
+function isCanonicalIsoUtcTimestamp(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
+}
+
 function assertArtifact(manifest, key) {
   assert(manifest.artifacts && manifest.artifacts[key], `readiness manifest missing ${key} artifact`);
   const artifact = manifest.artifacts[key];
@@ -104,6 +110,7 @@ function verifyReadinessManifest(filePath, serviceRoot = root) {
   assertCleanRows(rows);
   const manifest = readJson(filePath);
   assert(manifest.status === 'ready-for-owner-approval', 'readiness manifest status must be ready-for-owner-approval');
+  assert(isCanonicalIsoUtcTimestamp(manifest.generatedAt), 'readiness manifest generatedAt must be a canonical UTC ISO timestamp');
   assert(manifest.completionGate === 'incomplete-runtime-pending', 'readiness manifest must preserve incomplete runtime completion gate');
   assert(manifest.serviceHeads && typeof manifest.serviceHeads === 'object', 'readiness manifest serviceHeads are required');
   for (const row of rows) {
@@ -184,6 +191,18 @@ function runSelfTest() {
   const verified = verifyReadinessManifest(manifestPath, serviceRoot);
   assert(verified.rows.length === rows.length, 'self-test verifier must return service rows');
 
+  const nonCanonicalManifestPath = path.join(path.dirname(manifestPath), 'non-canonical-readiness-manifest.json');
+  const nonCanonicalManifest = readJson(manifestPath);
+  nonCanonicalManifest.generatedAt = 'June 13 2026';
+  fs.writeFileSync(nonCanonicalManifestPath, JSON.stringify(nonCanonicalManifest, null, 2) + '\n');
+  let nonCanonicalReadinessGeneratedAtRejected = false;
+  try {
+    verifyReadinessManifest(nonCanonicalManifestPath, serviceRoot);
+  } catch (error) {
+    nonCanonicalReadinessGeneratedAtRejected = /canonical UTC ISO timestamp/.test(error.message);
+  }
+  assert(nonCanonicalReadinessGeneratedAtRejected, 'readiness verifier self-test must reject non-canonical generatedAt timestamps');
+
   fs.appendFileSync(files.plan, '\ntampered\n');
   let tamperedHashRejected = false;
   try {
@@ -228,7 +247,7 @@ function runSelfTest() {
   }
   assert(staleHeadRejected, 'readiness verifier self-test must reject stale service heads');
 
-  console.log(JSON.stringify({ status: 'passed', artifacts: Object.keys(files), tamperedHashRejected, credentialLeakRejected, dirtyWorktreeRejected, staleHeadRejected }, null, 2));
+  console.log(JSON.stringify({ status: 'passed', artifacts: Object.keys(files), nonCanonicalReadinessGeneratedAtRejected, tamperedHashRejected, credentialLeakRejected, dirtyWorktreeRejected, staleHeadRejected }, null, 2));
 }
 
 try {
