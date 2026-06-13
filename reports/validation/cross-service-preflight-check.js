@@ -114,6 +114,16 @@ const checks = [
   },
   {
     service: 'suppliers',
+    file: 'k8s/configmap.yaml',
+    patterns: ['CATALOG_SERVICE_URL: "http://catalog-microservice.statex-apps.svc.cluster.local:3200"', 'WAREHOUSE_SERVICE_URL: "http://warehouse-microservice.statex-apps.svc.cluster.local:3201"'],
+  },
+  {
+    service: 'suppliers',
+    file: 'k8s/deployment.yaml',
+    patterns: ['CATALOG_SERVICE_TOKEN', 'name: catalog-microservice-secret', 'WAREHOUSE_SERVICE_TOKEN', 'name: warehouse-microservice-secret', 'key: JWT_TOKEN'],
+  },
+  {
+    service: 'suppliers',
     file: 'src/imports/adapters/supplier-import-adapter.ts',
     patterns: ['SupplierAdapterRunSupplier', 'apiCredentials', 'supplier?: SupplierAdapterRunSupplier', 'supplierId?: string'],
   },

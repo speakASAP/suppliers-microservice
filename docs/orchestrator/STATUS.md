@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-13 - Suppliers Runtime Service Token Wiring
+
+Change: wired Suppliers production Kubernetes runtime to call Catalog and Warehouse during the approved stock traceability import. The ConfigMap now sets in-cluster `CATALOG_SERVICE_URL` and `WAREHOUSE_SERVICE_URL`, and the Deployment injects `CATALOG_SERVICE_TOKEN` from `catalog-microservice-secret` plus `WAREHOUSE_SERVICE_TOKEN` from `warehouse-microservice-secret` without exposing token values. Cross-service preflight now checks these bindings before runtime handoff.
+
+Validation evidence: live Suppliers pod inspection showed Catalog and Warehouse service-token env vars were missing while only `JWT_TOKEN` was present. Live database schema check showed `import_jobs.sourceFingerprint` is already varchar(256), so no sourceFingerprint migration is needed for this approved run. Full build, preflight, readiness, deployment, and guarded runtime validation are rerun after this entry is committed and deployed.
+
+Boundary decision: no token value was printed or checked into source. No production import, Warehouse stock mutation, hard delete, or cleanup mutation was performed by this source change.
+
+Next unfinished chunk: commit and deploy Warehouse, Catalog, and Suppliers current heads, generate approval/deployment evidence, then run the owner-approved guarded synthetic runtime smoke.
+
 ## 2026-06-13 - Runtime Handoff Deployment Evidence Wording
 
 Change: clarified the runtime handoff required-input text so `DEPLOYMENT_EVIDENCE_FILE` is described once as completed deployment evidence JSON bound to `RUNTIME_READINESS_MANIFEST_FILE`. This removes duplicate wording from the generated owner handoff without changing runtime behavior or approval boundaries.
