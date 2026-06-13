@@ -63,9 +63,9 @@ function hasWarehouseOrigin(smoke, warehouseId, warehouseType, supplierId) {
     && (!supplierId || row.supplierId === supplierId));
 }
 
-function hasRouteForWarehouse(smoke, warehouseId, routeType, supplierId) {
+function hasRouteForWarehouse(routes, warehouseId, routeType, supplierId) {
   if (!warehouseId) return true;
-  return (smoke.logisticsLegs || []).some((route) => route.warehouseId === warehouseId
+  return (routes || []).some((route) => route.warehouseId === warehouseId
     && route.routeType === routeType
     && (!supplierId || route.supplierId === supplierId)
     && Array.isArray(route.legs)
@@ -100,9 +100,15 @@ function verifyTraceArtifactConsistency(manifest) {
   assert(hasWarehouseOrigin(smoke, ownWarehouseId, 'own'), 'smoke artifact must include the fixture own warehouse origin');
   assert(hasWarehouseOrigin(smoke, supplierWarehouseId, 'supplier', supplierId), 'smoke artifact must include the fixture supplier warehouse origin for TRACE_SUPPLIER_ID');
   assert(hasWarehouseOrigin(smoke, dropshipWarehouseId, 'dropship', supplierId), 'smoke artifact must include the fixture dropship warehouse origin for TRACE_SUPPLIER_ID');
-  assert(hasRouteForWarehouse(smoke, ownWarehouseId, 'local_fulfillment'), 'smoke artifact must include the fixture own warehouse local route');
-  assert(hasRouteForWarehouse(smoke, supplierWarehouseId, 'supplier_replenishment', supplierId), 'smoke artifact must include the fixture supplier replenishment route for TRACE_SUPPLIER_ID');
-  assert(hasRouteForWarehouse(smoke, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route for TRACE_SUPPLIER_ID');
+  assert(hasRouteForWarehouse(smoke.logisticsLegs, ownWarehouseId, 'local_fulfillment'), 'smoke artifact must include the fixture own warehouse local route');
+  assert(hasRouteForWarehouse(smoke.logisticsLegs, supplierWarehouseId, 'supplier_replenishment', supplierId), 'smoke artifact must include the fixture supplier replenishment route for TRACE_SUPPLIER_ID');
+  assert(hasRouteForWarehouse(smoke.logisticsLegs, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route for TRACE_SUPPLIER_ID');
+  assert(hasRouteForWarehouse(smoke.catalogAvailability?.routeLegs, ownWarehouseId, 'local_fulfillment'), 'smoke artifact must include the fixture own warehouse local route in Catalog availability');
+  assert(hasRouteForWarehouse(smoke.catalogAvailability?.routeLegs, supplierWarehouseId, 'supplier_replenishment', supplierId), 'smoke artifact must include the fixture supplier replenishment route in Catalog availability for TRACE_SUPPLIER_ID');
+  assert(hasRouteForWarehouse(smoke.catalogAvailability?.routeLegs, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route in Catalog availability for TRACE_SUPPLIER_ID');
+  assert(hasRouteForWarehouse(smoke.projection?.routeLegs, ownWarehouseId, 'local_fulfillment'), 'smoke artifact must include the fixture own warehouse local route in FlipFlop projection');
+  assert(hasRouteForWarehouse(smoke.projection?.routeLegs, supplierWarehouseId, 'supplier_replenishment', supplierId), 'smoke artifact must include the fixture supplier replenishment route in FlipFlop projection for TRACE_SUPPLIER_ID');
+  assert(hasRouteForWarehouse(smoke.projection?.routeLegs, dropshipWarehouseId, 'supplier_dropship', supplierId), 'smoke artifact must include the fixture dropship route in FlipFlop projection for TRACE_SUPPLIER_ID');
   assert(smoke.cleanupEvidence, 'smoke artifact must include cleanup or archival evidence');
 }
 
@@ -352,6 +358,52 @@ function runSelfTest() {
   }
   assert(mismatchedSupplierRejected, 'bundle verifier must reject supplier identity that does not match fixture warehouse ownership');
 
+  const missingCatalogOwnRouteSmokeFile = path.join(dir, 'smoke-missing-catalog-own-route.json');
+  const missingCatalogOwnRouteSmoke = sampleSmoke();
+  missingCatalogOwnRouteSmoke.catalogAvailability.routeLegs = missingCatalogOwnRouteSmoke.catalogAvailability.routeLegs.filter((route) => route.warehouseId !== 'warehouse-own');
+  writeJson(missingCatalogOwnRouteSmokeFile, missingCatalogOwnRouteSmoke);
+  const missingCatalogOwnRouteReportFile = path.join(dir, 'report-missing-catalog-own-route.md');
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
+    FIXTURE_CHECK_RESULT_FILE: fixtureFile,
+    SMOKE_RESULT_FILE: missingCatalogOwnRouteSmokeFile,
+    DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
+    RUNTIME_EVIDENCE_OUTPUT: missingCatalogOwnRouteReportFile,
+    REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+  });
+  const missingCatalogOwnRouteManifestFile = path.join(dir, 'manifest-missing-catalog-own-route.json');
+  writeManifest(missingCatalogOwnRouteManifestFile, { fixture: fixtureFile, smoke: missingCatalogOwnRouteSmokeFile, deployment: deploymentFile, report: missingCatalogOwnRouteReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let missingCatalogOwnRouteRejected = false;
+  try {
+    verifyBundle({ manifestFile: missingCatalogOwnRouteManifestFile, reportFile: missingCatalogOwnRouteReportFile });
+  } catch (error) {
+    missingCatalogOwnRouteRejected = Boolean(error.message);
+  }
+  assert(missingCatalogOwnRouteRejected, 'bundle verifier must reject Catalog availability that omits the fixture own warehouse route');
+
+  const missingProjectionOwnRouteSmokeFile = path.join(dir, 'smoke-missing-projection-own-route.json');
+  const missingProjectionOwnRouteSmoke = sampleSmoke();
+  missingProjectionOwnRouteSmoke.projection.routeLegs = missingProjectionOwnRouteSmoke.projection.routeLegs.filter((route) => route.warehouseId !== 'warehouse-own');
+  writeJson(missingProjectionOwnRouteSmokeFile, missingProjectionOwnRouteSmoke);
+  const missingProjectionOwnRouteReportFile = path.join(dir, 'report-missing-projection-own-route.md');
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
+    FIXTURE_CHECK_RESULT_FILE: fixtureFile,
+    SMOKE_RESULT_FILE: missingProjectionOwnRouteSmokeFile,
+    DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
+    RUNTIME_EVIDENCE_OUTPUT: missingProjectionOwnRouteReportFile,
+    REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+  });
+  const missingProjectionOwnRouteManifestFile = path.join(dir, 'manifest-missing-projection-own-route.json');
+  writeManifest(missingProjectionOwnRouteManifestFile, { fixture: fixtureFile, smoke: missingProjectionOwnRouteSmokeFile, deployment: deploymentFile, report: missingProjectionOwnRouteReportFile }, Object.fromEntries(Object.entries(deployment.services).map(([service, item]) => [service, item.commitSha])));
+  let missingProjectionOwnRouteRejected = false;
+  try {
+    verifyBundle({ manifestFile: missingProjectionOwnRouteManifestFile, reportFile: missingProjectionOwnRouteReportFile });
+  } catch (error) {
+    missingProjectionOwnRouteRejected = Boolean(error.message);
+  }
+  assert(missingProjectionOwnRouteRejected, 'bundle verifier must reject FlipFlop projection that omits the fixture own warehouse route');
+
   const mismatchedDeploymentFile = path.join(dir, 'deployment-mismatched.json');
   const mismatchedDeployment = sampleDeployment();
   mismatchedDeployment.services.catalog.commitSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
@@ -365,7 +417,7 @@ function runSelfTest() {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, deploymentManifestMismatchRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true };
 }
 
 try {

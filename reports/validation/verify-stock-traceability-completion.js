@@ -7,6 +7,7 @@ const { spawnSync } = require('child_process');
 const args = new Set(process.argv.slice(2));
 const selfTest = args.has('--self-test');
 const defaultReport = 'docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md';
+const defaultManifest = path.join(process.env.RUNTIME_EVIDENCE_DIR || '/tmp/stock-traceability-runtime', 'stock-traceability-runtime-evidence-manifest.json');
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -38,7 +39,8 @@ function reportLooksComplete(report) {
 }
 
 function verifyCompletion({ reportFile, manifestFile }) {
-  const reportPath = reportFile || process.env.RUNTIME_EVIDENCE_REPORT || defaultReport;
+  const explicitReportPath = reportFile || process.env.RUNTIME_EVIDENCE_REPORT || "";
+  const reportPath = explicitReportPath || defaultReport;
   if (!fs.existsSync(reportPath)) {
     return { status: 'incomplete', reason: 'runtime report is absent', reportFile: reportPath };
   }
@@ -48,16 +50,32 @@ function verifyCompletion({ reportFile, manifestFile }) {
     return { status: 'incomplete', reason: 'runtime report is not passed-runtime/runtime-complete', reportFile: reportPath };
   }
 
-  const manifestPath = manifestFile || process.env.RUNTIME_EVIDENCE_MANIFEST;
-  assert(manifestPath, 'RUNTIME_EVIDENCE_MANIFEST or manifest path is required when runtime report claims completion');
-  runNodeJson(['reports/validation/verify-runtime-evidence-report.js'], { RUNTIME_EVIDENCE_REPORT: reportPath });
-  const bundle = runNodeJson(['reports/validation/verify-runtime-evidence-bundle.js', manifestPath, reportPath]);
-  return {
-    status: 'complete',
-    reportFile: reportPath,
-    manifestFile: manifestPath,
-    bundleStatus: bundle.status,
-  };
+  const manifestPath = manifestFile || process.env.RUNTIME_EVIDENCE_MANIFEST || (!explicitReportPath && fs.existsSync(defaultManifest) ? defaultManifest : "");
+  if (!manifestPath) {
+    return {
+      status: "incomplete",
+      reason: "runtime report claims completion but no runtime evidence manifest was provided",
+      reportFile: reportPath,
+    };
+  }
+
+  try {
+    runNodeJson(["reports/validation/verify-runtime-evidence-report.js"], { RUNTIME_EVIDENCE_REPORT: reportPath });
+    const bundle = runNodeJson(["reports/validation/verify-runtime-evidence-bundle.js", manifestPath, reportPath]);
+    return {
+      status: "complete",
+      reportFile: reportPath,
+      manifestFile: manifestPath,
+      bundleStatus: bundle.status,
+    };
+  } catch (error) {
+    return {
+      status: "incomplete",
+      reason: `runtime report claims completion but verified bundle is missing, stale, or invalid: ${error.message}`,
+      reportFile: reportPath,
+      manifestFile: manifestPath,
+    };
+  }
 }
 
 function writeJson(filePath, value) {
@@ -73,13 +91,9 @@ function runSelfTest() {
 
   const passedReportWithoutManifest = path.join(dir, 'passed-no-manifest.md');
   fs.writeFileSync(passedReportWithoutManifest, '# runtime\n- status: passed-runtime\n- completeness_level: runtime-complete\nRuntime complete\n');
-  let missingManifestRejected = false;
-  try {
-    verifyCompletion({ reportFile: passedReportWithoutManifest });
-  } catch (error) {
-    missingManifestRejected = /manifest path is required/.test(error.message);
-  }
-  assert(missingManifestRejected, 'completion verifier must reject passed-runtime report without manifest path');
+  const missingManifest = verifyCompletion({ reportFile: passedReportWithoutManifest });
+  assert(missingManifest.status === "incomplete", "completion verifier must treat passed-runtime report without manifest path as incomplete");
+  assert(/manifest/.test(missingManifest.reason), "completion verifier must explain missing manifest path");
 
   const bundleDir = fs.mkdtempSync(path.join(dir, 'bundle-'));
   const fixtureFile = path.join(bundleDir, 'fixture.json');
@@ -157,7 +171,7 @@ function runSelfTest() {
   });
   const complete = verifyCompletion({ reportFile, manifestFile });
   assert(complete.status === 'complete', 'completion verifier must accept complete verified bundle');
-  return { status: 'passed', incompleteStatus: incomplete.status, missingManifestRejected, completeStatus: complete.status };
+  return { status: "passed", incompleteStatus: incomplete.status, missingManifestStatus: missingManifest.status, completeStatus: complete.status };
 }
 
 try {

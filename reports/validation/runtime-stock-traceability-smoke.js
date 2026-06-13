@@ -177,6 +177,13 @@ function assertConfiguredRouteSupplierOwnership(label, expectedSupplierId, confi
   assert(route.supplierId === expectedSupplierId, `expected ${label} route ${routeType} for warehouse ${configuredId} to belong to supplier ${expectedSupplierId}`);
 }
 
+function assertConfiguredRoute(label, configuredId, routeType, options) {
+  if (!configuredId) return;
+  const route = options.find((item) => item.warehouseId === configuredId && item.routeType === routeType);
+  assert(route, `expected ${label} route ${routeType} for warehouse ${configuredId}`);
+  assert(Array.isArray(route.legs) && route.legs.length > 0, `expected ${label} route ${routeType} for warehouse ${configuredId} to include legs`);
+}
+
 async function readSupplierJob({ suppliersUrl, suppliersToken, supplierId, importIdempotencyKey }) {
   const supplierJobs = await requestJson('Suppliers import jobs', `${suppliersUrl}/api/imports?supplierId=${encodeURIComponent(supplierId)}`, {
     method: 'GET',
@@ -432,6 +439,7 @@ if (planOnly) {
   assert(logisticsOptions.some((option) => option.routeType === 'supplier_replenishment'), 'expected supplier replenishment route');
   assert(logisticsOptions.some((option) => option.routeType === 'supplier_dropship'), 'expected supplier dropship route');
   assert(hasRequiredLogisticsLegs(logisticsOptions), 'expected Warehouse logistics legs to prove local fulfillment, supplier replenishment, and supplier dropship paths');
+  assertConfiguredRoute("own", ownWarehouseId, "local_fulfillment", logisticsOptions);
   assertConfiguredRouteSupplierOwnership("supplier replenishment", supplierId, supplierWarehouseId, "supplier_replenishment", logisticsOptions);
   assertConfiguredRouteSupplierOwnership("supplier dropship", supplierId, dropshipWarehouseId, "supplier_dropship", logisticsOptions);
   assert(catalogItem?.source === 'warehouse', 'expected Catalog availability source warehouse');
@@ -441,6 +449,9 @@ if (planOnly) {
   assert(catalogRouteTypes.includes('supplier_replenishment'), 'expected Catalog availability to forward supplier replenishment route');
   assert(catalogRouteTypes.includes('supplier_dropship'), 'expected Catalog availability to forward supplier dropship route');
   assert(hasRequiredLogisticsLegs(catalogLogisticsOptions), 'expected Catalog availability to forward local, supplier replenishment, and dropship logistics legs');
+  assertConfiguredRoute("Catalog forwarded own", ownWarehouseId, "local_fulfillment", catalogLogisticsOptions);
+  assertConfiguredRouteSupplierOwnership("Catalog forwarded supplier replenishment", supplierId, supplierWarehouseId, "supplier_replenishment", catalogLogisticsOptions);
+  assertConfiguredRouteSupplierOwnership("Catalog forwarded supplier dropship", supplierId, dropshipWarehouseId, "supplier_dropship", catalogLogisticsOptions);
   assert(coverageItem?.coverageStatus === 'covered', 'expected Catalog coverage status covered');
   assert(coverageItem?.stockOrigin === 'mixed_stock', 'expected Catalog coverage stockOrigin mixed_stock');
   assert(coverageAuditItem?.coverageStatus === 'covered', 'expected Catalog coverage audit to include covered product');
@@ -451,6 +462,9 @@ if (planOnly) {
   assert(projectionRouteTypes.includes('supplier_replenishment'), 'expected FlipFlop projection to forward supplier replenishment route');
   assert(projectionRouteTypes.includes('supplier_dropship'), 'expected FlipFlop projection to forward supplier dropship route');
   assert(hasRequiredLogisticsLegs(projectionLogisticsOptions), 'expected FlipFlop projection to forward local, supplier replenishment, and dropship logistics legs');
+  assertConfiguredRoute("FlipFlop forwarded own", ownWarehouseId, "local_fulfillment", projectionLogisticsOptions);
+  assertConfiguredRouteSupplierOwnership("FlipFlop forwarded supplier replenishment", supplierId, supplierWarehouseId, "supplier_replenishment", projectionLogisticsOptions);
+  assertConfiguredRouteSupplierOwnership("FlipFlop forwarded supplier dropship", supplierId, dropshipWarehouseId, "supplier_dropship", projectionLogisticsOptions);
   assert(warehouseTotalAvailable === warehouseOriginAvailable, 'expected Warehouse totalAvailable to equal summed Warehouse origin availability');
   assert(catalogAvailabilityTotal === warehouseTotalAvailable, 'expected Catalog availability totalAvailable to match Warehouse totalAvailable');
   assert(catalogCoverageTotal === warehouseTotalAvailable, 'expected Catalog coverage totalAvailable to match Warehouse totalAvailable');

@@ -183,3 +183,13 @@ Runtime evidence: reports/validation/run-runtime-evidence-flow.js completed with
 Validation evidence: verify-runtime-evidence-report.js passed with 12 assertion rows; verify-runtime-evidence-manifest.js passed with 4 artifacts; verify-runtime-evidence-bundle.js passed across 3 services; verify-stock-traceability-completion.js returned complete. Runtime report docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md is status passed-runtime and completeness runtime-complete.
 
 Next unfinished chunk: TASK-002 supplier-specific API integration remains blocked pending owner-supplied supplier API contract details.
+
+## 2026-06-13 - Current-Head Runtime Completion Gate Hardening
+
+Change: hardened the Suppliers runtime traceability validators so current and future runtime evidence must prove the configured own warehouse route, supplier replenishment route, and dropship route are present not only in Warehouse logistics but also in Catalog availability and FlipFlop supplier projection. The completion verifier now reports passed-runtime reports without a matching verified bundle as incomplete instead of throwing, and its default live-report path uses the guarded runtime evidence manifest location when no explicit report path is provided.
+
+Validation evidence: node --check reports/validation/verify-stock-traceability-completion.js passed. verify-stock-traceability-completion.js --self-test passed. verify-runtime-evidence-bundle.js --self-test passed and rejected missing Catalog own-route and missing FlipFlop own-route evidence. runtime-evidence-flow-negative-check.js passed. cross-service-preflight-check.js passed with liveRuntimeReport=verified-passed-runtime and completionGate=incomplete because the saved runtime manifest still references Suppliers commit a6fc69d220e04aa055345c2ee1606bad21cc5a06 and does not cover the current hardening changeset. git diff --check passed.
+
+Boundary decision: no deployment, live fixture creation, production supplier import, Warehouse mutation, runtime token inspection, or cleanup mutation was performed in this hardening chunk. The previous runtime report remains evidence for its recorded deployed commits only; current-head completion remains unproven until a new approved guarded runtime evidence flow is executed against the current source/deployment state.
+
+Next unfinished chunk: commit and deploy the current Suppliers validation hardening only if owner-approved, then regenerate guarded runtime evidence for the current Warehouse, Catalog, and Suppliers heads so verify-stock-traceability-completion.js returns complete for the current manifest.
