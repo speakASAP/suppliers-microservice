@@ -130,6 +130,42 @@ function assertReportUsesManifestApprovalArtifact(report, approvalFile) {
   assert(report.includes('RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile), 'runtime report smoke command approval artifact path must match manifest approval artifact');
 }
 
+function reportSection(report, heading) {
+  const marker = '## ' + heading;
+  const start = report.indexOf(marker);
+  assert(start !== -1, 'runtime report missing section: ' + heading);
+  const next = report.indexOf('\n## ', start + marker.length);
+  return next === -1 ? report.slice(start) : report.slice(start, next);
+}
+
+function commandEnvValue(section, key) {
+  const token = section.split(/\s+/).find((part) => part.startsWith(key + '='));
+  if (!token) return null;
+  return token.slice(key.length + 1).replace(/^['"]|['"]$/g, '');
+}
+
+function assertCommandEnv(section, key, expected, label) {
+  if (!expected) return;
+  const actual = commandEnvValue(section, key);
+  assert(actual === expected, label + ' command ' + key + ' must match hashed runtime artifact evidence');
+}
+
+function assertReportCommandEvidenceMatchesArtifacts(report, fixture, smoke) {
+  const fixtureCommand = reportSection(report, 'Fixture Check Command Evidence');
+  const smokeCommand = reportSection(report, 'Smoke Command Evidence');
+  assertCommandEnv(fixtureCommand, 'TRACE_PRODUCT_ID', fixture.productId, 'fixture');
+  assertCommandEnv(smokeCommand, 'TRACE_PRODUCT_ID', smoke.productId, 'smoke');
+  assertCommandEnv(fixtureCommand, 'TRACE_PRODUCT_SKU_PREFIX', fixture.traceProductSkuPrefix, 'fixture');
+  assertCommandEnv(smokeCommand, 'TRACE_PRODUCT_SKU_PREFIX', smoke.traceProductSkuPrefix, 'smoke');
+  assertCommandEnv(fixtureCommand, 'TRACE_OWN_WAREHOUSE_ID', fixture.supplierImport?.ownWarehouseId, 'fixture');
+  assertCommandEnv(smokeCommand, 'TRACE_OWN_WAREHOUSE_ID', fixture.supplierImport?.ownWarehouseId, 'smoke');
+  assertCommandEnv(fixtureCommand, 'TRACE_SUPPLIER_WAREHOUSE_ID', fixture.supplierImport?.supplierWarehouseId, 'fixture');
+  assertCommandEnv(smokeCommand, 'TRACE_SUPPLIER_WAREHOUSE_ID', smoke.supplierImport?.supplierWarehouseId, 'smoke');
+  assertCommandEnv(fixtureCommand, 'TRACE_DROPSHIP_WAREHOUSE_ID', fixture.supplierImport?.dropshipWarehouseId, 'fixture');
+  assertCommandEnv(smokeCommand, 'TRACE_DROPSHIP_WAREHOUSE_ID', smoke.supplierImport?.dropshipWarehouseId, 'smoke');
+  assertCommandEnv(smokeCommand, 'TRACE_SUPPLIER_ID', smoke.supplierImport?.supplierId, 'smoke');
+}
+
 function isCompletedEvidenceText(value) {
   return typeof value === 'string' && value.trim().length > 0 && !/TODO/i.test(value);
 }
@@ -182,6 +218,7 @@ function verifyTraceArtifactConsistency(manifest) {
   assertSupplierJobPreservesCatalogAndWarehouse(smoke, supplierId);
   assertStockAuthorityMatchesTrace(smoke);
   assert(isCompletedEvidenceText(smoke.cleanupEvidence), 'smoke artifact must include completed cleanup or archival evidence and must not contain TODO');
+  return { fixture, smoke };
 }
 
 function verifyBundle({ manifestFile, reportFile }) {
@@ -198,12 +235,13 @@ function verifyBundle({ manifestFile, reportFile }) {
   const manifestReportResolved = path.resolve(manifest.artifacts.report.file);
   assert(reportResolved === manifestReportResolved, 'runtime report path must match manifest report artifact');
 
-  verifyTraceArtifactConsistency(manifest);
+  const { fixture, smoke } = verifyTraceArtifactConsistency(manifest);
   const deployment = readJson(manifest.artifacts.deployment.file, 'deployment evidence artifact');
   assert(deployment?.generatedFromCurrentHeads === true, 'deployment evidence artifact must be generated from current service heads');
   assert(String(deployment?.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'deployment evidence artifact must include completion verifier reminder');
   const report = fs.readFileSync(reportPath, 'utf8');
   assertReportUsesManifestApprovalArtifact(report, approvalFile);
+  assertReportCommandEvidenceMatchesArtifacts(report, fixture, smoke);
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
     const deploymentSha = deployment.services?.[service]?.commitSha;
     const manifestSha = manifest.serviceHeads?.[service];
@@ -663,6 +701,25 @@ function runSelfTest() {
   }
   assert(staleApprovalArtifactRejected, 'bundle verifier must reject approval artifact for different service heads');
 
+  const mismatchedCommandProductReportFile = path.join(dir, 'report-mismatched-command-product.md');
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
+    FIXTURE_CHECK_RESULT_FILE: fixtureFile,
+    SMOKE_RESULT_FILE: smokeFile,
+    DEPLOYMENT_EVIDENCE_FILE: deploymentFile,
+    RUNTIME_EVIDENCE_OUTPUT: mismatchedCommandProductReportFile,
+    REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-other TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+  });
+  const mismatchedCommandProductManifestFile = path.join(dir, 'manifest-mismatched-command-product.json');
+  writeManifest(mismatchedCommandProductManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: approvalFile, report: mismatchedCommandProductReportFile }, serviceHeads);
+  let mismatchedCommandProductRejected = false;
+  try {
+    verifyBundle({ manifestFile: mismatchedCommandProductManifestFile, reportFile: mismatchedCommandProductReportFile });
+  } catch (error) {
+    mismatchedCommandProductRejected = /command TRACE_PRODUCT_ID must match/.test(error.message);
+  }
+  assert(mismatchedCommandProductRejected, 'bundle verifier must reject report command product IDs that do not match hashed fixture and smoke artifacts');
+
   const mismatchedApprovalPathReportFile = path.join(dir, 'report-mismatched-approval-path.md');
   runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
     FIXTURE_CHECK_RESULT_FILE: fixtureFile,
@@ -682,7 +739,7 @@ function runSelfTest() {
   }
   assert(mismatchedApprovalPathRejected, 'bundle verifier must reject report command approval path that does not match manifest approval artifact');
 
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedApprovalPathRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedCommandProductRejected: true, mismatchedApprovalPathRejected: true };
 }
 
 try {
