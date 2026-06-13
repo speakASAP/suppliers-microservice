@@ -27,6 +27,12 @@ function readJson(filePath, label) {
   }
 }
 
+function isCanonicalIsoUtcTimestamp(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  const parsed = new Date(value);
+  return Number.isFinite(parsed.getTime()) && parsed.toISOString() === value;
+}
+
 function repoPathForService(service) {
   const repo = deploymentRepos[service];
   assert(repo, `Unknown deployment service: ${service}`);
@@ -261,6 +267,7 @@ function verifyBundle({ manifestFile, reportFile }) {
 
   const { fixture, smoke } = verifyTraceArtifactConsistency(manifest);
   const deployment = readJson(manifest.artifacts.deployment.file, 'deployment evidence artifact');
+  assert(isCanonicalIsoUtcTimestamp(deployment?.generatedAt), 'deployment evidence artifact generatedAt must be a canonical UTC ISO timestamp');
   assert(deployment?.generatedFromCurrentHeads === true, 'deployment evidence artifact must be generated from current service heads');
   assert(deployment.readinessManifest && deployment.readinessManifest.sha256 === approvalJson.readinessManifest?.sha256, 'deployment evidence readiness manifest must match approval artifact readiness manifest');
   assert(String(deployment?.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'deployment evidence artifact must include completion verifier reminder');
@@ -387,6 +394,7 @@ function sampleSmoke() {
 
 function sampleDeployment(readinessManifest) {
   return {
+    generatedAt: new Date().toISOString(),
     generatedFromCurrentHeads: true,
     readinessManifest,
     completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
@@ -503,6 +511,19 @@ function runSelfTest() {
   });
   writeManifest(manifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
   const passed = verifyBundle({ manifestFile, reportFile });
+
+  const nonCanonicalDeploymentFile = path.join(dir, 'deployment-non-canonical-generated-at.json');
+  const nonCanonicalDeployment = { ...deployment, generatedAt: 'June 13 2026' };
+  writeJson(nonCanonicalDeploymentFile, nonCanonicalDeployment);
+  const nonCanonicalDeploymentManifestFile = path.join(dir, 'manifest-non-canonical-deployment-generated-at.json');
+  writeManifest(nonCanonicalDeploymentManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: nonCanonicalDeploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
+  let nonCanonicalDeploymentGeneratedAtRejected = false;
+  try {
+    verifyBundle({ manifestFile: nonCanonicalDeploymentManifestFile, reportFile });
+  } catch (error) {
+    nonCanonicalDeploymentGeneratedAtRejected = /canonical UTC ISO timestamp/.test(error.message);
+  }
+  assert(nonCanonicalDeploymentGeneratedAtRejected, 'bundle verifier must reject deployment evidence with non-canonical generatedAt timestamps');
 
   const mixedProductSmokeFile = path.join(dir, 'smoke-mixed-product.json');
   const mixedProductSmoke = sampleSmoke();
@@ -885,7 +906,7 @@ function runSelfTest() {
   }
   assert(mismatchedApprovalPathRejected, 'bundle verifier must reject report command approval path that does not match manifest approval artifact');
 
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, mismatchedDeploymentReportRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedCommandProductRejected: true, mismatchedCommandIdempotencyRejected: true, mismatchedApprovalPathRejected: true, mismatchedApprovalInputsRejected: true };
+  return { ...passed, nonCanonicalDeploymentGeneratedAtRejected: true, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, mismatchedDeploymentReportRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedCommandProductRejected: true, mismatchedCommandIdempotencyRejected: true, mismatchedApprovalPathRejected: true, mismatchedApprovalInputsRejected: true };
 }
 
 try {

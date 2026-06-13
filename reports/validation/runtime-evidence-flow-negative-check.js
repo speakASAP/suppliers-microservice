@@ -263,6 +263,7 @@ const cases = [
   runPassCase('manifest-verifier-self-test-rejects-non-canonical-generated-at', ['reports/validation/verify-runtime-evidence-manifest.js', '--self-test'], 'nonCanonicalGeneratedAtRejected'),
   runPassCase('manifest-verifier-self-test-rejects-tampering', ['reports/validation/verify-runtime-evidence-manifest.js', '--self-test'], 'tamperedHashRejected'),
   runPassCase('manifest-bundle-self-test-cross-checks-deployment', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'deploymentManifestMismatchRejected'),
+  runPassCase('manifest-bundle-self-test-rejects-non-canonical-deployment-generated-at', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'nonCanonicalDeploymentGeneratedAtRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mixed-trace-product', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mixedTraceProductRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mixed-supplier-warehouse', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mixedSupplierWarehouseRejected'),
   runPassCase('manifest-bundle-self-test-rejects-mismatched-supplier-id', ['reports/validation/verify-runtime-evidence-bundle.js', '--self-test'], 'mismatchedSupplierRejected'),
