@@ -38,9 +38,11 @@ const baseEnv = {
   TRACE_DROPSHIP_WAREHOUSE_ID: 'warehouse-dropship',
 };
 
-function writeDeploymentEvidence(overrides = {}) {
+function writeDeploymentEvidence(overrides = {}, mutateDeployment = null) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-flow-deployment-'));
   const deployment = {
+    generatedFromCurrentHeads: true,
+    completionReminder: 'Deployment evidence is valid only when verify-stock-traceability-completion.js passes against the generated runtime manifest.',
     services: {
       warehouse: {
         commitSha: currentHeadForService('warehouse'),
@@ -65,6 +67,7 @@ function writeDeploymentEvidence(overrides = {}) {
   for (const [service, patch] of Object.entries(overrides)) {
     deployment.services[service] = patch === null ? undefined : { ...deployment.services[service], ...patch };
   }
+  if (mutateDeployment) mutateDeployment(deployment);
   const filePath = path.join(dir, 'deployment.json');
   fs.writeFileSync(filePath, JSON.stringify(deployment, null, 2));
   return filePath;
@@ -180,6 +183,17 @@ const cases = [
     OWNER_APPROVAL: 'explicit',
     SMOKE_ALLOW_MUTATION: 'true',
   }, 'catalog commitSha must match current'),
+  runCase('approved-smoke-missing-current-head-deployment-marker', {
+    RUN_APPROVED_RUNTIME_SMOKE: 'true',
+    TRACE_SUPPLIER_ID: 'supplier-synthetic',
+    TRACE_IMPORT_IDEMPOTENCY_KEY: 'manual:traceability-synthetic',
+    TRACE_CLEANUP_EVIDENCE: 'deferred:traceability-runbook',
+    DEPLOYMENT_EVIDENCE_FILE: writeDeploymentEvidence({}, (deployment) => {
+      delete deployment.generatedFromCurrentHeads;
+    }),
+    OWNER_APPROVAL: 'explicit',
+    SMOKE_ALLOW_MUTATION: 'true',
+  }, 'generated from current service heads'),
   runCase('approved-smoke-missing-protected-endpoint-evidence', {
     RUN_APPROVED_RUNTIME_SMOKE: 'true',
     TRACE_SUPPLIER_ID: 'supplier-synthetic',
