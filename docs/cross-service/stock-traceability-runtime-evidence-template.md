@@ -80,7 +80,7 @@ The generator marks the final report `Runtime incomplete` unless deployment evid
 
 ## Runtime Evidence Manifest
 
-Preserve the guarded runner manifest from `RUNTIME_EVIDENCE_DIR/stock-traceability-runtime-evidence-manifest.json` or the path set by `RUNTIME_EVIDENCE_MANIFEST`. The manifest must stay with the fixture JSON, smoke JSON, deployment evidence JSON, and final report because it records byte counts and SHA-256 hashes for the runtime evidence bundle. The guarded runner verifies the manifest, verifies the bundle, and runs `verify-stock-traceability-completion.js <report-file> <manifest-file>` before it can print `runtime-complete`. The bundle verifier must reject missing artifacts, mismatched bytes, mismatched SHA-256 hashes, service heads that do not match the current deployed source repos, fixture/smoke bundles where supplier-managed origins or routes are not owned by the same `TRACE_SUPPLIER_ID`, non-reservable route artifacts, and smoke artifacts where the Suppliers import job does not prove Catalog product validation and Warehouse stock authority.
+Preserve the guarded runner manifest from `RUNTIME_EVIDENCE_DIR/stock-traceability-runtime-evidence-manifest.json` or the path set by `RUNTIME_EVIDENCE_MANIFEST`. The manifest must stay with the fixture JSON, smoke JSON, deployment evidence JSON, and final report because it records byte counts and SHA-256 hashes for the runtime evidence bundle. The guarded runner verifies the manifest, verifies the bundle, and runs `verify-stock-traceability-completion.js <report-file> <manifest-file>` before it can print `runtime-complete`. The bundle verifier must reject missing artifacts, mismatched bytes, mismatched SHA-256 hashes, service heads that do not match the current deployed source repos, fixture/smoke bundles where supplier-managed origins or routes are not owned by the same `TRACE_SUPPLIER_ID`, non-reservable route artifacts, and smoke artifacts where the Suppliers import job does not prove Catalog product validation, approved trace source fingerprint, and Warehouse stock authority.
 
 ## Fixture Check Command Evidence
 
@@ -122,7 +122,7 @@ Record the command with tokens replaced by `[REDACTED]`. Keep these fields visib
 | Catalog availability forwards Warehouse origin rows and logistics. | Source, row count, logistics option count, forwarded route types, and forwarded route legs including positive reservable local plus supplier movement. | pending-runtime |
 | Catalog coverage and audit classify covered mixed stock. | `coverageStatus`, `stockOrigin`, and audit matched product. | pending-runtime |
 | FlipFlop projection forwards Warehouse-sourced availability and logistics. | Source, stock quantity, route count, forwarded route types, and forwarded route legs including positive reservable local plus supplier movement. | pending-runtime |
-| Suppliers import preserves Catalog identity and Warehouse authority. | Job status, idempotency key, `catalogProductValidation=passed`, checked Catalog product IDs, Warehouse authority, mutation attempted, approved, and update count. | pending-runtime |
+| Suppliers import preserves Catalog identity and Warehouse authority. | Job status, idempotency key, `sourceFingerprint` matching `trace:<TRACE_PRODUCT_ID>:<TRACE_SUPPLIER_WAREHOUSE_ID>:<TRACE_DROPSHIP_WAREHOUSE_ID>:<TRACE_SUPPLIER_STOCK_QTY>:<TRACE_SUPPLIER_SKU>`, `catalogProductValidation=passed`, checked Catalog product IDs, Warehouse authority, mutation attempted, approved, and update count. | pending-runtime |
 | Warehouse remains stock authority across totals. | Warehouse total, summed Warehouse origins, Catalog availability total, Catalog coverage total, and FlipFlop stock quantity all match with `source=warehouse`. | pending-runtime |
 | Cleanup or archival evidence is recorded. | `TRACE_CLEANUP_EVIDENCE` value or completed cleanup summary. | pending-runtime |
 
@@ -136,7 +136,7 @@ Include only summarized fields from the JSON smoke output:
 - Warehouse, Catalog, and FlipFlop route type and route-leg lists;
 - Catalog coverage summary;
 - stock-authority total consistency summary;
-- Suppliers import job summary, including Catalog product identity validation before Warehouse reconciliation;
+- Suppliers import job summary, including approved trace source fingerprint and Catalog product identity validation before Warehouse reconciliation;
 - cleanup evidence.
 
 Do not paste raw full responses or tokens.
@@ -166,7 +166,7 @@ The negative validation command proves unsafe evidence cannot pass:
 node reports/validation/runtime-evidence-negative-check.js
 ```
 
-It must fail generated runtime reports for a real/non-synthetic SKU, unnamed health evidence, missing forwarded supplier replenishment and dropship route types, missing logistics leg evidence, missing read-only fixture-check evidence, mismatched stock-authority totals, invalid deployment commit evidence, missing deployment service rows, placeholder deployment health evidence, deployment evidence missing the current-head marker, protected endpoint evidence that does not contain `401` or `403`, and redacted smoke command evidence that disables the approved supplier import.
+It must fail generated runtime reports for a real/non-synthetic SKU, unnamed health evidence, missing forwarded supplier replenishment and dropship route types, missing logistics leg evidence, missing read-only fixture-check evidence, mismatched supplier job source fingerprint, mismatched stock-authority totals, invalid deployment commit evidence, missing deployment service rows, placeholder deployment health evidence, deployment evidence missing the current-head marker, protected endpoint evidence that does not contain `401` or `403`, and redacted smoke command evidence that disables the approved supplier import.
 
 ## Boundary Evidence
 

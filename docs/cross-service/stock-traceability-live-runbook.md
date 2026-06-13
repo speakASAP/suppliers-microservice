@@ -201,7 +201,7 @@ The captured smoke artifact must include:
 - Warehouse logistics routes and route legs containing local fulfillment plus supplier replenishment and dropship;
 - Catalog availability and FlipFlop projection with Warehouse source, origin rows, logistics routes, and route legs;
 - Catalog coverage and audit with `covered` and `mixed_stock`;
-- Suppliers import job with Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
+- Suppliers import job with approved trace source fingerprint, Catalog product identity verified before Warehouse mutation, Warehouse mutation attempted, approved, Warehouse authority, and applied updates;
 - cleanup or cleanup-deferral evidence.
 
 ## Failure Handling
@@ -241,7 +241,7 @@ node reports/validation/verify-stock-traceability-completion.js docs/intent-pres
 '
 ```
 
-The guarded runner also writes `stock-traceability-runtime-evidence-manifest.json` in `RUNTIME_EVIDENCE_DIR` unless `RUNTIME_EVIDENCE_MANIFEST` overrides the path. Preserve it with the fixture JSON, smoke JSON, deployment evidence JSON, and final report; it records byte counts and SHA-256 hashes for the complete runtime evidence bundle. The runner verifies the manifest, verifies the bundle, and then executes `verify-stock-traceability-completion.js <report-file> <manifest-file>` before it can print `runtime-complete`. Operators can rerun `node reports/validation/verify-runtime-evidence-manifest.js <manifest-file>`, `node reports/validation/verify-runtime-evidence-bundle.js <manifest-file> <report-file>`, and the completion verifier to recheck immutable evidence. The bundle verifier also proves the fixture and smoke artifacts use the same trace product, supplier/dropship warehouse IDs, and `TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes, so operators cannot accidentally combine evidence from different runs or suppliers.
+The guarded runner also writes `stock-traceability-runtime-evidence-manifest.json` in `RUNTIME_EVIDENCE_DIR` unless `RUNTIME_EVIDENCE_MANIFEST` overrides the path. Preserve it with the fixture JSON, smoke JSON, deployment evidence JSON, and final report; it records byte counts and SHA-256 hashes for the complete runtime evidence bundle. The runner verifies the manifest, verifies the bundle, and then executes `verify-stock-traceability-completion.js <report-file> <manifest-file>` before it can print `runtime-complete`. Operators can rerun `node reports/validation/verify-runtime-evidence-manifest.js <manifest-file>`, `node reports/validation/verify-runtime-evidence-bundle.js <manifest-file> <report-file>`, and the completion verifier to recheck immutable evidence. The bundle verifier also proves the fixture and smoke artifacts use the same trace product, supplier/dropship warehouse IDs, `TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes, and a Suppliers job `sourceFingerprint` that matches the approved import request, so operators cannot accidentally combine evidence from different runs or suppliers.
 
 
 Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle.

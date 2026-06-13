@@ -196,12 +196,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-runtime-evidence-template.md',
-    patterns: ['supplier ID matching `TRACE_SUPPLIER_ID`', 'supplier routes owned by `TRACE_SUPPLIER_ID`', 'not owned by the same `TRACE_SUPPLIER_ID`', 'generator refuses dirty service worktrees', 'clean Warehouse, Catalog, and Suppliers worktrees'],
+    patterns: ['supplier ID matching `TRACE_SUPPLIER_ID`', 'supplier routes owned by `TRACE_SUPPLIER_ID`', 'not owned by the same `TRACE_SUPPLIER_ID`', 'sourceFingerprint` matching `trace:<TRACE_PRODUCT_ID>', 'mismatched supplier job source fingerprint', 'generator refuses dirty service worktrees', 'clean Warehouse, Catalog, and Suppliers worktrees'],
   },
   {
     service: 'suppliers',
     file: 'docs/cross-service/stock-traceability-completion-audit.md',
-    patterns: ['supplier IDs match `TRACE_SUPPLIER_ID`', 'supplier routes are owned by `TRACE_SUPPLIER_ID`', 'clean current service heads', 'no dirty Warehouse/Catalog/Suppliers worktree state'],
+    patterns: ['supplier IDs match `TRACE_SUPPLIER_ID`', 'supplier routes are owned by `TRACE_SUPPLIER_ID`', 'sourceFingerprint` matches the approved trace import request', 'clean current service heads', 'no dirty Warehouse/Catalog/Suppliers worktree state'],
   },
   {
     service: 'suppliers',
