@@ -2,6 +2,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 const { execFileSync } = require('child_process');
 
 const args = process.argv.slice(2);
@@ -69,6 +70,27 @@ function assertNoSecrets(artifactText) {
   assert(!/Bearer\s+|CATALOG_TOKEN|WAREHOUSE_TOKEN|SUPPLIERS_TOKEN|SERVICE_TOKEN|api[_-]?key|secret|password/i.test(artifactText), 'runtime approval artifact must not contain token or credential values');
 }
 
+function sha256File(filePath) {
+  return crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex');
+}
+
+function assertReadinessManifestBinding(artifact, artifactDir) {
+  const readiness = artifact.readinessManifest;
+  assert(readiness && typeof readiness === 'object', 'approval artifact readinessManifest binding is required');
+  assert(readiness.status === 'verified', 'approval artifact readinessManifest.status must be verified');
+  assert(hasText(readiness.file), 'approval artifact readinessManifest.file is required');
+  assert(/^[0-9a-f]{64}$/i.test(readiness.sha256 || ''), 'approval artifact readinessManifest.sha256 must be a 64-character hex digest');
+  const readinessFile = path.isAbsolute(readiness.file) ? readiness.file : path.join(artifactDir, readiness.file);
+  assert(fs.existsSync(readinessFile), 'approval artifact readinessManifest.file does not exist: ' + readiness.file);
+  assert(sha256File(readinessFile) === readiness.sha256, 'approval artifact readinessManifest.sha256 must match readiness manifest file');
+  const readinessJson = JSON.parse(fs.readFileSync(readinessFile, 'utf8'));
+  assert(readinessJson.status === 'ready-for-owner-approval', 'approval artifact readiness manifest must be ready-for-owner-approval');
+  for (const service of ['warehouse', 'catalog', 'suppliers']) {
+    assert(readiness.serviceHeads && readiness.serviceHeads[service] === artifact.serviceHeads?.[service], `approval artifact readinessManifest ${service} head must match approval serviceHeads`);
+    assert(readinessJson.serviceHeads && readinessJson.serviceHeads[service] === artifact.serviceHeads?.[service], `approval artifact readiness manifest file ${service} head must match approval serviceHeads`);
+  }
+}
+
 function forbiddenActionText(artifact) {
   if (Array.isArray(artifact.forbiddenActionsAcknowledged)) return artifact.forbiddenActionsAcknowledged.join('\n');
   if (Array.isArray(artifact.forbiddenActions)) return artifact.forbiddenActions.join('\n');
@@ -85,6 +107,8 @@ function validateApprovalArtifact(filePath) {
   assert(hasText(artifact.approvedBy), 'approval artifact approvedBy is required');
   assert(isIsoDate(artifact.approvedAt), 'approval artifact approvedAt must be an ISO timestamp');
   assert(artifact.approvedForCurrentCleanHeads === true, 'approval artifact must set approvedForCurrentCleanHeads=true');
+
+  assertReadinessManifestBinding(artifact, path.dirname(filePath));
 
   const scope = artifact.scope || {};
   assert(scope.syntheticSkuPrefix === 'CODEX-STOCK-TRACE-', 'approval artifact scope.syntheticSkuPrefix must be CODEX-STOCK-TRACE-');
@@ -122,9 +146,14 @@ function initSelfTestRepo(root, repo) {
   return repoPath;
 }
 
-function validArtifactForRoot(root) {
+function validArtifactForRoot(root, dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-traceability-readiness-binding-'))) {
   const previousRoot = crossServiceRoot;
   crossServiceRoot = root;
+  const serviceHeads = {
+      warehouse: currentHeadForService('warehouse'),
+      catalog: currentHeadForService('catalog'),
+      suppliers: currentHeadForService('suppliers'),
+    };
   const artifact = {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
@@ -132,11 +161,8 @@ function validArtifactForRoot(root) {
     approvedBy: 'owner@example.test',
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
-    serviceHeads: {
-      warehouse: currentHeadForService('warehouse'),
-      catalog: currentHeadForService('catalog'),
-      suppliers: currentHeadForService('suppliers'),
-    },
+    serviceHeads,
+    readinessManifest: writeReadinessManifest(dir, serviceHeads),
     scope: {
       syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
       syntheticRecordsOnly: true,
@@ -158,6 +184,17 @@ function writeArtifact(dir, artifact) {
   return filePath;
 }
 
+function writeReadinessManifest(dir, serviceHeads) {
+  fs.mkdirSync(dir, { recursive: true });
+  const filePath = path.join(dir, 'readiness-manifest.json');
+  fs.writeFileSync(filePath, JSON.stringify({
+    status: 'ready-for-owner-approval',
+    serviceHeads,
+    artifacts: {},
+  }, null, 2));
+  return { file: filePath, sha256: sha256File(filePath), status: 'verified', serviceHeads };
+}
+
 function runSelfTest() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-traceability-approval-self-test-'));
   const root = path.join(dir, 'repos');
@@ -176,7 +213,7 @@ function runSelfTest() {
   try {
     validateApprovalArtifact(mismatchedFile);
   } catch (error) {
-    mismatchedApprovalHeadRejected = /catalog head must match current/.test(error.message);
+    mismatchedApprovalHeadRejected = /catalog .*head must match/.test(error.message);
   }
   assert(mismatchedApprovalHeadRejected, 'self-test must reject approval artifacts for stale service heads');
 
@@ -190,6 +227,17 @@ function runSelfTest() {
     missingForbiddenActionRejected = /forbidden actions/.test(error.message);
   }
   assert(missingForbiddenActionRejected, 'self-test must reject approval artifacts that omit forbidden action acknowledgements');
+
+  const missingReadiness = validArtifactForRoot(root, path.join(dir, 'missing-readiness-source'));
+  delete missingReadiness.readinessManifest;
+  const missingReadinessFile = writeArtifact(path.join(dir, 'missing-readiness'), missingReadiness);
+  let missingReadinessManifestRejected = false;
+  try {
+    validateApprovalArtifact(missingReadinessFile);
+  } catch (error) {
+    missingReadinessManifestRejected = /readinessManifest binding is required/.test(error.message);
+  }
+  assert(missingReadinessManifestRejected, 'self-test must reject approval artifacts without readiness manifest binding');
 
   fs.writeFileSync(path.join(repoPathForService('warehouse'), 'dirty.txt'), 'dirty\n');
   let dirtyApprovalRootRejected = false;
@@ -206,6 +254,7 @@ function runSelfTest() {
     mismatchedApprovalHeadRejected,
     missingForbiddenActionRejected,
     dirtyApprovalRootRejected,
+    missingReadinessManifestRejected,
   }, null, 2));
 }
 

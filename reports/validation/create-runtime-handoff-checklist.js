@@ -105,7 +105,7 @@ Runtime handoff requires clean Warehouse, Catalog, and Suppliers worktrees. If a
 2. Generate aligned readiness bundle with \`RUNTIME_READINESS_BUNDLE_DIR=/tmp/stock-traceability-runtime-readiness node reports/validation/create-runtime-readiness-bundle.js\`, verify it with \`node reports/validation/verify-runtime-readiness-bundle.js /tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json\`, and preserve \`stock-traceability-runtime-readiness-manifest.json\`.
 3. Generate deployment evidence skeleton with \`DEPLOYMENT_EVIDENCE_TEMPLATE_OUTPUT=/tmp/stock-traceability-deployment-evidence.template.json node reports/validation/create-deployment-evidence-template.js\`.
 4. Generate the approval prompt with \`RUNTIME_APPROVAL_REQUEST_OUTPUT=/tmp/stock-traceability-runtime-approval-request.md node reports/validation/create-runtime-approval-request.js\`.
-5. After owner approval, generate the matching approval artifact with \`OWNER_APPROVAL=explicit RUNTIME_APPROVED_BY=<owner-id> RUNTIME_APPROVAL_REQUEST_FILE=/tmp/stock-traceability-runtime-approval-request.md RUNTIME_APPROVAL_ARTIFACT_OUTPUT=/tmp/stock-traceability-runtime-approval.json node reports/validation/create-runtime-approval-artifact.js\`.
+5. After owner approval, generate the matching approval artifact with \`OWNER_APPROVAL=explicit RUNTIME_APPROVED_BY=<owner-id> RUNTIME_READINESS_MANIFEST_FILE=/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json RUNTIME_APPROVAL_REQUEST_FILE=/tmp/stock-traceability-runtime-approval-request.md RUNTIME_APPROVAL_ARTIFACT_OUTPUT=/tmp/stock-traceability-runtime-approval.json node reports/validation/create-runtime-approval-artifact.js\`.
 6. Validate the approval artifact with \`node reports/validation/verify-runtime-approval-artifact.js /tmp/stock-traceability-runtime-approval.json\`.
 7. Deploy Warehouse first: \`ssh alfares 'cd /home/ssf/Documents/Github/warehouse-microservice && ./scripts/deploy.sh'\`.
 8. Deploy Catalog second: \`ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/deploy.sh'\`.
@@ -142,6 +142,7 @@ function assertSelfTestContent(markdown) {
     'verify-deployment-evidence.js /tmp/stock-traceability-deployment-evidence.json',
     'RUNTIME_APPROVAL_ARTIFACT_FILE',
     'create-runtime-approval-artifact.js',
+    'RUNTIME_READINESS_MANIFEST_FILE',
     'verify-runtime-approval-artifact.js /tmp/stock-traceability-runtime-approval.json',
     'create-runtime-readiness-bundle.js',
     'verify-runtime-readiness-bundle.js',

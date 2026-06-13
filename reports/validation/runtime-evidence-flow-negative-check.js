@@ -2,6 +2,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 const { execFileSync, spawnSync } = require('child_process');
 
 function assert(condition, message) {
@@ -96,8 +97,24 @@ function writeDeploymentEvidence(overrides = {}, mutateDeployment = null, root =
   return filePath;
 }
 
+function writeReadinessManifestForApproval(dir, serviceHeads) {
+  const filePath = path.join(dir, 'readiness-manifest.json');
+  fs.writeFileSync(filePath, JSON.stringify({ status: 'ready-for-owner-approval', serviceHeads, artifacts: {} }, null, 2));
+  return {
+    file: filePath,
+    sha256: crypto.createHash('sha256').update(fs.readFileSync(filePath)).digest('hex'),
+    status: 'verified',
+    serviceHeads,
+  };
+}
+
 function writeRuntimeApprovalArtifact(root = crossServiceRoot, mutateApproval = null) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'stock-trace-flow-approval-'));
+  const serviceHeads = {
+    warehouse: currentHeadForService('warehouse', root),
+    catalog: currentHeadForService('catalog', root),
+    suppliers: currentHeadForService('suppliers', root),
+  };
   const approval = {
     id: 'STOCK-TRACEABILITY-RUNTIME-APPROVAL',
     status: 'approved',
@@ -105,11 +122,8 @@ function writeRuntimeApprovalArtifact(root = crossServiceRoot, mutateApproval = 
     approvedBy: 'owner@example.test',
     approvedAt: new Date().toISOString(),
     approvedForCurrentCleanHeads: true,
-    serviceHeads: {
-      warehouse: currentHeadForService('warehouse', root),
-      catalog: currentHeadForService('catalog', root),
-      suppliers: currentHeadForService('suppliers', root),
-    },
+    serviceHeads,
+    readinessManifest: writeReadinessManifestForApproval(dir, serviceHeads),
     scope: {
       syntheticSkuPrefix: 'CODEX-STOCK-TRACE-',
       syntheticRecordsOnly: true,

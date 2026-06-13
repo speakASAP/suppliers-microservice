@@ -251,12 +251,12 @@ const checks = [
   {
     service: 'suppliers',
     file: 'reports/validation/verify-runtime-approval-artifact.js',
-    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'approvedForCurrentCleanHeads', 'syntheticRecordsOnly', 'oneGuardedSyntheticImport', 'forbiddenActionsAcknowledged', 'token disclosure', 'worktree must be clean before runtime approval can authorize mutation', 'mismatchedApprovalHeadRejected', 'dirtyApprovalRootRejected'],
+    patterns: ['STOCK-TRACEABILITY-RUNTIME-APPROVAL', 'RUNTIME_APPROVAL_ARTIFACT_FILE', 'readinessManifest binding is required', 'readinessManifest.sha256', 'approvedForCurrentCleanHeads', 'syntheticRecordsOnly', 'oneGuardedSyntheticImport', 'forbiddenActionsAcknowledged', 'token disclosure', 'worktree must be clean before runtime approval can authorize mutation', 'mismatchedApprovalHeadRejected', 'dirtyApprovalRootRejected'],
   },
   {
     service: 'suppliers',
     file: 'reports/validation/create-runtime-approval-artifact.js',
-    patterns: ['RUNTIME_APPROVAL_ARTIFACT_OUTPUT', 'RUNTIME_APPROVAL_REQUEST_FILE', 'OWNER_APPROVAL=explicit is required to generate runtime approval artifact', 'RUNTIME_APPROVED_BY is required', 'runtime approval artifact requires clean Warehouse, Catalog, and Suppliers worktrees', 'approval request file does not contain current', 'verify-runtime-approval-artifact.js', 'forbiddenActionsAcknowledged', 'dirtyRowsRejected', 'missingApprovalRejected'],
+    patterns: ['RUNTIME_APPROVAL_ARTIFACT_OUTPUT', 'RUNTIME_APPROVAL_REQUEST_FILE', 'RUNTIME_READINESS_MANIFEST_FILE', 'readinessManifestBound', 'OWNER_APPROVAL=explicit is required to generate runtime approval artifact', 'RUNTIME_APPROVED_BY is required', 'runtime approval artifact requires clean Warehouse, Catalog, and Suppliers worktrees', 'approval request file does not contain current', 'verify-runtime-approval-artifact.js', 'forbiddenActionsAcknowledged', 'dirtyRowsRejected', 'missingApprovalRejected'],
   },
 ];
 
