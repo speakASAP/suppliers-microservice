@@ -158,7 +158,7 @@ Run this command after generating the final report:
 node reports/validation/verify-runtime-evidence-report.js
 ```
 
-The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any named runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values or `TODO` placeholders, if protected endpoint evidence does not include `401` or `403`, if the redacted fixture command does not include `--fixture-check`, if fixture evidence does not prove `fixture-ready`, mutation disabled, and supplier import not triggered, if the redacted smoke command does not include the approved import, expected job, owner approval, mutation allowance, cleanup, and token-redaction fields, or if the completion decision is not `Runtime complete`. The guarded runner must also have accepted clean Warehouse, Catalog, and Suppliers worktrees before generating the final bundle.
+The verifier fails if metadata is not `passed-runtime` and `runtime-complete`, if any named runtime assertion remains `missing-runtime` or `pending-runtime`, if deployment evidence rows have missing values or `TODO` placeholders, if protected endpoint evidence does not include `401` or `403`, if the redacted fixture command does not include `--fixture-check`, if fixture evidence does not prove `fixture-ready`, mutation disabled, and supplier import not triggered, if the redacted smoke command does not include the approved import, expected job, own warehouse ID, owner approval, mutation allowance, cleanup, and token-redaction fields, or if the completion decision is not `Runtime complete`. The guarded runner must also have accepted clean Warehouse, Catalog, and Suppliers worktrees before generating the final bundle.
 
 The negative validation command proves unsafe evidence cannot pass:
 
@@ -166,7 +166,7 @@ The negative validation command proves unsafe evidence cannot pass:
 node reports/validation/runtime-evidence-negative-check.js
 ```
 
-It must fail generated runtime reports for a real/non-synthetic SKU, unnamed health evidence, missing forwarded supplier replenishment and dropship route types, missing logistics leg evidence, missing read-only fixture-check evidence, mismatched supplier job source fingerprint, mismatched stock-authority totals, invalid deployment commit evidence, missing deployment service rows, placeholder deployment health evidence, deployment evidence missing the current-head marker, protected endpoint evidence that does not contain `401` or `403`, and redacted smoke command evidence that disables the approved supplier import.
+It must fail generated runtime reports for a real/non-synthetic SKU, unnamed health evidence, missing forwarded supplier replenishment and dropship route types, missing logistics leg evidence, missing read-only fixture-check evidence, mismatched supplier job source fingerprint, mismatched stock-authority totals, invalid deployment commit evidence, missing deployment service rows, placeholder deployment health evidence, deployment evidence missing the current-head marker, protected endpoint evidence that does not contain `401` or `403`, and redacted smoke command evidence that disables the approved supplier import or omits the own warehouse ID.
 
 ## Boundary Evidence
 

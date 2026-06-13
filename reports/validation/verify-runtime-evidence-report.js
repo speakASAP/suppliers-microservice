@@ -52,7 +52,7 @@ WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.c
 ## Smoke Command Evidence
 
 \`\`\`bash
-WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js
+WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js
 \`\`\`
 
 ## Deployment Evidence
@@ -108,6 +108,14 @@ function assertionRows(report) {
     .filter((line) => line.startsWith('| ') && line.endsWith(' |') && line.includes('passed-runtime'));
 }
 
+function sectionText(report, heading) {
+  const marker = "## " + heading;
+  const start = report.indexOf(marker);
+  if (start === -1) return "";
+  const next = report.indexOf("\n## ", start + marker.length);
+  return next === -1 ? report.slice(start) : report.slice(start, next);
+}
+
 function hasRouteLegEvidence(row) {
   return row.includes('routeLegs=')
     && /local_fulfillment\[available=[1-9]\d*;reservable=yes;/.test(row)
@@ -136,8 +144,11 @@ function verify(report) {
   assert(!report.includes('missing-runtime'), 'runtime report contains missing-runtime assertions');
   assert(!report.includes('pending-runtime'), 'runtime report contains pending-runtime assertions');
   assert(!report.includes('Runtime incomplete'), 'runtime report is marked incomplete');
+  const smokeCommandEvidence = sectionText(report, 'Smoke Command Evidence');
+  assert(smokeCommandEvidence.includes('runtime-stock-traceability-smoke.js'), 'smoke command evidence section must include the runtime smoke command');
+
   for (const token of ['CATALOG_TOKEN=[REDACTED]', 'WAREHOUSE_TOKEN=[REDACTED]', 'SUPPLIERS_TOKEN=[REDACTED]']) {
-    assert(report.includes(token), `redacted smoke command must include ${token}`);
+    assert(smokeCommandEvidence.includes(token), `redacted smoke command must include ${token}`);
   }
 
   for (const requiredFlag of [
@@ -148,9 +159,10 @@ function verify(report) {
     'TRACE_CLEANUP_EVIDENCE=',
     'TRACE_IMPORT_IDEMPOTENCY_KEY=',
     'TRACE_DROPSHIP_WAREHOUSE_ID=',
+    'TRACE_OWN_WAREHOUSE_ID=',
     'TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE-',
   ]) {
-    assert(report.includes(requiredFlag), `redacted smoke command must include ${requiredFlag}`);
+    assert(smokeCommandEvidence.includes(requiredFlag), `redacted smoke command must include ${requiredFlag}`);
   }
 
   assert(report.includes('## Fixture Check Command Evidence'), 'fixture check command evidence section is missing');
