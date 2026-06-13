@@ -150,6 +150,24 @@ function assertCommandEnv(section, key, expected, label) {
   assert(actual === expected, label + ' command ' + key + ' must match hashed runtime artifact evidence');
 }
 
+function deploymentRow(report, service) {
+  const label = service[0].toUpperCase() + service.slice(1);
+  const row = report.split('\n').find((line) => line.startsWith('| ' + label + ' |'));
+  assert(row, 'runtime report deployment evidence row is missing for ' + service);
+  return row;
+}
+
+function assertReportDeploymentEvidenceMatchesArtifact(report, deployment) {
+  for (const service of ['warehouse', 'catalog', 'suppliers']) {
+    const row = deploymentRow(report, service);
+    const item = deployment.services?.[service];
+    assert(item, 'deployment artifact missing ' + service + ' evidence');
+    for (const value of [item.commitSha, item.deployCommand || './scripts/deploy.sh', item.healthEvidence, item.protectedEndpointEvidence]) {
+      assert(row.includes(String(value || '')), 'runtime report ' + service + ' deployment row must match hashed deployment evidence artifact');
+    }
+  }
+}
+
 function assertReportCommandEvidenceMatchesArtifacts(report, fixture, smoke) {
   const fixtureCommand = reportSection(report, 'Fixture Check Command Evidence');
   const smokeCommand = reportSection(report, 'Smoke Command Evidence');
@@ -243,6 +261,7 @@ function verifyBundle({ manifestFile, reportFile }) {
   assert(String(deployment?.completionReminder || '').includes('verify-stock-traceability-completion.js'), 'deployment evidence artifact must include completion verifier reminder');
   const report = fs.readFileSync(reportPath, 'utf8');
   assertReportUsesManifestApprovalArtifact(report, approvalFile);
+  assertReportDeploymentEvidenceMatchesArtifact(report, deployment);
   assertReportCommandEvidenceMatchesArtifacts(report, fixture, smoke);
   for (const service of ['warehouse', 'catalog', 'suppliers']) {
     const deploymentSha = deployment.services?.[service]?.commitSha;
@@ -671,15 +690,47 @@ function runSelfTest() {
   const mismatchedDeployment = sampleDeployment();
   mismatchedDeployment.services.catalog.commitSha = 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb';
   writeJson(mismatchedDeploymentFile, mismatchedDeployment);
+  const mismatchedDeploymentEvidenceReportFile = path.join(dir, 'report-mismatched-deployment-head.md');
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
+    FIXTURE_CHECK_RESULT_FILE: fixtureFile,
+    SMOKE_RESULT_FILE: smokeFile,
+    DEPLOYMENT_EVIDENCE_FILE: mismatchedDeploymentFile,
+    RUNTIME_EVIDENCE_OUTPUT: mismatchedDeploymentEvidenceReportFile,
+    REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+  });
   const mismatchedManifestFile = path.join(dir, 'manifest-mismatched.json');
-  writeManifest(mismatchedManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: mismatchedDeploymentFile, approval: approvalFile, report: reportFile }, serviceHeads);
+  writeManifest(mismatchedManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: mismatchedDeploymentFile, approval: approvalFile, report: mismatchedDeploymentEvidenceReportFile }, serviceHeads);
   let mismatchRejected = false;
   try {
-    verifyBundle({ manifestFile: mismatchedManifestFile, reportFile });
+    verifyBundle({ manifestFile: mismatchedManifestFile, reportFile: mismatchedDeploymentEvidenceReportFile });
   } catch (error) {
     mismatchRejected = /deployment evidence commit must match manifest service head/.test(error.message);
   }
   assert(mismatchRejected, 'bundle verifier must reject deployment evidence that does not match manifest heads');
+
+  const mismatchedDeploymentReportFile = path.join(dir, 'report-mismatched-deployment-evidence.md');
+  const mismatchedDeploymentReportEvidenceFile = path.join(dir, 'deployment-report-mismatched.json');
+  const mismatchedDeploymentReportEvidence = sampleDeployment();
+  mismatchedDeploymentReportEvidence.services.warehouse.healthEvidence = '/api/health unrelated deployment returned 200';
+  writeJson(mismatchedDeploymentReportEvidenceFile, mismatchedDeploymentReportEvidence);
+  runNodeJson(['reports/validation/generate-runtime-evidence-report.js'], {
+    FIXTURE_CHECK_RESULT_FILE: fixtureFile,
+    SMOKE_RESULT_FILE: smokeFile,
+    DEPLOYMENT_EVIDENCE_FILE: mismatchedDeploymentReportEvidenceFile,
+    RUNTIME_EVIDENCE_OUTPUT: mismatchedDeploymentReportFile,
+    REDACTED_FIXTURE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship node reports/validation/runtime-stock-traceability-smoke.js --fixture-check',
+    REDACTED_SMOKE_COMMAND: 'WAREHOUSE_URL=https://warehouse.alfares.cz CATALOG_URL=https://catalog.alfares.cz SUPPLIERS_URL=https://suppliers.alfares.cz CATALOG_TOKEN=[REDACTED] WAREHOUSE_TOKEN=[REDACTED] SUPPLIERS_TOKEN=[REDACTED] TRACE_PRODUCT_ID=product-synthetic TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_OWN_WAREHOUSE_ID=warehouse-own TRACE_SUPPLIER_ID=supplier-synthetic TRACE_SUPPLIER_WAREHOUSE_ID=warehouse-supplier TRACE_DROPSHIP_WAREHOUSE_ID=warehouse-dropship TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-synthetic TRACE_CLEANUP_EVIDENCE=deferred:traceability-runbook RUNTIME_APPROVAL_ARTIFACT_FILE=' + approvalFile + ' TRACE_RUN_SUPPLIERS_IMPORT=true TRACE_EXPECT_SUPPLIERS_JOB=true OWNER_APPROVAL=explicit SMOKE_ALLOW_MUTATION=true node reports/validation/runtime-stock-traceability-smoke.js',
+  });
+  const mismatchedDeploymentReportManifestFile = path.join(dir, 'manifest-mismatched-deployment-report.json');
+  writeManifest(mismatchedDeploymentReportManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, approval: approvalFile, report: mismatchedDeploymentReportFile }, serviceHeads);
+  let mismatchedDeploymentReportRejected = false;
+  try {
+    verifyBundle({ manifestFile: mismatchedDeploymentReportManifestFile, reportFile: mismatchedDeploymentReportFile });
+  } catch (error) {
+    mismatchedDeploymentReportRejected = /deployment row must match hashed deployment evidence/.test(error.message);
+  }
+  assert(mismatchedDeploymentReportRejected, 'bundle verifier must reject runtime reports generated from deployment evidence that differs from the manifest deployment artifact');
 
   const missingApprovalManifestFile = path.join(dir, 'manifest-missing-approval.json');
   writeManifest(missingApprovalManifestFile, { fixture: fixtureFile, smoke: smokeFile, deployment: deploymentFile, report: reportFile }, serviceHeads);
@@ -760,7 +811,7 @@ function runSelfTest() {
   }
   assert(mismatchedApprovalPathRejected, 'bundle verifier must reject report command approval path that does not match manifest approval artifact');
 
-  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedCommandProductRejected: true, mismatchedCommandIdempotencyRejected: true, mismatchedApprovalPathRejected: true };
+  return { ...passed, mixedTraceProductRejected: true, mixedSupplierWarehouseRejected: true, mismatchedSupplierRejected: true, missingCatalogOwnRouteRejected: true, nonReservableSupplierRouteRejected: true, mismatchedSupplierJobFingerprintRejected: true, missingSupplierJobCatalogValidationRejected: true, mismatchedStockAuthorityRejected: true, cleanupPlaceholderRejected: true, missingProjectionOwnRouteRejected: true, deploymentManifestMismatchRejected: true, missingCurrentHeadDeploymentMarkerRejected: true, mismatchedDeploymentReportRejected: true, missingApprovalArtifactRejected: true, staleApprovalArtifactRejected: true, mismatchedCommandProductRejected: true, mismatchedCommandIdempotencyRejected: true, mismatchedApprovalPathRejected: true };
 }
 
 try {
