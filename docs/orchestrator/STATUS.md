@@ -1,5 +1,16 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-15 - Goal 8 Source Preflight And TASK-002 Intake Gate
+
+Change: ran the next Goal 8 non-mutating source validation and prepared the Goal 9/TASK-002 owner contract-intake execution-plan gate. Added `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`, linked it from the intake checklist, added follow-up owner questions, marked the contract-intake checklist chunk complete, and kept supplier-specific adapter implementation blocked pending owner-supplied contract details.
+
+Validation evidence: final-head source preflight passed with Warehouse `7639539c1eb3a1db6761e7fc43e5266c69fd94ed` clean, Catalog `37822855615d25ed7260d252bce8d62e7bf45046` dirty with four lines, and the post-update Suppliers head clean. `node reports/validation/cross-service-preflight-check.js` passed and recorded Catalog dirtyLines `4`; `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues` passed with score 100/100; `git diff --check` passed. Runtime readiness bundle, runtime handoff, and deployment evidence template generation were attempted before the final docs commit and failed closed because `catalog-microservice` is dirty; the existing `/tmp` readiness artifacts are stale and must not be reused.
+
+Boundary decision: no deployment, runtime token inspection, production supplier import, raw supplier payload inspection, Catalog write, Warehouse stock mutation, cleanup mutation, source adapter implementation, schema change, or secret change was performed. Catalog dirty changes were not inspected beyond git status and were not reverted.
+
+Next unfinished chunk: resolve or commit the dirty Catalog worktree, then regenerate current-head runtime readiness/handoff/deployment evidence for Warehouse, Catalog, and Suppliers; after that, request owner-approved deployment and guarded runtime evidence. TASK-002 adapter coding remains blocked until owner supplies the required supplier contract.
+
+
 ## 2026-06-13 - Parallel-Agent Planning Refactor
 
 Change: refactored the Suppliers planning workflow so future work is split into agent-ready goals with wave assignment, ownership boundaries, dependencies, blockers, shared-resource conflicts, validation evidence, and handoff paths. Added current parallel task candidates for current-head runtime readiness, source preflight verification, runtime deployment/smoke, supplier-specific adapter discovery, and status consolidation.

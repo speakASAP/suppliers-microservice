@@ -73,5 +73,5 @@ Blockers:
 - Production database currently has no supplier rows or credential references to infer a real contract.
 
 Agent-ready chunks:
-- [ ] Contract intake checklist: prepare the exact questions and validation checklist for the owner. Can start now. Evidence: updated context package or execution plan with required inputs.
+- [x] Contract intake checklist: prepared exact owner questions and execution-plan gate in `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`. Evidence: documentation validation and no invented supplier details.
 - [ ] Adapter implementation: blocked until contract intake is complete and reviewed. Evidence when unblocked: synthetic contract tests, credential-safety review, idempotency evidence, Catalog/Warehouse boundary evidence.

@@ -1,6 +1,7 @@
 {
   "blockers": [
-    "No active real production supplier row, private endpoint, or runtime credential references have been supplied for onboarding"
+    "No active real production supplier row, private endpoint, or runtime credential references have been supplied for onboarding",
+    "Dirty catalog-microservice worktree blocks current-head runtime readiness generation"
   ],
   "budget_units_used": 0,
   "cycle": 1,
@@ -45,10 +46,13 @@
       "cross_service_runtime_report": "docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md",
       "cross_service_runtime_manifest": "/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json",
       "cross_service_runtime_import": "completed_manual_traceability_20260613_012_updatedProducts_2",
-      "cross_service_runtime_token_cleanup": "temporary_suppliers_WAREHOUSE_SERVICE_TOKEN_removed_and_health_verified"
+      "cross_service_runtime_token_cleanup": "temporary_suppliers_WAREHOUSE_SERVICE_TOKEN_removed_and_health_verified",
+      "goal8_source_preflight_current_head": "passed_catalog_dirtyLines_4",
+      "goal8_runtime_readiness_current_head": "blocked_catalog_dirty_worktree",
+      "task_002_contract_intake": "prepared_owner_input_required"
     }
   },
-  "next_focus": "TASK-002 supplier-specific API integration remains blocked pending owner-supplied supplier API contract details; cross-service synthetic runtime traceability evidence is complete",
+  "next_focus": "Resolve or commit dirty catalog-microservice worktree, regenerate current-head runtime readiness artifacts, then request owner-approved guarded runtime evidence; TASK-002 adapter coding remains blocked pending owner-supplied supplier API contract details",
   "open_task_ids": [
     "TASK-002"
   ],

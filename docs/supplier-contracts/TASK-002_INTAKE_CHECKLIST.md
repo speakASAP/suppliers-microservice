@@ -5,7 +5,7 @@ id: TASK-002-SUPPLIER-CONTRACT-INTAKE-CHECKLIST
 status: blocked-pending-owner-input
 owner: supplier-service-owner
 created: 2026-06-14
-last_updated: 2026-06-14
+last_updated: 2026-06-15
 completeness_level: owner-input-required
 upstream:
   - BUSINESS.md
@@ -18,6 +18,7 @@ upstream:
   - docs/IMPLEMENTATION_STATE.md
   - docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md
   - docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md
+  - docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md
 ```
 
 ## Purpose
@@ -66,6 +67,8 @@ Use this owner-facing checklist before starting any TASK-002 supplier-specific A
 8. Which stock quantities are supplier-managed, dropship, or warehouse-specific, and what Warehouse reconciliation path is allowed after validation?
 9. What pagination, delta-sync, timeout, retry, and rate-limit rules must the import job obey?
 10. What non-production or synthetic validation evidence must pass before the owner approves any real runtime onboarding?
+11. Confirm whether the next coding slice should onboard through the generic `rest` adapter, create a supplier-code-specific adapter, or remain blocked.
+12. Confirm which runtime action, if any, needs a separate owner approval after source-only validation passes.
 
 ## Adapter Implementation Blockers
 
