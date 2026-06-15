@@ -1,5 +1,17 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-15 - Goal 8 Current-Head Readiness Regenerated
+
+Change: committed and pushed the previously dirty Catalog cross-agent documentation update, then completed the unblocked Goal 8 current-head readiness and source verification chunks. Regenerated current-head runtime handoff, readiness manifest, and deployment evidence template from clean Warehouse, Catalog, and Suppliers heads. No deployment or runtime mutation was performed.
+
+Current clean heads: Warehouse 7639539c1eb3a1db6761e7fc43e5266c69fd94ed; Catalog 4f3be18ecae4642360d82b53d5b8acc35fd960aa; Suppliers b702c192c3ea00a9001493e7fed0b8543b78c290.
+
+Validation evidence: node reports/validation/cross-service-preflight-check.js passed with all three service worktrees clean; python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues passed with score 100/100; git diff --check passed. Fresh readiness artifacts were generated at /tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json with sha256 53ff2d80b3ee450c84176d64a24ff33595a606b66b3afb31ab7d4ab4118d5ec8, /tmp/stock-traceability-runtime-handoff.md with sha256 ef1857190c0cc9a30174d3e50d338892d84c0a9f6ce4189e628801cd85ac1faf, and /tmp/stock-traceability-deployment-evidence.template.json with sha256 61c719c3c5fd86c9fe1a78439099eb380b6d5dc0995a99a25dff299006b4ca11. The readiness bundle manifest reports ready-for-owner-approval.
+
+Boundary decision: no runtime token inspection, secret disclosure, deployment, production supplier import, Catalog write, Warehouse stock mutation, cleanup mutation, source adapter implementation, schema change, or production resource mutation was performed. Catalog documentation validation was limited to git diff --check; the Catalog repo does not provide scripts/strict_doc_audit.py.
+
+Next unfinished chunk: owner-approved runtime deployment and guarded smoke for the current clean heads, using the fresh readiness/deployment evidence. TASK-002 adapter coding remains blocked until owner supplies the required supplier API contract.
+
 ## 2026-06-15 - Goal 8 Source Preflight And TASK-002 Intake Gate
 
 Change: ran the next Goal 8 non-mutating source validation and prepared the Goal 9/TASK-002 owner contract-intake execution-plan gate. Added `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`, linked it from the intake checklist, added follow-up owner questions, marked the contract-intake checklist chunk complete, and kept supplier-specific adapter implementation blocked pending owner-supplied contract details.

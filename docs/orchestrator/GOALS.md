@@ -57,10 +57,10 @@ Status: active
 Parallelization: split into independent readiness, source-verification, runtime-execution, and status-consolidation sessions. Runtime execution must wait for owner approval and readiness evidence.
 
 Agent-ready chunks:
-- [ ] Readiness regeneration: regenerate current-head runtime handoff, readiness manifest, and deployment evidence templates from clean Warehouse, Catalog, and Suppliers heads. Can start now. Blockers: dirty worktree in any service or missing sibling repository. Evidence: clean SHAs, generated artifact paths, hash checks, preflight output.
-- [ ] Source preflight verification: rerun non-mutating cross-service preflight, strict documentation audit, and whitespace checks. Can start now. Blockers: source drift, stale sibling service heads, missing validation scripts. Evidence: command output and current SHAs.
+- [x] Readiness regeneration: regenerated current-head runtime handoff, readiness manifest, and deployment evidence templates from clean Warehouse, Catalog, and Suppliers heads. Evidence: Warehouse 7639539c1eb3a1db6761e7fc43e5266c69fd94ed, Catalog 4f3be18ecae4642360d82b53d5b8acc35fd960aa, Suppliers b702c192c3ea00a9001493e7fed0b8543b78c290, generated /tmp artifact paths and hashes, and passed preflight output.
+- [x] Source preflight verification: reran non-mutating cross-service preflight, strict documentation audit, and whitespace checks. Evidence: cross-service preflight passed, strict documentation audit passed 100/100, and git diff --check passed against the current clean heads.
 - [ ] Runtime deployment and guarded smoke: deploy current heads and run guarded stock traceability evidence flow. Cannot start yet. Blockers: owner deployment/runtime approval, readiness artifacts from the readiness chunk, runtime credentials, clean worktrees, and protected production mutation boundary. Evidence: deployment evidence JSON, runtime report, runtime manifest, completion verifier output.
-- [ ] Status consolidation: update orchestrator status, implementation state, validation report links, and next-wave blockers after readiness/source/runtime chunks complete. Can start after readiness/source evidence exists. Blockers: missing evidence from prior chunks. Evidence: updated docs with no unresolved execution-critical markers.
+- [x] Status consolidation: updated orchestrator status, implementation state, and continuation state after readiness/source chunks completed. Runtime completion status remains blocked until owner-approved deployment and guarded smoke evidence exist.
 
 ## Goal 9 - Supplier-Specific API Integration
 Status: blocked

@@ -1,3 +1,16 @@
+# Repository Agent Instructions
+
+Shared rules live here:
+
+- Codex profile: `/home/ssf/.codex/AGENTS.md`
+- Cross-agent standard: `/home/ssf/.ai-agent-standards/CROSS_AGENT_AUTOMATION_STANDARD.md`
+- Repository operations: `AGENT_OPERATIONS.md`
+
+Read those first, then follow the repository-specific notes below and the current planning/status files.
+
+
+## Repository-Specific Notes
+
 # Agents: suppliers-microservice
 
 ## Remote-First Working Rule
@@ -26,11 +39,3 @@ Do not assign two agents to edit the same source file, migration, runtime manife
 ## Active Agents
 <!-- Coordinator-maintained -->
 None.
-
-## Company Cross-Agent Standard
-
-This repository also follows `AGENT_OPERATIONS.md`, which points all AI agents to the company cross-agent automation model: readiness scanner, bounded worker agent, worker monitor, and integration validator. Use the validation-debt ledger for known out-of-scope validation failures and preserve the Intent Preservation chain.
-
-## Central Instruction Source
-
-Shared agent rules now live in `/home/ssf/.codex/AGENTS.md` and `/home/ssf/.ai-agent-standards/CROSS_AGENT_AUTOMATION_STANDARD.md`. Keep this file for repository-specific constraints only; do not duplicate shared operating rules here.
