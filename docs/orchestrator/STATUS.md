@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-21 - TASK-002 Derived REST/JSON Contract Boundary
+
+Change: added `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md` and linked it from the TASK-002 intake checklist, execution plan, context package, plan, goals, implementation state, and continuation state. The new document separates repo-derived generic REST/JSON details from missing external supplier facts. Derived details include adapter key `rest`, `apiType=rest`, HTTPS JSON GET by default, runtime credential reference behavior, accepted payload shape, required `supplierSku` and `stockQuantity`, optional normalized fields, replay key derivation, source fingerprint derivation, and existing synthetic source checks.
+
+Boundary decision: no real supplier identity, endpoint, credential, raw supplier payload, real SKU, real product ID, supplier row, production import, Catalog write, Warehouse stock mutation, cleanup mutation, deployment, or adapter source change was performed by this documentation update. TASK-002 adapter coding remains blocked until owner-supplied contract details complete the intake gate. Owner approval for the guarded runtime smoke is recorded as available for the current session; runtime execution still requires regenerated current-head readiness and deployment evidence before any guarded synthetic mutation.
+
+Validation evidence: `npm run build` passed; `node reports/validation/production-rest-json-adapter-check.js` passed; `node reports/validation/synthetic-production-rest-json-adapter-check.js` passed; `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues` passed with score 100/100 across 44 files; `git diff --check` passed; targeted bearer/client-secret/private-key scan returned no matches. Full evidence is recorded in `docs/intent-preservation/validation-reports/VAL-TASK-002-DERIVED-CONTRACT.md`.
+
+Next unfinished chunk: regenerate current-head runtime readiness after this Suppliers docs commit, create completed deployment/approval evidence if deployment is required, and run only the approved guarded synthetic runtime smoke if all gates pass.
+
 ## 2026-06-15 - Goal 8 Current-Head Readiness Regenerated
 
 Change: committed and pushed the previously dirty Catalog cross-agent documentation update, then completed the unblocked Goal 8 current-head readiness and source verification chunks. Regenerated current-head runtime handoff, readiness manifest, and deployment evidence template from clean Warehouse, Catalog, and Suppliers heads. No deployment or runtime mutation was performed.

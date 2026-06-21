@@ -9,6 +9,7 @@
 
 ## Completed
 <!-- AI appends here. Never modifies previous entries. -->
+- [x] 2026-06-21 TASK-002 derived generic REST/JSON contract details documented without real supplier facts or adapter coding (goal_id: TASK-002, priority: 2)
 - [x] 2026-06-13 Cross-service stock traceability source evidence added for Suppliers-Warehouse-Catalog flow (goal_id: CROSS-STOCK-TRACEABILITY, priority: 1)
 - [x] 2026-06-13 Warehouse reconciliation client for validated supplier stock candidates (goal_id: SUP-G7, priority: 1)
 - [x] 2026-04-05 Documentation standard applied

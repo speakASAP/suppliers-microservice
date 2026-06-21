@@ -1,13 +1,13 @@
 {
   "blockers": [
-    "No active real production supplier row, private endpoint, or runtime credential references have been supplied for onboarding",
-    "Runtime deployment and guarded stock traceability smoke require explicit owner approval for current clean heads"
+    "No active real production supplier row, private endpoint, runtime credential references, payload examples, or owner-confirmed supplier mapping facts have been supplied for TASK-002 onboarding",
+    "Guarded runtime smoke is owner-approved for this session but still requires regenerated current-head readiness, deployment evidence, runtime approval artifact, and passing validation gates before execution"
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
-  "last_cycle_at": "2026-06-15T10:12:47Z",
-  "last_milestone": "goal8-current-head-readiness-ready-for-owner-approval",
+  "last_cycle_at": "2026-06-21T00:00:00Z",
+  "last_milestone": "task_002_derived_rest_json_contract_boundary_documented",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -51,10 +51,13 @@
       "goal8_runtime_readiness_current_head": "ready_for_owner_approval_manifest_sha256_53ff2d80b3ee450c84176d64a24ff33595a606b66b3afb31ab7d4ab4118d5ec8",
       "task_002_contract_intake": "prepared_owner_input_required",
       "goal8_runtime_handoff_current_head": "/tmp/stock-traceability-runtime-handoff.md_sha256_ef1857190c0cc9a30174d3e50d338892d84c0a9f6ce4189e628801cd85ac1faf",
-      "goal8_deployment_template_current_head": "/tmp/stock-traceability-deployment-evidence.template.json_sha256_61c719c3c5fd86c9fe1a78439099eb380b6d5dc0995a99a25dff299006b4ca11"
+      "goal8_deployment_template_current_head": "/tmp/stock-traceability-deployment-evidence.template.json_sha256_61c719c3c5fd86c9fe1a78439099eb380b6d5dc0995a99a25dff299006b4ca11",
+      "task_002_repo_derived_rest_json_contract_details": "documented_safe_boundary_no_real_supplier_facts",
+      "task_002_missing_external_supplier_facts": "identity_endpoint_auth_refs_payload_samples_mapping_pagination_rate_limits_idempotency_owner_validation",
+      "runtime_smoke_owner_approval_current_session": "approved_pending_regenerated_readiness_deployment_evidence_and_runtime_gates"
     }
   },
-  "next_focus": "Request owner approval for current-head deployment and guarded stock traceability runtime smoke; TASK-002 adapter coding remains blocked pending owner-supplied supplier API contract details",
+  "next_focus": "Regenerate current-head runtime readiness after the TASK-002 docs commit, then run the owner-approved guarded synthetic runtime smoke only if deployment evidence and validation gates pass; TASK-002 adapter coding remains blocked pending real supplier contract facts",
   "open_task_ids": [
     "TASK-002"
   ],

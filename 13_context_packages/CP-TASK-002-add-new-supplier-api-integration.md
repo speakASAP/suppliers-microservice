@@ -5,7 +5,7 @@ id: CP-TASK-002
 status: draft
 owner: supplier-service-owner
 created: 2026-06-12
-last_updated: 2026-06-13
+last_updated: 2026-06-21
 completeness_level: complete
 upstream:
   - ../11_tasks/TASK-002-add-new-supplier-api-integration.md
@@ -43,6 +43,8 @@ TASK-002: `../11_tasks/TASK-002-add-new-supplier-api-integration.md`
 No real credentials, no unvalidated Catalog writes, no unapproved Warehouse mutation, preserve import idempotency, and handle mapping gaps explicitly. Do not store private supplier URLs, decoded credentials, authorization headers, raw production payloads, real SKUs, real product IDs, or customer data in committed artifacts.
 
 ## Contract Intake Context
+
+Repo-derived contract details now exist in `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md`. The current generic REST/JSON path can be used only when a real supplier matches adapter key `rest`, `apiType=rest`, HTTPS JSON GET, runtime credential references, JSON array or `{ "items": [...] }`, required `supplierSku` and `stockQuantity`, and the documented replay/source-fingerprint rules.
 
 TASK-002 is blocked for adapter implementation until the owner supplies a real supplier-specific contract and approval. The intake checklist in `../21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md` is the controlling source for required inputs. Current missing execution-critical inputs are:
 

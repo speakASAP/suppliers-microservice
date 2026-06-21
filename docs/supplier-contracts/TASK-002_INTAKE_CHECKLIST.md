@@ -5,7 +5,7 @@ id: TASK-002-SUPPLIER-CONTRACT-INTAKE-CHECKLIST
 status: blocked-pending-owner-input
 owner: supplier-service-owner
 created: 2026-06-14
-last_updated: 2026-06-15
+last_updated: 2026-06-21
 completeness_level: owner-input-required
 upstream:
   - BUSINESS.md
@@ -18,6 +18,7 @@ upstream:
   - docs/IMPLEMENTATION_STATE.md
   - docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md
   - docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md
+  - docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md
   - docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md
 ```
 
@@ -37,22 +38,26 @@ Use this owner-facing checklist before starting any TASK-002 supplier-specific A
 - Code: Blocked until the execution plan is complete and pre-coding gates pass.
 - Validation: Use synthetic contract tests, credential-reference checks, idempotency evidence, Catalog boundary evidence, Warehouse boundary evidence, strict documentation audit, and build validation.
 
+## Repo-Derived Details
+
+The current repo already provides a generic production REST/JSON contract in `docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md` and the derived TASK-002 boundary in `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md`. Safely derived details are: adapter key `rest`, `apiType=rest`, HTTPS JSON GET by default, optional runtime credential reference names, JSON array or `{ "items": [...] }`, required `supplierSku` plus `stockQuantity`, optional `sourceRecordId`, `productId`, `warehouseId`, `supplierId`, and `observedAt`, deterministic replay keys, deterministic source fingerprints, and existing synthetic source checks. These details do not identify any real supplier and do not unblock adapter coding without the owner inputs below.
+
 ## Required Owner Inputs
 
 | Area | Required owner input | Safe documentation format | Current status |
 | --- | --- | --- | --- |
-| Supplier identity | Display name, stable supplier code, business owner, technical owner, support/escalation contact, and whether the generic `rest` adapter is sufficient or a supplier-code-specific adapter is required. | Names and stable non-secret identifiers only; no private account IDs unless masked. | [MISSING: supplier identity and owner contacts] |
+| Supplier identity | Display name, stable supplier code, business owner, technical owner, support/escalation contact, and whether the generic `rest` adapter is sufficient or a supplier-code-specific adapter is required. | Names and stable non-secret identifiers only; no private account IDs unless masked. | [DERIVED: generic `rest` adapter exists if supplier matches `PRODUCTION_REST_JSON_V1`; MISSING: real supplier identity and owner contacts] |
 | Source endpoint | Protocol, integration type, endpoint or file source location, environment separation, TLS requirements, redirect policy, and allowed IP/network assumptions. | Describe endpoint class and runtime config key names; do not commit private URLs. | [MISSING: private endpoint or runtime endpoint reference plan] |
 | Authentication shape | API key, bearer token, basic auth, OAuth/client credentials, mTLS, signed request, SFTP credential, or no-auth decision. | Runtime secret reference names only; no decoded values, auth headers, usernames, passwords, tokens, client secrets, or certificates. | [MISSING: authentication shape and credential reference names] |
 | Credential reference plan | Exact env/config reference keys to be created, rotation owner, secret storage location, deployment process, and redaction expectations. | Reference key names and owner/process notes only. | [MISSING: credential reference plan] |
-| Payload schema | Top-level response/file shape, item path, required/optional fields, source types, null handling, validation rules, and units/currency/date semantics. | Schema table plus synthetic examples only. | [MISSING: payload schema] |
+| Payload schema | Top-level response/file shape, item path, required/optional fields, source types, null handling, validation rules, and units/currency/date semantics. | Schema table plus synthetic examples only. | [DERIVED: generic REST accepts JSON array or `{ "items": [...] }`, required `supplierSku` and `stockQuantity`, optional `sourceRecordId`, `productId`, `warehouseId`, `supplierId`, `observedAt`; MISSING: confirmation the real supplier matches this shape or approved alternate schema] |
 | Product mapping | Source SKU/product ID rules, product identity matching, title/description/brand/price fields, image/media handling, and Catalog product ownership expectations. | Field map with synthetic values and explicit Catalog write constraints. | [MISSING: product mapping assumptions] |
 | Stock mapping | Quantity fields, warehouse/location identifiers, dropship versus supplier stock semantics, observed-at timestamp, and non-negative/integer rules. | Field map with synthetic values and Warehouse authority constraints. | [MISSING: stock and warehouse mapping assumptions] |
 | Category mapping | Source category identifiers, expected category tree/list shape, required pre-approved Catalog category mappings, and missing/stale mapping behavior. | Source category field names and masked/synthetic IDs only. | [MISSING: category mapping assumptions] |
 | Pagination and filters | Page/cursor/offset rules, page size limits, delta filters, since timestamps, full-sync rules, and end-of-data signal. | Contract notes and synthetic query examples only. | [MISSING: pagination and filter contract] |
 | Rate limits and retries | Supplier rate limits, retryable status/error codes, backoff expectations, timeout ceilings, concurrency limit, and circuit-breaker expectations. | Numeric policy and sanitized error categories. | [MISSING: rate limits, retries, and timeout policy] |
 | Sanitized sample shape | One minimal valid response/file sample, one representative full item, and malformed examples for validation tests. | Synthetic or masked examples only; no raw production payloads, private URLs, real SKUs, real product IDs, or credentials. | [MISSING: sanitized sample payload shape] |
-| Idempotency rules | Stable source record identifier, source fingerprint basis, duplicate/replay behavior, deletion/discontinuation semantics, and retry safety expectations. | Deterministic rules with synthetic identifiers. | [MISSING: source record and idempotency key rules] |
+| Idempotency rules | Stable source record identifier, source fingerprint basis, duplicate/replay behavior, deletion/discontinuation semantics, and retry safety expectations. | Deterministic rules with synthetic identifiers. | [DERIVED: generic REST replay key uses idempotency key plus `sourceRecordId`, and source fingerprint uses supplier code plus sorted source record IDs unless supplied; MISSING: real supplier record stability, deletion/discontinuation semantics, and delta policy] |
 | Validation evidence | Owner review confirmation, contract completeness review, synthetic test plan, non-production smoke plan if needed, and approval boundary for any runtime check. | Checklist sign-off notes and command summaries only. | [MISSING: owner validation evidence and approval boundary] |
 
 ## Required Validation Questions
@@ -71,6 +76,8 @@ Use this owner-facing checklist before starting any TASK-002 supplier-specific A
 12. Confirm which runtime action, if any, needs a separate owner approval after source-only validation passes.
 
 ## Adapter Implementation Blockers
+
+Repo-derived details are now documented, but execution-critical external facts remain missing.
 
 - [MISSING: supplier identity]
 - [MISSING: endpoint/runtime endpoint reference]

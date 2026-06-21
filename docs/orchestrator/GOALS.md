@@ -74,4 +74,5 @@ Blockers:
 
 Agent-ready chunks:
 - [x] Contract intake checklist: prepared exact owner questions and execution-plan gate in `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`. Evidence: documentation validation and no invented supplier details.
+- [x] Derived REST/JSON contract boundary: documented the generic `rest` adapter details that can be safely derived from repo source in `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md`. Evidence: docs validation, source contract checks, and no real supplier facts fabricated.
 - [ ] Adapter implementation: blocked until contract intake is complete and reviewed. Evidence when unblocked: synthetic contract tests, credential-safety review, idempotency evidence, Catalog/Warehouse boundary evidence.

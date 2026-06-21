@@ -5,7 +5,7 @@ Metadata:
 - status: intake-ready-blocked-for-owner-input
 - goal_id: TASK-002
 - created: 2026-06-15
-- last_updated: 2026-06-15
+- last_updated: 2026-06-21
 - completeness_level: owner-input-required
 
 ## Upstream Traceability
@@ -18,6 +18,7 @@ Metadata:
 - docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md
 - docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md
 - docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md
+- docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md
 
 ## Intent Preservation Chain
 
@@ -34,6 +35,10 @@ Metadata:
 ## Objective
 
 Prepare TASK-002 for owner review by making the required supplier contract questions explicit. This plan does not implement an adapter, deploy, inspect secrets, query raw supplier payloads, run production imports, write Catalog products, mutate Warehouse stock, or create cleanup mutations.
+
+## Repo-Derived Contract Boundary
+
+The repo now documents the TASK-002 details that can be safely derived from the current generic REST/JSON contract in `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md`. Those details include adapter key `rest`, `apiType=rest`, HTTPS JSON GET by default, runtime credential reference behavior, accepted payload shape, required and optional normalized fields, replay key derivation, source fingerprint derivation, and synthetic validation coverage. They are sufficient for planning a generic REST onboarding only if the owner confirms the real supplier matches the contract. They are not real supplier identity, endpoint, credential, payload sample, category mapping, product mapping, warehouse mapping, pagination, rate-limit, retry, or approval facts.
 
 ## Required Owner Inputs
 
@@ -72,6 +77,7 @@ Allowed files for the intake slice:
 
 - docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md
 - docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md
+- docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md
 - docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md
 - docs/orchestrator/GOALS.md
 - docs/orchestrator/PLAN.md
