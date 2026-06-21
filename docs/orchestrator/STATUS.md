@@ -619,3 +619,16 @@ Remaining blockers:
 - [MISSING: sanitized valid, malformed, empty, paginated, and supplier-error examples]
 - [MISSING: product, category, warehouse, pagination, retry, rate-limit, idempotency, and deletion/discontinuation facts]
 - [MISSING: explicit approval for any runtime import, deployment, or Warehouse mutation]
+
+## 2026-06-21 - TASK-002 Synthetic Generic REST Test Supplier Plan
+
+Current focus: execute owner-approved generic REST onboarding with synthetic test suppliers.
+
+Change:
+- Added public synthetic generic REST fixture payloads under `public/supplier-fixtures/`.
+- Added `reports/validation/generic-rest-test-onboarding.js` to create/update the two approved test suppliers and run validate-only imports.
+- Added `docs/supplier-contracts/TASK-002_SYNTHETIC_GENERIC_REST_TEST_SUPPLIERS.md` to record the synthetic supplier metadata and runtime boundary.
+
+Boundary decision:
+- The synthetic supplier codes are `codex-rest-test-a` and `codex-rest-test-b`.
+- No real supplier credentials, private endpoint, production payload, real SKU, real product ID, real warehouse ID, Catalog write, Warehouse mutation, cleanup mutation, or worker start is authorized by this plan.

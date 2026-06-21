@@ -1,0 +1,20 @@
+{
+  "items": [
+    {
+      "supplierSku": "CODEX-REST-A-001",
+      "stockQuantity": 4,
+      "sourceRecordId": "codex-rest-a-record-001",
+      "productId": "codex-product-rest-a-001",
+      "warehouseId": "codex-warehouse-rest-a-001",
+      "observedAt": "2026-06-21T10:00:00.000Z"
+    },
+    {
+      "supplierSku": "CODEX-REST-A-002",
+      "stockQuantity": 0,
+      "sourceRecordId": "codex-rest-a-record-002",
+      "productId": "codex-product-rest-a-002",
+      "warehouseId": "codex-warehouse-rest-a-002",
+      "observedAt": "2026-06-21T10:05:00.000Z"
+    }
+  ]
+}

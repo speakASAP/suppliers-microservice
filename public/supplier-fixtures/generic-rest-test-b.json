@@ -1,0 +1,10 @@
+[
+  {
+    "supplierSku": "CODEX-REST-B-001",
+    "stockQuantity": 9,
+    "sourceRecordId": "codex-rest-b-record-001",
+    "productId": "codex-product-rest-b-001",
+    "warehouseId": "codex-warehouse-rest-b-001",
+    "observedAt": "2026-06-21T10:10:00.000Z"
+  }
+]
