@@ -2,11 +2,11 @@
 
 ```yaml
 id: TASK-002-SYNTHETIC-GENERIC-REST-TEST-SUPPLIERS
-status: ready-for-runtime-validation
+status: runtime-validation-passed
 owner: supplier-service-owner
 created: 2026-06-21
 last_updated: 2026-06-21
-completeness_level: synthetic-test-only
+completeness_level: synthetic-runtime-complete
 upstream:
   - docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md
   - docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md
@@ -42,3 +42,8 @@ Define owner-approved synthetic supplier metadata for generic REST onboarding va
 - Imports must use `warehouseStockUpdateMode=validate_only`.
 - No supplier credentials, private endpoint, raw production payload, real SKU, real product ID, real warehouse ID, Catalog write, Warehouse mutation, cleanup mutation, or worker start is authorized by this synthetic test.
 - The fixture files are public synthetic data served by Suppliers itself over HTTPS to exercise the generic REST adapter without external supplier dependencies.
+
+
+## Runtime Result
+
+The synthetic onboarding run passed on 2026-06-21. Test supplier rows were created for `codex-rest-test-a` and `codex-rest-test-b`; validate-only imports completed with payload validation and Warehouse boundary validation passed, and no Warehouse mutation attempted or approved. Detailed evidence is recorded in `docs/intent-preservation/validation-reports/VAL-TASK-002-GENERIC-REST-TEST-ONBOARDING.md`.

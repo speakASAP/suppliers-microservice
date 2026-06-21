@@ -632,3 +632,19 @@ Change:
 Boundary decision:
 - The synthetic supplier codes are `codex-rest-test-a` and `codex-rest-test-b`.
 - No real supplier credentials, private endpoint, production payload, real SKU, real product ID, real warehouse ID, Catalog write, Warehouse mutation, cleanup mutation, or worker start is authorized by this plan.
+
+## 2026-06-21 - TASK-002 Generic REST Test Onboarding Runtime Passed
+
+Current focus: synthetic generic REST onboarding completed; real supplier onboarding remains owner-data-gated.
+
+Evidence:
+- Deployed Suppliers image tag `46a8210` with digest `sha256:b51bb244df3f5efeeb0ffbe05105c4f9b584a833a235d4f68ae969fb75216643`.
+- Public synthetic fixture URLs returned HTTP 200.
+- `reports/validation/generic-rest-test-onboarding.js` passed against `https://suppliers.alfares.cz`.
+- Created test supplier `codex-rest-test-a` and validate-only import job `ddfbcde7-d22c-4126-a9e0-965e308b8f48` completed with `totalProducts=2`, `payloadValidationStatus=passed`, `warehouseStockValidationStatus=passed`, and `updatedProducts=0`.
+- Created test supplier `codex-rest-test-b` and validate-only import job `73e9f33a-4e39-49fc-ad8e-405cc69b1a3a` completed with `totalProducts=1`, `payloadValidationStatus=passed`, `warehouseStockValidationStatus=passed`, and `updatedProducts=0`.
+- `warehouseStockUpdateAttempted=false` and `warehouseStockUpdateApproved=false` for both imports.
+
+Boundary decision:
+- No real supplier endpoint, credential, production payload, real SKU, real product ID, real warehouse ID, Catalog write, Warehouse mutation, cleanup mutation, object-storage mutation, or worker start was performed.
+- The JWT used for protected API calls was generated short-lived from runtime `JWT_SECRET` and was not printed or committed.

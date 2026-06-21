@@ -6,7 +6,7 @@
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-21T00:00:00Z",
-  "last_milestone": "task_002_generic_rest_onboarding_path_approved",
+  "last_milestone": "task_002_generic_rest_test_onboarding_passed",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -30,7 +30,7 @@
       "latest_pod_health": "healthy_after_runtime_evidence_token_cleanup",
       "nest_major_dependency_upgrade": "done_11_x_deployed_sha256_f4049681685f9068c16b989664ffa8b9a2cc8d8beaa3709b13058b65b08f7264",
       "supplier_contract_discovery": "none_found_repo_runtime_or_sanitized_production_metadata",
-      "production_supplier_count": 0,
+      "production_supplier_count": "2_synthetic_test_rows_no_real_supplier",
       "warehouse_reconciliation_client": "source_validated_no_deploy",
       "warehouse_reconciliation_validation": "build_synthetic_checks_doc_gates_passed",
       "cross_service_stock_traceability": "source_synthetic_passed_no_deploy",
@@ -57,10 +57,14 @@
       "task_002_runtime_smoke": "passed_2026-06-21_manual_traceability_20260621_001_updated_products_2",
       "task_002_runtime_evidence_manifest": "/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest-20260621-final.json",
       "task_002_owner_adapter_decision": "generic_rest_onboarding_approved_2026_06_21",
-      "task_002_generic_rest_onboarding_approval_doc": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+      "task_002_generic_rest_onboarding_approval_doc": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md",
+      "task_002_generic_rest_test_onboarding": "passed_two_synthetic_suppliers_validate_only_no_warehouse_mutation",
+      "task_002_generic_rest_test_supplier_ids": "codex-rest-test-a=63e362e6-8304-4f48-9abc-261f4138db7f,codex-rest-test-b=ff4e2684-c067-49fb-a005-fe1f16a7a5cb",
+      "task_002_generic_rest_test_import_jobs": "codex-rest-test-a=ddfbcde7-d22c-4126-a9e0-965e308b8f48,codex-rest-test-b=73e9f33a-4e39-49fc-ad8e-405cc69b1a3a",
+      "latest_deployed_suppliers_image": "46a8210_sha256_b51bb244df3f5efeeb0ffbe05105c4f9b584a833a235d4f68ae969fb75216643"
     }
   },
-  "next_focus": "Generic REST onboarding path is approved. Collect owner-supplied supplier row metadata, private endpoint/runtime reference plan, credential refs, payload examples, mapping facts, and explicit runtime/import approvals before any real onboarding execution.",
+  "next_focus": "Synthetic generic REST onboarding passed. Real supplier onboarding remains gated until real supplier metadata, endpoint/runtime reference plan, credential refs, payload examples, mapping facts, and explicit runtime/import approvals are supplied.",
   "open_task_ids": [],
   "project": "suppliers-microservice",
   "stage": "production",

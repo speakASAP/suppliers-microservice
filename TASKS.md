@@ -10,6 +10,7 @@
 ## Completed
 - [x] 2026-06-21 TASK-002 derived REST contract boundary and approved synthetic runtime smoke completed with idempotency key `manual:traceability-20260621-001`, supplier import job completed, and `updatedProducts=2`; real supplier onboarding remains data-gated until real supplier facts are supplied.
 <!-- AI appends here. Never modifies previous entries. -->
+- [x] 2026-06-21 TASK-002 synthetic generic `rest` onboarding passed for test suppliers `codex-rest-test-a` and `codex-rest-test-b`; imports were validate-only and performed no Warehouse mutation.
 - [x] 2026-06-21 TASK-002 owner selected generic `rest` onboarding path; runtime onboarding remains data-gated until supplier row metadata, endpoint, credential refs, payload examples, and mapping facts are supplied.
 - [x] 2026-06-21 TASK-002 derived generic REST/JSON contract details documented without real supplier facts or adapter coding (goal_id: TASK-002, priority: 2)
 - [x] 2026-06-13 Cross-service stock traceability source evidence added for Suppliers-Warehouse-Catalog flow (goal_id: CROSS-STOCK-TRACEABILITY, priority: 1)
