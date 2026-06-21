@@ -2,7 +2,7 @@
 
 ```yaml
 id: TASK-002-DERIVED-REST-JSON-DETAILS
-status: derived-contract-boundary
+status: generic-rest-approved-data-gated
 owner: supplier-service-owner
 created: 2026-06-21
 last_updated: 2026-06-21
@@ -10,6 +10,7 @@ completeness_level: partial-derived-owner-input-required
 upstream:
   - docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md
   - docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md
+  - docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md
   - src/imports/adapters/README.md
   - src/imports/adapters/production-rest-json-supplier-adapter.ts
   - src/imports/adapters/supplier-import-adapter.ts
@@ -19,14 +20,14 @@ upstream:
 
 ## Purpose
 
-Record the TASK-002 supplier contract details that can be safely derived from the current repository and the generic production REST/JSON adapter. This document does not add a real supplier, endpoint, credential, production payload, Catalog write, Warehouse mutation, deployment, or adapter implementation.
+Record the TASK-002 supplier contract details that can be safely derived from the current repository and the generic production REST/JSON adapter. The owner selected this generic `rest` onboarding path on 2026-06-21. This document does not add a real supplier, endpoint, credential, production payload, Catalog write, Warehouse mutation, deployment, or adapter implementation.
 
 ## Intent Preservation Chain
 
 - Vision: Suppliers remains the validation-first intake service for supplier product and stock feeds.
-- Goal Impact: TASK-002 can use the existing generic REST/JSON adapter only when a real supplier contract matches this document and all owner-supplied facts are reviewed.
+- Goal Impact: TASK-002 has owner approval to proceed through the existing generic REST/JSON adapter only when a real supplier contract matches this document and all remaining owner-supplied facts are reviewed.
 - System: Supplier metadata, import jobs, category mappings, payload validation, Catalog ownership boundaries, Warehouse stock authority, and idempotency remain separated.
-- Feature: Generic production REST/JSON supplier onboarding using adapter key `rest`, or supplier-code-specific adapter work when the supplier does not match this contract.
+- Feature: Generic production REST/JSON supplier onboarding using adapter key `rest`. Supplier-code-specific adapter work is out of scope unless later facts prove the supplier does not match this contract.
 - Task: Separate repo-derived contract details from missing external supplier facts before any coding or runtime onboarding.
 - Execution Plan: Use this document with `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`.
 - Coding Prompt: Still blocked until owner-supplied facts complete the contract and the pre-coding gate passes.
@@ -64,13 +65,14 @@ The following facts cannot be safely derived from the repo and must remain `[MIS
 - [MISSING: warehouse/location mapping, dropship versus supplier-managed semantics, and Warehouse mutation approval boundary]
 - [MISSING: pagination, delta-sync, timeout, retry, backoff, concurrency, and rate-limit policy]
 - [MISSING: source record stability, source fingerprint policy, deletion/discontinuation semantics, and replay expectations]
-- [MISSING: owner validation evidence and approval to convert the completed contract into a coding prompt or runtime onboarding run]
+- [APPROVED: owner selected generic `rest` onboarding path on 2026-06-21]
+- [MISSING: owner validation evidence and approval to execute a runtime onboarding run after all data is supplied]
 
 ## Current Execution Decision
 
-TASK-002 adapter coding remains blocked. The current repo supports two safe next paths after owner input:
+TASK-002 supplier-specific adapter coding is not the selected path. The owner selected generic REST onboarding on 2026-06-21, but runtime onboarding remains blocked by missing supplier facts.
 
-1. Generic REST onboarding: use adapter key `rest` when the real supplier exactly matches the derived contract above and owner supplies only non-secret metadata, runtime reference names, and synthetic or masked fixtures.
-2. Supplier-specific adapter: create a new plan and coding prompt only when the supplier requires a different transport, authentication flow, payload path, pagination model, field mapping, error model, or side-effect policy.
+1. Generic REST onboarding: selected. Use adapter key `rest` when the real supplier exactly matches the derived contract above and owner supplies only non-secret metadata, runtime reference names, and synthetic or masked fixtures.
+2. Supplier-specific adapter: not selected. Create a new plan and coding prompt only if later supplier facts require a different transport, authentication flow, payload path, pagination model, field mapping, error model, or side-effect policy.
 
 No real private supplier credentials, endpoints, raw production payloads, real SKUs, real product IDs, production imports, Catalog writes, Warehouse stock mutations, or cleanup operations are permitted from this derived document alone.

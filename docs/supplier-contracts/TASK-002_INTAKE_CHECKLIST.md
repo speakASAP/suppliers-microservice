@@ -2,7 +2,7 @@
 
 ```yaml
 id: TASK-002-SUPPLIER-CONTRACT-INTAKE-CHECKLIST
-status: blocked-pending-owner-input
+status: generic-rest-approved-pending-owner-input
 owner: supplier-service-owner
 created: 2026-06-14
 last_updated: 2026-06-21
@@ -19,12 +19,13 @@ upstream:
   - docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md
   - docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md
   - docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md
+  - docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md
   - docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md
 ```
 
 ## Purpose
 
-Use this owner-facing checklist before starting any TASK-002 supplier-specific API integration. Adapter implementation remains blocked until every required owner input is supplied, reviewed, and represented only as safe metadata, runtime secret reference names, or synthetic/masked examples.
+Use this owner-facing checklist before starting any TASK-002 supplier-specific API integration. The owner selected the generic `rest` onboarding path on 2026-06-21. Runtime onboarding remains blocked until every remaining owner input is supplied, reviewed, and represented only as safe metadata, runtime secret reference names, or synthetic/masked examples.
 
 ## Intent Preservation Chain
 
@@ -46,7 +47,7 @@ The current repo already provides a generic production REST/JSON contract in `do
 
 | Area | Required owner input | Safe documentation format | Current status |
 | --- | --- | --- | --- |
-| Supplier identity | Display name, stable supplier code, business owner, technical owner, support/escalation contact, and whether the generic `rest` adapter is sufficient or a supplier-code-specific adapter is required. | Names and stable non-secret identifiers only; no private account IDs unless masked. | [DERIVED: generic `rest` adapter exists if supplier matches `PRODUCTION_REST_JSON_V1`; MISSING: real supplier identity and owner contacts] |
+| Supplier identity | Display name, stable supplier code, business owner, technical owner, support/escalation contact, and whether the generic `rest` adapter is sufficient or a supplier-code-specific adapter is required. | Names and stable non-secret identifiers only; no private account IDs unless masked. | [APPROVED: generic `rest` onboarding path; MISSING: real supplier identity and owner contacts] |
 | Source endpoint | Protocol, integration type, endpoint or file source location, environment separation, TLS requirements, redirect policy, and allowed IP/network assumptions. | Describe endpoint class and runtime config key names; do not commit private URLs. | [MISSING: private endpoint or runtime endpoint reference plan] |
 | Authentication shape | API key, bearer token, basic auth, OAuth/client credentials, mTLS, signed request, SFTP credential, or no-auth decision. | Runtime secret reference names only; no decoded values, auth headers, usernames, passwords, tokens, client secrets, or certificates. | [MISSING: authentication shape and credential reference names] |
 | Credential reference plan | Exact env/config reference keys to be created, rotation owner, secret storage location, deployment process, and redaction expectations. | Reference key names and owner/process notes only. | [MISSING: credential reference plan] |
@@ -72,12 +73,12 @@ The current repo already provides a generic production REST/JSON contract in `do
 8. Which stock quantities are supplier-managed, dropship, or warehouse-specific, and what Warehouse reconciliation path is allowed after validation?
 9. What pagination, delta-sync, timeout, retry, and rate-limit rules must the import job obey?
 10. What non-production or synthetic validation evidence must pass before the owner approves any real runtime onboarding?
-11. Confirm whether the next coding slice should onboard through the generic `rest` adapter, create a supplier-code-specific adapter, or remain blocked.
+11. Confirm whether the next coding slice should onboard through the generic `rest` adapter, create a supplier-code-specific adapter, or remain blocked. [ANSWERED: owner selected generic `rest` onboarding on 2026-06-21.]
 12. Confirm which runtime action, if any, needs a separate owner approval after source-only validation passes.
 
 ## Adapter Implementation Blockers
 
-Repo-derived details are now documented, but execution-critical external facts remain missing.
+Repo-derived details and the owner adapter-path decision are now documented, but execution-critical external facts remain missing.
 
 - [MISSING: supplier identity]
 - [MISSING: endpoint/runtime endpoint reference]
@@ -90,7 +91,7 @@ Repo-derived details are now documented, but execution-critical external facts r
 - [MISSING: source record ID and idempotency rules]
 - [MISSING: owner validation evidence and approval boundary]
 
-Do not mark Goal 9 or TASK-002 unblocked until the blockers above are resolved with reviewed, non-secret, non-production-safe documentation.
+Do not mark Goal 9 or TASK-002 runtime onboarding unblocked until the blockers above are resolved with reviewed, non-secret, non-production-safe documentation.
 
 ## Acceptance Criteria For Unblocking Coding
 

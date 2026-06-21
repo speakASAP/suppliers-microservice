@@ -595,3 +595,27 @@ Evidence:
 State:
 - TASK-002 contract and approved synthetic runtime smoke are complete.
 - Real supplier onboarding remains data-gated until real supplier endpoint, credential references, payload sample, supplier row, and mapping facts are supplied.
+
+## 2026-06-21 - TASK-002 Generic REST Onboarding Path Approved
+
+Current focus: generic REST onboarding is the selected next lane for TASK-002.
+
+Change:
+- Recorded owner approval for generic `rest` onboarding in `docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md`.
+- Updated TASK-002 checklist, derived REST contract details, goal backlog, task list, and state to separate the approved adapter path from the still-missing real supplier facts.
+
+Boundary decision:
+- No supplier-specific adapter code was added.
+- No supplier row was created or updated.
+- No private endpoint, decoded credential, raw production payload, real SKU, real product ID, or customer data was recorded.
+- No deployment, production import, Catalog write, Warehouse mutation, cleanup mutation, DB query, object-storage mutation, or worker start was performed.
+
+Remaining blockers:
+- [MISSING: real supplier display name and stable supplier code]
+- [MISSING: business owner, technical owner, and escalation contact]
+- [MISSING: supplier row metadata and explicit DB mutation approval]
+- [MISSING: private endpoint or runtime endpoint reference plan]
+- [MISSING: authentication shape and runtime credential reference key names]
+- [MISSING: sanitized valid, malformed, empty, paginated, and supplier-error examples]
+- [MISSING: product, category, warehouse, pagination, retry, rate-limit, idempotency, and deletion/discontinuation facts]
+- [MISSING: explicit approval for any runtime import, deployment, or Warehouse mutation]

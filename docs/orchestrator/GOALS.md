@@ -65,14 +65,15 @@ Agent-ready chunks:
 ## Goal 9 - Supplier-Specific API Integration
 Status: blocked
 
-Parallelization: only contract discovery and planning can run now. Adapter coding must wait for real supplier details.
+Parallelization: the owner selected generic `rest` onboarding on 2026-06-21. Runtime onboarding is still data-gated; only contract completion and non-mutating planning can run until real supplier details are supplied.
 
 Blockers:
-- Owner has not supplied supplier identity.
-- Owner has not supplied private endpoint, authentication shape, credential reference plan, payload schema, rate limits, pagination, or sanitized sample response.
+- Owner selected generic `rest` onboarding, but has not supplied supplier identity.
+- Owner has not supplied private endpoint, authentication shape, credential reference plan, payload schema confirmation, rate limits, pagination, or sanitized sample response.
 - Production database currently has no supplier rows or credential references to infer a real contract.
 
 Agent-ready chunks:
 - [x] Contract intake checklist: prepared exact owner questions and execution-plan gate in `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`. Evidence: documentation validation and no invented supplier details.
 - [x] Derived REST/JSON contract boundary: documented the generic `rest` adapter details that can be safely derived from repo source in `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md`. Evidence: docs validation, source contract checks, and no real supplier facts fabricated.
-- [ ] Adapter implementation: blocked until contract intake is complete and reviewed. Evidence when unblocked: synthetic contract tests, credential-safety review, idempotency evidence, Catalog/Warehouse boundary evidence.
+- [x] Owner adapter-path decision: generic `rest` onboarding approved on 2026-06-21 and recorded in `docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md`. Evidence: decision captured without source edits, secrets, private endpoints, or runtime mutation.
+- [ ] Generic REST runtime onboarding: blocked until contract facts, supplier row metadata, credential reference names, sanitized payload examples, mapping facts, and explicit runtime/import approvals are supplied. Evidence when unblocked: supplier-row plan, synthetic contract checks, credential-safety review, idempotency evidence, Catalog/Warehouse boundary evidence, and approved runtime smoke/import report.

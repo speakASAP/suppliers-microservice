@@ -1,12 +1,12 @@
 {
   "blockers": [
-    "Real supplier onboarding remains data-gated: no active real production supplier row, private endpoint, runtime credential references, payload examples, or owner-confirmed supplier mapping facts have been supplied."
+    "Generic REST onboarding path is owner-approved, but real supplier onboarding remains data-gated: no active real production supplier row metadata, private endpoint, runtime credential reference names, payload examples, or owner-confirmed supplier mapping facts have been supplied."
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-21T00:00:00Z",
-  "last_milestone": "task_002_runtime_smoke_completed",
+  "last_milestone": "task_002_generic_rest_onboarding_path_approved",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -38,7 +38,7 @@
       "task_006_adapter_foundation": "complete_with_production_rest_json_adapter",
       "production_rest_json_supplier_contract": "done_PRODUCTION_REST_JSON_V1",
       "production_rest_json_supplier_adapter": "source_validated_no_real_supplier_onboarded",
-      "production_supplier_onboarding": "pending_owner_supplied_metadata_and_runtime_secret_refs",
+      "production_supplier_onboarding": "generic_rest_approved_pending_owner_supplied_metadata_endpoint_auth_refs_payload_samples_mapping_facts",
       "production_rest_json_supplier_adapter_deployed": "done_sha256_eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34",
       "cross_service_runtime_source_hardening": "done_non_mutating_validation_passed",
       "cross_service_runtime_completion": "complete_passed_runtime_synthetic_fixture",
@@ -52,13 +52,15 @@
       "goal8_runtime_handoff_current_head": "/tmp/stock-traceability-runtime-handoff.md_sha256_ef1857190c0cc9a30174d3e50d338892d84c0a9f6ce4189e628801cd85ac1faf",
       "goal8_deployment_template_current_head": "/tmp/stock-traceability-deployment-evidence.template.json_sha256_61c719c3c5fd86c9fe1a78439099eb380b6d5dc0995a99a25dff299006b4ca11",
       "task_002_repo_derived_rest_json_contract_details": "documented_safe_boundary_no_real_supplier_facts",
-      "task_002_missing_external_supplier_facts": "identity_endpoint_auth_refs_payload_samples_mapping_pagination_rate_limits_idempotency_owner_validation",
+      "task_002_missing_external_supplier_facts": "identity_endpoint_auth_refs_payload_samples_mapping_pagination_rate_limits_idempotency_owner_runtime_approval",
       "runtime_smoke_owner_approval_current_session": "approved_pending_regenerated_readiness_deployment_evidence_and_runtime_gates",
       "task_002_runtime_smoke": "passed_2026-06-21_manual_traceability_20260621_001_updated_products_2",
-      "task_002_runtime_evidence_manifest": "/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest-20260621-final.json"
+      "task_002_runtime_evidence_manifest": "/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest-20260621-final.json",
+      "task_002_owner_adapter_decision": "generic_rest_onboarding_approved_2026_06_21",
+      "task_002_generic_rest_onboarding_approval_doc": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
     }
   },
-  "next_focus": "TASK-002 derived REST contract boundary and approved synthetic runtime smoke completed. Real supplier onboarding remains data-gated until a real supplier row, private endpoint, credential refs, payload examples, and mapping facts are supplied.",
+  "next_focus": "Generic REST onboarding path is approved. Collect owner-supplied supplier row metadata, private endpoint/runtime reference plan, credential refs, payload examples, mapping facts, and explicit runtime/import approvals before any real onboarding execution.",
   "open_task_ids": [],
   "project": "suppliers-microservice",
   "stage": "production",
