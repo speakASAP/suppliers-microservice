@@ -1,13 +1,12 @@
 {
   "blockers": [
-    "No active real production supplier row, private endpoint, runtime credential references, payload examples, or owner-confirmed supplier mapping facts have been supplied for TASK-002 onboarding",
-    "Guarded runtime smoke is owner-approved for this session but still requires regenerated current-head readiness, deployment evidence, runtime approval artifact, and passing validation gates before execution"
+    "Real supplier onboarding remains data-gated: no active real production supplier row, private endpoint, runtime credential references, payload examples, or owner-confirmed supplier mapping facts have been supplied."
   ],
   "budget_units_used": 0,
   "cycle": 1,
   "health": "ok",
   "last_cycle_at": "2026-06-21T00:00:00Z",
-  "last_milestone": "task_002_derived_rest_json_contract_boundary_documented",
+  "last_milestone": "task_002_runtime_smoke_completed",
   "metrics": {
     "custom": {
       "category_mapping_completeness_catalog_boundary": "done",
@@ -54,16 +53,17 @@
       "goal8_deployment_template_current_head": "/tmp/stock-traceability-deployment-evidence.template.json_sha256_61c719c3c5fd86c9fe1a78439099eb380b6d5dc0995a99a25dff299006b4ca11",
       "task_002_repo_derived_rest_json_contract_details": "documented_safe_boundary_no_real_supplier_facts",
       "task_002_missing_external_supplier_facts": "identity_endpoint_auth_refs_payload_samples_mapping_pagination_rate_limits_idempotency_owner_validation",
-      "runtime_smoke_owner_approval_current_session": "approved_pending_regenerated_readiness_deployment_evidence_and_runtime_gates"
+      "runtime_smoke_owner_approval_current_session": "approved_pending_regenerated_readiness_deployment_evidence_and_runtime_gates",
+      "task_002_runtime_smoke": "passed_2026-06-21_manual_traceability_20260621_001_updated_products_2",
+      "task_002_runtime_evidence_manifest": "/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest-20260621-final.json"
     }
   },
-  "next_focus": "Regenerate current-head runtime readiness after the TASK-002 docs commit, then run the owner-approved guarded synthetic runtime smoke only if deployment evidence and validation gates pass; TASK-002 adapter coding remains blocked pending real supplier contract facts",
-  "open_task_ids": [
-    "TASK-002"
-  ],
+  "next_focus": "TASK-002 derived REST contract boundary and approved synthetic runtime smoke completed. Real supplier onboarding remains data-gated until a real supplier row, private endpoint, credential refs, payload examples, and mapping facts are supplied.",
+  "open_task_ids": [],
   "project": "suppliers-microservice",
   "stage": "production",
   "tasks_active": 1,
   "tasks_failed_last_cycle": 0,
-  "v": 1
+  "v": 1,
+  "updated_at": "2026-06-21"
 }

@@ -576,3 +576,22 @@ Validation evidence: strict documentation audit passed, `node reports/validation
 Boundary decision: no deployment, runtime token inspection, live fixture creation, production supplier import, Warehouse stock mutation, or cleanup mutation was performed. Current-head runtime completion remains unproven until owner-approved guarded runtime evidence regeneration.
 
 Next unfinished chunk: regenerate handoff and deployment evidence for latest clean heads, then request owner-approved deployment and guarded runtime evidence regeneration.
+
+## 2026-06-21 - TASK-002 Runtime Smoke Completion
+
+Current focus: close TASK-002 derived REST contract boundary and approved synthetic runtime evidence.
+
+Evidence:
+- The owner-approved guarded synthetic smoke ran once with idempotency key `manual:traceability-20260621-001`.
+- Smoke result status: `passed`.
+- Supplier import was triggered and the supplier job completed.
+- Supplier job updated products: `2`.
+- Read-only fixture check passed before mutation with `mutationEnabled=false` and `supplierImport.triggered=false`.
+- Runtime evidence manifest verified: `/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest-20260621-final.json`.
+- Runtime evidence bundle verified with report `/tmp/stock-traceability-runtime/VAL-CROSS-STOCK-RUNTIME-LIVE-20260621-final.md`.
+- No token or secret values were printed or persisted.
+- No hard delete, compensating stock change, or cleanup mutation was performed; cleanup remains deferred by runbook.
+
+State:
+- TASK-002 contract and approved synthetic runtime smoke are complete.
+- Real supplier onboarding remains data-gated until real supplier endpoint, credential references, payload sample, supplier row, and mapping facts are supplied.

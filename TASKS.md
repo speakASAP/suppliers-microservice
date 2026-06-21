@@ -4,10 +4,11 @@
 
 - [ ] Add new supplier API integration (priority: 2)
 - [x] TASK-006: Implement supplier integration from empty production state (priority: 2)
-- [ ] Review category mapping completeness (priority: 3)
+- [ ] Data-gated: review real supplier category mapping completeness after a real supplier contract is supplied (priority: 3)
 - [x] Plan owner-approved Nest major dependency upgrade for remaining audit findings (priority: 2)
 
 ## Completed
+- [x] 2026-06-21 TASK-002 derived REST contract boundary and approved synthetic runtime smoke completed with idempotency key `manual:traceability-20260621-001`, supplier import job completed, and `updatedProducts=2`; real supplier onboarding remains data-gated until real supplier facts are supplied.
 <!-- AI appends here. Never modifies previous entries. -->
 - [x] 2026-06-21 TASK-002 derived generic REST/JSON contract details documented without real supplier facts or adapter coding (goal_id: TASK-002, priority: 2)
 - [x] 2026-06-13 Cross-service stock traceability source evidence added for Suppliers-Warehouse-Catalog flow (goal_id: CROSS-STOCK-TRACEABILITY, priority: 1)
