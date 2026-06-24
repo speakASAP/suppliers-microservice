@@ -1,5 +1,15 @@
 # Suppliers Orchestrator Status
 
+## 2026-06-24 - Current-Head Runtime Completion
+
+Change: refreshed the dedicated `stock-traceability-runtime-token` Kubernetes secret with a fresh short-lived synthetic downstream JWT, restarted `suppliers-microservice`, regenerated current-head runtime approval and deployment evidence against clean detached Warehouse/Catalog/Suppliers worktrees, and completed the guarded runtime flow for idempotency key `manual:traceability-20260624-003`. The verified runtime-complete artifacts are `/tmp/stock-traceability-runtime-20260624-003/VAL-CROSS-STOCK-RUNTIME-LIVE.md` and `/tmp/stock-traceability-runtime-20260624-003/stock-traceability-runtime-evidence-manifest.json`.
+
+Boundary decision: no source adapter logic, schema, or real-supplier onboarding contract changed. Runtime mutation stayed within the approved synthetic traceability scope and used the dedicated downstream secret without exposing credential values.
+
+Validation evidence: in-pod Suppliers probes returned Catalog `GET /api/products/:id` HTTP 200 and Warehouse `POST /api/supplier-reconciliations` HTTP 201 after the downstream auth refresh; guarded runtime flow reached `runtime-complete`; `verify-runtime-evidence-report.js`, `verify-runtime-evidence-manifest.js`, `verify-runtime-evidence-bundle.js`, and `verify-stock-traceability-completion.js` all passed for the `/tmp/stock-traceability-runtime-20260624-003` bundle.
+
+Next unfinished chunk: real supplier onboarding remains data-gated until owner supplies supplier metadata, endpoint/runtime reference plan, credential refs, payload examples, mapping facts, and explicit runtime/import approvals.
+
 ## 2026-06-21 - TASK-002 Derived REST/JSON Contract Boundary
 
 Change: added `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md` and linked it from the TASK-002 intake checklist, execution plan, context package, plan, goals, implementation state, and continuation state. The new document separates repo-derived generic REST/JSON details from missing external supplier facts. Derived details include adapter key `rest`, `apiType=rest`, HTTPS JSON GET by default, runtime credential reference behavior, accepted payload shape, required `supplierSku` and `stockQuantity`, optional normalized fields, replay key derivation, source fingerprint derivation, and existing synthetic source checks.

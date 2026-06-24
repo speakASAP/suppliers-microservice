@@ -8,6 +8,8 @@
 - [x] Plan owner-approved Nest major dependency upgrade for remaining audit findings (priority: 2)
 
 ## Completed
+
+- [x] 2026-06-24 Current-head cross-service runtime stock traceability completed with verified runtime bundle `/tmp/stock-traceability-runtime-20260624-003`, idempotency key `manual:traceability-20260624-003`, and runtime auth refresh for the dedicated synthetic downstream secret.
 - [x] 2026-06-21 TASK-002 derived REST contract boundary and approved synthetic runtime smoke completed with idempotency key `manual:traceability-20260621-001`, supplier import job completed, and `updatedProducts=2`; real supplier onboarding remains data-gated until real supplier facts are supplied.
 <!-- AI appends here. Never modifies previous entries. -->
 - [x] 2026-06-21 TASK-002 synthetic generic `rest` onboarding passed for test suppliers `codex-rest-test-a` and `codex-rest-test-b`; imports were validate-only and performed no Warehouse mutation.
