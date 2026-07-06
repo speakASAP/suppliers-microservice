@@ -10,6 +10,7 @@ import { HealthModule } from './health/health.module';
 import { LoggerModule } from './logger/logger.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtRolesGuard } from './auth/jwt-roles.guard';
+import { BusinessHealthModule } from './business-health/business-health.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { JwtRolesGuard } from './auth/jwt-roles.guard';
     }),
     LoggerModule,
     HealthModule,
+    BusinessHealthModule,
     SuppliersModule,
     ImportsModule,
     MappingsModule,

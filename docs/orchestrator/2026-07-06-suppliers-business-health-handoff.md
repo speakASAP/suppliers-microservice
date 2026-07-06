@@ -151,6 +151,65 @@ Validation owner: monitor implementer for source-only monitor work; runtime vali
 
 Merge order: no source monitor should claim real supplier health before contract intake and runtime approvals are complete.
 
+
+## Business-health endpoint implementation
+
+The Suppliers-owned read-only endpoint is now implemented for control-plane aggregation:
+
+| Field | Value |
+| --- | --- |
+| `endpoint` | `GET /api/business-health/supplier-warehouse-traceability` |
+| `contractId` | `suppliers.supplier_warehouse_traceability_business_health.v1` |
+| `businessHealthContract` | `stock-order-marketplace-business-health.v1` |
+| `service` | `suppliers-microservice` |
+| `status` | `warn` |
+| `mutatesSuppliers` | `false` |
+| `mutatesWarehouse` | `false` |
+| `mutatesCatalog` | `false` |
+| `mutatesMarketplace` | `false` |
+| `runtimeDataQueried` | `false` |
+| `productionDbQueried` | `false` |
+| `liveSyntheticMutationAuthorized` | `false` |
+
+The endpoint returns source-owned, sanitized evidence only. It does not read the production database, call live supplier endpoints, call Warehouse or Catalog, execute imports, deploy, or mutate Suppliers, Warehouse, Catalog, marketplace, stock, reservation, order, or payment state.
+
+Required machine-readable envelope markers:
+
+```text
+runtimeDataQueried: false
+productionDbQueried: false
+liveSyntheticMutationAuthorized: false
+```
+
+Source references exposed by the envelope:
+
+- `src/imports/import-validation.ts`
+- `src/imports/imports.service.ts`
+- `src/imports/adapters/synthetic-trace-supplier-adapter.ts`
+- `reports/validation/synthetic-stock-traceability-check.js`
+- `reports/validation/runtime-stock-traceability-smoke.js`
+- `reports/validation/verify-stock-traceability-completion.js`
+- `docs/cross-service/stock-traceability-flow.md`
+- `docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md`
+
+Endpoint assertions:
+
+- Supplier candidates are validation-first and must pass normalized candidate checks before downstream writes.
+- Warehouse remains stock authority; Suppliers only orchestrates owner-approved reconciliation intent.
+- Idempotency keys and source fingerprints are required evidence for replay-sensitive supplier imports.
+- Synthetic proof is business-health evidence for cross-service plumbing, not real supplier procurement readiness.
+- Evidence must not contain secrets, credential values, private supplier endpoints, raw supplier payloads, bearer tokens, API keys, passwords, private keys, or unredacted response bodies.
+- Real procurement readiness remains blocked by the `[MISSING: ...]` facts in this handoff.
+
+Implementation files:
+
+- `src/business-health/business-health.controller.ts`
+- `src/business-health/business-health.service.ts`
+- `src/business-health/business-health.types.ts`
+- `src/business-health/business-health.module.ts`
+- `src/app.module.ts`
+- `scripts/verify-business-health-suppliers-traceability-contract.js`
+
 ## Validation
 
 Planned commands for this handoff:
@@ -162,6 +221,7 @@ git diff --check
 
 Validation result:
 
+- 2026-07-06: `npm run verify:business-health-suppliers-traceability-contract` validates the service endpoint, static source references, forbidden runtime patterns, and preserved `[MISSING: ...]` blockers.
 - 2026-07-06: `node scripts/verify-business-health-suppliers-contract.js` passed with `missingMarkers=17` and `checkedSnippets=24`.
 - 2026-07-06: `git diff --check` passed with no output.
 
