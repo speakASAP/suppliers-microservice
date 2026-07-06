@@ -12,6 +12,12 @@ export class Supplier {
   @Column({ length: 100, unique: true })
   code: string;
 
+  @Column({ length: 200, nullable: true })
+  ownerUserId: string;
+
+  @Column({ length: 200, nullable: true })
+  ownerEmail: string;
+
   // API connection type: rest, xml, csv, ftp
   @Column({ length: 50 })
   apiType: SupplierApiType;

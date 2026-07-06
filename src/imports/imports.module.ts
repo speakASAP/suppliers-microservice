@@ -9,9 +9,10 @@ import { SyntheticTraceSupplierAdapter } from "./adapters/synthetic-trace-suppli
 import { ProductionRestJsonSupplierAdapter } from "./adapters/production-rest-json-supplier-adapter";
 import { LoggerModule } from "../logger/logger.module";
 import { Supplier } from "../suppliers/supplier.entity";
+import { SuppliersModule } from "../suppliers/suppliers.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([ImportJob, Supplier]), HttpModule, LoggerModule],
+  imports: [TypeOrmModule.forFeature([ImportJob, Supplier]), HttpModule, LoggerModule, SuppliersModule],
   controllers: [ImportsController],
   providers: [
     ImportsService,

@@ -8,6 +8,8 @@ CREATE TABLE IF NOT EXISTS "suppliers" (
   "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   "name" varchar(200) NOT NULL,
   "code" varchar(100) NOT NULL,
+  "ownerUserId" varchar(200),
+  "ownerEmail" varchar(200),
   "apiType" varchar(50) NOT NULL,
   "apiUrl" varchar(500),
   "apiCredentials" jsonb,
@@ -23,6 +25,8 @@ ALTER TABLE "suppliers"
   ADD COLUMN IF NOT EXISTS "name" varchar(200),
   ADD COLUMN IF NOT EXISTS "code" varchar(100),
   ADD COLUMN IF NOT EXISTS "apiType" varchar(50),
+  ADD COLUMN IF NOT EXISTS "ownerUserId" varchar(200),
+  ADD COLUMN IF NOT EXISTS "ownerEmail" varchar(200),
   ADD COLUMN IF NOT EXISTS "apiUrl" varchar(500),
   ADD COLUMN IF NOT EXISTS "apiCredentials" jsonb,
   ADD COLUMN IF NOT EXISTS "syncSchedule" varchar(100),
@@ -31,6 +35,12 @@ ALTER TABLE "suppliers"
   ADD COLUMN IF NOT EXISTS "lastSyncStatus" varchar(50),
   ADD COLUMN IF NOT EXISTS "createdAt" timestamp NOT NULL DEFAULT now(),
   ADD COLUMN IF NOT EXISTS "updatedAt" timestamp NOT NULL DEFAULT now();
+
+CREATE INDEX IF NOT EXISTS "IDX_suppliers_owner_user"
+  ON "suppliers" ("ownerUserId");
+
+CREATE INDEX IF NOT EXISTS "IDX_suppliers_owner_email"
+  ON "suppliers" ("ownerEmail");
 
 CREATE UNIQUE INDEX IF NOT EXISTS "IDX_suppliers_code"
   ON "suppliers" ("code");

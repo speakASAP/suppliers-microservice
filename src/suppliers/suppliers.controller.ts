@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Put, Body, Param, ParseUUIDPipe } from '@nestjs/common';
+import { Controller, Get, Post, Put, Body, Param, ParseUUIDPipe, Req } from '@nestjs/common';
+import type { AuthenticatedSupplierRequest } from '../auth/jwt-roles.guard';
 import { CreateSupplierDto, UpdateSupplierDto } from './dto/supplier.dto';
 import { Supplier } from './supplier.entity';
 import { SuppliersService } from './suppliers.service';
+import type { SupplierActor } from './suppliers.service';
 
 type SupplierResponse = Omit<Supplier, 'apiCredentials'> & { hasCredentials: boolean };
 
@@ -10,27 +12,35 @@ export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
   @Get()
-  async findAll() {
-    const suppliers = await this.suppliersService.findAll();
+  async findAll(@Req() request: AuthenticatedSupplierRequest) {
+    const suppliers = await this.suppliersService.findAll(this.actorFromRequest(request));
     return { success: true, data: suppliers.map((supplier) => this.toResponse(supplier)) };
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
-    const supplier = await this.suppliersService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string, @Req() request: AuthenticatedSupplierRequest) {
+    const supplier = await this.suppliersService.findOne(id, this.actorFromRequest(request));
     return { success: true, data: this.toResponse(supplier) };
   }
 
   @Post()
-  async create(@Body() data: CreateSupplierDto) {
-    const supplier = await this.suppliersService.create(data);
+  async create(@Body() data: CreateSupplierDto, @Req() request: AuthenticatedSupplierRequest) {
+    const supplier = await this.suppliersService.create(data, this.actorFromRequest(request));
     return { success: true, data: this.toResponse(supplier) };
   }
 
   @Put(':id')
-  async update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateSupplierDto) {
-    const supplier = await this.suppliersService.update(id, data);
+  async update(@Param('id', ParseUUIDPipe) id: string, @Body() data: UpdateSupplierDto, @Req() request: AuthenticatedSupplierRequest) {
+    const supplier = await this.suppliersService.update(id, data, this.actorFromRequest(request));
     return { success: true, data: this.toResponse(supplier) };
+  }
+
+  private actorFromRequest(request: AuthenticatedSupplierRequest): SupplierActor {
+    return {
+      sub: request.user?.sub || '',
+      email: request.user?.email,
+      roles: request.user?.roles || [],
+    };
   }
 
   private toResponse(supplier: Supplier): SupplierResponse {

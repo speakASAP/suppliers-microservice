@@ -14,6 +14,14 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ROLES_KEY, PUBLIC_KEY } from './roles.decorator';
 
+export type AuthenticatedSupplierUser = {
+  sub: string;
+  email?: string;
+  roles: string[];
+};
+
+export type AuthenticatedSupplierRequest = Request & { user?: AuthenticatedSupplierUser };
+
 @Injectable()
 export class JwtRolesGuard implements CanActivate {
   constructor(
@@ -48,12 +56,12 @@ export class JwtRolesGuard implements CanActivate {
       });
       const userRoles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
 
-      const hasRole = requiredRoles.some((r) => userRoles.includes(r));
+      const hasRole = requiredRoles.includes('authenticated') || requiredRoles.some((r) => userRoles.includes(r));
       if (!hasRole) {
         throw new ForbiddenException('Insufficient permissions');
       }
 
-      (request as Request & { user: unknown }).user = {
+      (request as AuthenticatedSupplierRequest).user = {
         sub: payload.sub,
         email: payload.email,
         roles: userRoles,
@@ -67,6 +75,6 @@ export class JwtRolesGuard implements CanActivate {
 
   private getDefaultRoles(): string[] {
     const name = process.env.SERVICE_NAME || 'suppliers-microservice';
-    return [`global:superadmin`, `internal:${name}:admin`];
+    return ['authenticated', `global:superadmin`, `internal:${name}:admin`];
   }
 }

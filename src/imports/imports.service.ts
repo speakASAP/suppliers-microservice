@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { HttpService } from "@nestjs/axios";
 import { createHash } from "crypto";
 import { firstValueFrom } from "rxjs";
@@ -87,6 +87,17 @@ export class ImportsService {
     const where = supplierId ? { supplierId } : {};
     return this.importJobRepository.find({
       where,
+      order: { createdAt: "DESC" },
+      take: 50,
+    });
+  }
+
+  async findJobsBySupplierIds(supplierIds: string[]): Promise<ImportJob[]> {
+    if (supplierIds.length === 0) {
+      return [];
+    }
+    return this.importJobRepository.find({
+      where: { supplierId: In(supplierIds) },
       order: { createdAt: "DESC" },
       take: 50,
     });
