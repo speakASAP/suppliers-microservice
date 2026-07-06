@@ -84,7 +84,11 @@ export class LoggerService {
       payload.metadata = sanitizedMetadata;
     }
 
-    void axios.post(loggingUrl, payload, { timeout: 2000 }).catch(() => undefined);
+    const token = process.env.LOGGING_SERVICE_TOKEN?.trim();
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+    const requestOptions = headers ? { timeout: 2000, headers } : { timeout: 2000 };
+
+    void axios.post(loggingUrl, payload, requestOptions).catch(() => undefined);
   }
 
   private toCentralLevel(level: LogLevel): CentralLogLevel {
