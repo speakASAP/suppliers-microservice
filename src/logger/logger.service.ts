@@ -2,11 +2,12 @@ import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 
 type LogLevel = 'log' | 'warn' | 'error';
+type CentralLogLevel = 'info' | 'warn' | 'error';
 
 type LogMetadata = Record<string, unknown>;
 
 interface CentralLogPayload {
-  level: LogLevel;
+  level: CentralLogLevel;
   message: string;
   service: string;
   timestamp: string;
@@ -67,7 +68,7 @@ export class LoggerService {
 
     const sanitizedMetadata = this.sanitizeMetadata(metadata);
     const payload: CentralLogPayload = {
-      level,
+      level: this.toCentralLevel(level),
       message: this.redactSensitiveText(message),
       service: process.env.SERVICE_NAME || DEFAULT_SERVICE_NAME,
       timestamp,
@@ -84,6 +85,10 @@ export class LoggerService {
     }
 
     void axios.post(loggingUrl, payload, { timeout: 2000 }).catch(() => undefined);
+  }
+
+  private toCentralLevel(level: LogLevel): CentralLogLevel {
+    return level === 'log' ? 'info' : level;
   }
 
   private getLoggingUrl(): string | undefined {
