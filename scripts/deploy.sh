@@ -10,7 +10,27 @@ SERVICE_NAME="suppliers-microservice"
 NAMESPACE="${NAMESPACE:-statex-apps}"
 K8S_DIR="$PROJECT_ROOT/k8s"
 REGISTRY="localhost:5000"
-DEFAULT_TAG="$(cd "$PROJECT_ROOT" && git rev-parse --short HEAD 2>/dev/null || echo "build-$(date -u +%Y%m%d%H%M%S)")"
+# Tag describes the WORKING TREE that is actually built, not just git HEAD:
+# a tag derived from HEAD alone repeats itself when files changed without a
+# commit, which makes `kubectl set image` a no-op and silently keeps the old
+# image running.
+compute_default_tag() {
+  local head dirty root
+  root="${PROJECT_ROOT:-$(pwd)}"
+  head="$(git -C "$root" rev-parse --short HEAD 2>/dev/null || true)"
+  if [ -z "$head" ]; then
+    echo "build-$(date -u +%Y%m%d%H%M%S)"
+    return
+  fi
+  dirty="$(git -C "$root" status --porcelain 2>/dev/null || true)"
+  if [ -n "$dirty" ]; then
+    echo "${head}-wt$(date -u +%Y%m%d%H%M%S)"
+  else
+    echo "$head"
+  fi
+}
+
+DEFAULT_TAG="$(compute_default_tag)"
 IMAGE_TAG="${1:-$DEFAULT_TAG}"
 IMAGE="${REGISTRY}/${SERVICE_NAME}:${IMAGE_TAG}"
 IMAGE_LATEST="${REGISTRY}/${SERVICE_NAME}:latest"
@@ -51,12 +71,8 @@ fi
 
 deploy_timing_run_phase "Preflight" preflight_service_health
 
-if [ "${NODE_ENV:-}" = "production" ]; then
-  deploy_timing_phase_start "Git sync"
-  cd "$PROJECT_ROOT"
-  git fetch origin && git stash || true && git pull origin main && git stash pop || true
-  deploy_timing_phase_end "Git sync"
-fi
+# No git fetch/pull/stash here on purpose: the deploy ships exactly the code
+# in $PROJECT_ROOT. Pulling would replace the tree being tested with origin.
 
 deploy_timing_phase_start "Build image"
 docker build -t "$IMAGE" -t "$IMAGE_LATEST" "$PROJECT_ROOT"
