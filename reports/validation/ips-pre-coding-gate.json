@@ -3,12 +3,12 @@
   "execution_plans": {
     "execution_plan_count": 6,
     "execution_plan_files": [
-      "21_execution_plans/EP-TASK-001-ips-documentation-bootstrap.md",
-      "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md",
-      "21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md",
-      "21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md",
-      "21_execution_plans/EP-TASK-005-goal-6.md",
-      "21_execution_plans/EP-TASK-006-adapter-foundation.md"
+      "docs/21_execution_plans/EP-TASK-001-ips-documentation-bootstrap.md",
+      "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md",
+      "docs/21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md",
+      "docs/21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md",
+      "docs/21_execution_plans/EP-TASK-005-goal-6.md",
+      "docs/21_execution_plans/EP-TASK-006-adapter-foundation.md"
     ],
     "missing_validation_plan": []
   },
@@ -16,18 +16,18 @@
   "missing_immutable_files": [],
   "next_step": "start_controlled_coding",
   "project_invariants": {
-    "path": "17_governance/PROJECT_INVARIANTS.md",
+    "path": "docs/17_governance/PROJECT_INVARIANTS.md",
     "status": "pass"
   },
   "required_immutable_files": [
-    "00_constitution/CONSTITUTION.md",
-    "01_vision/VISION.md"
+    "docs/00_constitution/CONSTITUTION.md",
+    "docs/01_vision/VISION.md"
   ],
   "root": "/home/ssf/Documents/Github/suppliers-microservice",
   "schema_version": "1.0.0",
   "sensitive_data_findings": [],
   "shared_principles_with_dos": {
-    "path": "17_governance/SHARED_PRINCIPLES_WITH_DOS.md",
+    "path": "docs/17_governance/SHARED_PRINCIPLES_WITH_DOS.md",
     "reason": "cross_repo_mode_disabled",
     "status": "not_applicable"
   },
@@ -36,12 +36,12 @@
     "missing_upstream_traceability": [],
     "task_count": 6,
     "task_files": [
-      "11_tasks/TASK-001-ips-documentation-bootstrap.md",
-      "11_tasks/TASK-002-add-new-supplier-api-integration.md",
-      "11_tasks/TASK-003-review-category-mapping-completeness.md",
-      "11_tasks/TASK-004-review-warehouse-stock-update-boundary.md",
-      "11_tasks/TASK-005-goal-6.md",
-      "11_tasks/TASK-006-adapter-foundation.md"
+      "docs/11_tasks/TASK-001-ips-documentation-bootstrap.md",
+      "docs/11_tasks/TASK-002-add-new-supplier-api-integration.md",
+      "docs/11_tasks/TASK-003-review-category-mapping-completeness.md",
+      "docs/11_tasks/TASK-004-review-warehouse-stock-update-boundary.md",
+      "docs/11_tasks/TASK-005-goal-6.md",
+      "docs/11_tasks/TASK-006-adapter-foundation.md"
     ]
   }
 }

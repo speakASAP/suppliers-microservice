@@ -63,9 +63,9 @@ Warehouse client calls, production stock mutation, production stock verification
 ## Files to Create
 
 - `src/database/migrations/202606130002-import-job-warehouse-stock-boundary.sql`
-- `12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md`
-- `13_context_packages/CP-TASK-004-review-warehouse-stock-update-boundary.md`
-- `14_prompts/PROMPT-TASK-004-review-warehouse-stock-update-boundary.md`
+- `docs/12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md`
+- `docs/13_context_packages/CP-TASK-004-review-warehouse-stock-update-boundary.md`
+- `docs/14_prompts/PROMPT-TASK-004-review-warehouse-stock-update-boundary.md`
 
 ## Files to Modify
 
@@ -78,7 +78,7 @@ Warehouse client calls, production stock mutation, production stock verification
 - `docs/intent-preservation/TRACEABILITY_MATRIX.md`
 - `implementation-goals/README.md`
 - `implementation-goals/GOAL-05-warehouse-stock-update-boundary.md`
-- `16_operations/INTEGRATIONS.md`
+- `docs/16_operations/INTEGRATIONS.md`
 - `TASKS.md`
 - `STATE.json`
 
@@ -86,8 +86,8 @@ Warehouse client calls, production stock mutation, production stock verification
 
 - `.env`
 - `.env.backup*`
-- `00_constitution/`
-- `01_vision/`
+- `docs/00_constitution/`
+- `docs/01_vision/`
 
 ## Implementation Steps
 

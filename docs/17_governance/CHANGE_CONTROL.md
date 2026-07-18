@@ -15,7 +15,7 @@ related_adrs: []
 
 ## Rules
 
-- Changes under `00_constitution/` and `01_vision/` require owner review.
+- Changes under `docs/00_constitution/` and `docs/01_vision/` require owner review.
 - Runtime changes require an upstream task, goal impact record, execution plan, and validation report.
 - Supplier integrations require sensitive-data, contract, and replay/idempotency review.
 - Deployment-affecting changes require deployment-readiness evidence.

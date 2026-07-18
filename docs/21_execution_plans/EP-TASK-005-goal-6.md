@@ -66,12 +66,12 @@ Runtime source edits, database migrations, deployment, production imports, suppl
 
 ## Files to Create
 
-- `11_tasks/TASK-005-goal-6.md`
-- `12_validation/VAL-TASK-005-goal-6.md`
-- `13_context_packages/CP-TASK-005-goal-6.md`
-- `14_prompts/PROMPT-TASK-005-goal-6.md`
-- `21_execution_plans/EP-TASK-005-goal-6.md`
-- `22_goal_impact/GOAL-IMPACT-TASK-005.md`
+- `docs/11_tasks/TASK-005-goal-6.md`
+- `docs/12_validation/VAL-TASK-005-goal-6.md`
+- `docs/13_context_packages/CP-TASK-005-goal-6.md`
+- `docs/14_prompts/PROMPT-TASK-005-goal-6.md`
+- `docs/21_execution_plans/EP-TASK-005-goal-6.md`
+- `docs/22_goal_impact/GOAL-IMPACT-TASK-005.md`
 - `implementation-goals/GOAL-06-operational-smoke-docs-ingestion.md`
 
 ## Files to Modify
@@ -88,8 +88,8 @@ Runtime source edits, database migrations, deployment, production imports, suppl
 
 - `.env`
 - `.env.backup*`
-- `00_constitution/`
-- `01_vision/`
+- `docs/00_constitution/`
+- `docs/01_vision/`
 - Runtime source under `src/` unless a later owner-approved corrective plan is created.
 
 ## Implementation Steps

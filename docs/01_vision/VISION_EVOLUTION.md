@@ -25,15 +25,15 @@ The suppliers microservice needs traceable intent, tasks, execution plans, valid
 
 ## Original vision reference
 
-`01_vision/VISION.md` derived from `BUSINESS.md`, `README.md`, and `SYSTEM.md`.
+`docs/01_vision/VISION.md` derived from `BUSINESS.md`, `README.md`, and `SYSTEM.md`.
 
 ## Affected documents
 
-- `00_constitution/CONSTITUTION.md`
-- `01_vision/VISION.md`
-- `02_business_case/BUSINESS_CASE.md`
-- `04_systems/SYS-001-supplier-import-service.md`
-- `07_decisions/ADR-001-adopt-intent-preservation-system.md`
+- `docs/00_constitution/CONSTITUTION.md`
+- `docs/01_vision/VISION.md`
+- `docs/02_business_case/BUSINESS_CASE.md`
+- `docs/04_systems/SYS-001-supplier-import-service.md`
+- `docs/07_decisions/ADR-001-adopt-intent-preservation-system.md`
 
 ## Impact on business goal
 

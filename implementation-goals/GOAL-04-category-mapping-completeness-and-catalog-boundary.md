@@ -29,7 +29,7 @@ No production migration execution, deployment, Catalog category lookup, Catalog 
 
 ## File Scope
 
-src/database/migrations/202606130001-import-job-idempotency-validation.sql, src/mappings/dto/set-category-mapping.dto.ts, src/mappings/dto/validate-category-mappings.dto.ts, src/mappings/category-mapping.entity.ts, src/mappings/mappings.controller.ts, src/mappings/mappings.service.ts, 10_features/FEAT-002-category-mapping.md, 12_validation/VAL-TASK-003-review-category-mapping-completeness.md, 16_operations/INTEGRATIONS.md, 21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md, docs/orchestrator/GOALS.md, docs/orchestrator/PLAN.md, docs/orchestrator/STATUS.md, docs/IMPLEMENTATION_STATE.md, TASKS.md, STATE.json.
+src/database/migrations/202606130001-import-job-idempotency-validation.sql, src/mappings/dto/set-category-mapping.dto.ts, src/mappings/dto/validate-category-mappings.dto.ts, src/mappings/category-mapping.entity.ts, src/mappings/mappings.controller.ts, src/mappings/mappings.service.ts, docs/10_features/FEAT-002-category-mapping.md, docs/12_validation/VAL-TASK-003-review-category-mapping-completeness.md, docs/16_operations/INTEGRATIONS.md, docs/21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md, docs/orchestrator/GOALS.md, docs/orchestrator/PLAN.md, docs/orchestrator/STATUS.md, docs/IMPLEMENTATION_STATE.md, TASKS.md, STATE.json.
 
 ## Invariant Review
 

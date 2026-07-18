@@ -70,10 +70,10 @@ Provide the service boundary for configuring suppliers, executing supplier impor
 
 ## Downstream artifacts
 
-- `10_features/FEAT-001-supplier-api-integration.md`
-- `10_features/FEAT-002-category-mapping.md`
-- `10_features/FEAT-003-import-job-tracking.md`
-- `12_validation/VALIDATION_PYRAMID.md`
+- `docs/10_features/FEAT-001-supplier-api-integration.md`
+- `docs/10_features/FEAT-002-category-mapping.md`
+- `docs/10_features/FEAT-003-import-job-tracking.md`
+- `docs/12_validation/VALIDATION_PYRAMID.md`
 
 ## Validation criteria
 

@@ -17,7 +17,7 @@ upstream:
   - docs/intent-preservation/context-packages/CP-SUP-FRONTEND-ADMIN.md
 downstream: []
 related_adrs:
-  - 07_decisions/ADR-001-adopt-intent-preservation-system.md
+  - docs/07_decisions/ADR-001-adopt-intent-preservation-system.md
 ```
 
 ## Summary
@@ -26,7 +26,7 @@ The Suppliers public landing page, login screen, registration screen, and token-
 
 ## Upstream goal
 
-Create frontend surfaces for `suppliers-microservice` while preserving the supplier import service boundaries documented in `BUSINESS.md`, `SYSTEM.md`, `README.md`, `06_architecture/ARCHITECTURE_OVERVIEW.md`, and `16_operations/INTEGRATIONS.md`.
+Create frontend surfaces for `suppliers-microservice` while preserving the supplier import service boundaries documented in `BUSINESS.md`, `SYSTEM.md`, `README.md`, `docs/06_architecture/ARCHITECTURE_OVERVIEW.md`, and `docs/16_operations/INTEGRATIONS.md`.
 
 ## Criteria checked
 

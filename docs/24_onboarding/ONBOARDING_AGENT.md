@@ -16,7 +16,7 @@ related_adrs: []
 
 ## Start Here
 
-Read `AGENTS.md`, `00_constitution/CONSTITUTION.md`, `01_vision/VISION.md`, `17_governance/PROJECT_INVARIANTS.md`, and the task-specific execution plan before making changes.
+Read `AGENTS.md`, `docs/00_constitution/CONSTITUTION.md`, `docs/01_vision/VISION.md`, `docs/17_governance/PROJECT_INVARIANTS.md`, and the task-specific execution plan before making changes.
 
 ## Service Summary
 

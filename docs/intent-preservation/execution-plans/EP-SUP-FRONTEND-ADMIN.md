@@ -9,8 +9,8 @@ upstream:
   - BUSINESS.md
   - SYSTEM.md
   - README.md
-  - 06_architecture/ARCHITECTURE_OVERVIEW.md
-  - 16_operations/INTEGRATIONS.md
+  - docs/06_architecture/ARCHITECTURE_OVERVIEW.md
+  - docs/16_operations/INTEGRATIONS.md
 ```
 
 ## Goal

@@ -25,7 +25,7 @@ Implement the Goal 5 service-local Warehouse stock update boundary: validate sto
 
 ## Context
 
-Use `BUSINESS.md`, `SYSTEM.md`, `README.md`, `docs/orchestrator/*`, `10_features/FEAT-001-supplier-api-integration.md`, `11_tasks/TASK-004-review-warehouse-stock-update-boundary.md`, and `21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md`.
+Use `BUSINESS.md`, `SYSTEM.md`, `README.md`, `docs/orchestrator/*`, `docs/10_features/FEAT-001-supplier-api-integration.md`, `docs/11_tasks/TASK-004-review-warehouse-stock-update-boundary.md`, and `docs/21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md`.
 
 ## Constraints
 

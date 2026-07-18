@@ -23,7 +23,7 @@ No Warehouse client, Warehouse stock mutation, production supplier payload query
 
 ## File Scope
 
-src/imports/import-validation.ts, src/imports/import-job.entity.ts, src/imports/imports.service.ts, src/database/migrations/202606130002-import-job-warehouse-stock-boundary.sql, 11_tasks/TASK-004-review-warehouse-stock-update-boundary.md, 12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md, 13_context_packages/CP-TASK-004-review-warehouse-stock-update-boundary.md, 14_prompts/PROMPT-TASK-004-review-warehouse-stock-update-boundary.md, 16_operations/INTEGRATIONS.md, 21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md, 22_goal_impact/GOAL-IMPACT-TASK-004.md, docs/orchestrator/GOALS.md, docs/orchestrator/STATUS.md, docs/IMPLEMENTATION_STATE.md, docs/intent-preservation/TRACEABILITY_MATRIX.md, TASKS.md, STATE.json.
+src/imports/import-validation.ts, src/imports/import-job.entity.ts, src/imports/imports.service.ts, src/database/migrations/202606130002-import-job-warehouse-stock-boundary.sql, docs/11_tasks/TASK-004-review-warehouse-stock-update-boundary.md, docs/12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md, docs/13_context_packages/CP-TASK-004-review-warehouse-stock-update-boundary.md, docs/14_prompts/PROMPT-TASK-004-review-warehouse-stock-update-boundary.md, docs/16_operations/INTEGRATIONS.md, docs/21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md, docs/22_goal_impact/GOAL-IMPACT-TASK-004.md, docs/orchestrator/GOALS.md, docs/orchestrator/STATUS.md, docs/IMPLEMENTATION_STATE.md, docs/intent-preservation/TRACEABILITY_MATRIX.md, TASKS.md, STATE.json.
 
 ## Invariant Review
 

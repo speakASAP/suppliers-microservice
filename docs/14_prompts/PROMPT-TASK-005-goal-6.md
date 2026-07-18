@@ -25,7 +25,7 @@ Run Goal 6 read-only operational smoke and documentation-ingestion validation.
 
 ## Context
 
-Use `BUSINESS.md`, `SYSTEM.md`, `README.md`, `docs/orchestrator/*`, `11_tasks/TASK-005-goal-6.md`, and `21_execution_plans/EP-TASK-005-goal-6.md`.
+Use `BUSINESS.md`, `SYSTEM.md`, `README.md`, `docs/orchestrator/*`, `docs/11_tasks/TASK-005-goal-6.md`, and `docs/21_execution_plans/EP-TASK-005-goal-6.md`.
 
 ## Constraints
 

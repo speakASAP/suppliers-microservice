@@ -69,16 +69,16 @@ Validation report, DTOs, and migration artifact.
 - `src/mappings/mappings.service.ts`
 - `src/mappings/mappings.controller.ts`
 - `README.md`
-- `10_features/FEAT-002-category-mapping.md`
-- `12_validation/VAL-TASK-003-review-category-mapping-completeness.md`
-- `16_operations/INTEGRATIONS.md`
+- `docs/10_features/FEAT-002-category-mapping.md`
+- `docs/12_validation/VAL-TASK-003-review-category-mapping-completeness.md`
+- `docs/16_operations/INTEGRATIONS.md`
 
 ## Files That Must Not Be Modified
 
 - `.env`
 - `.env.backup*`
-- `00_constitution/`
-- `01_vision/`
+- `docs/00_constitution/`
+- `docs/01_vision/`
 
 ## Implementation Steps
 

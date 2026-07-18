@@ -69,7 +69,7 @@ Close the operational evidence loop for Suppliers and prepare current IPS docs f
 
 - `BUSINESS.md`: validation-first supplier import service.
 - `docs/orchestrator/READINESS_GATES.md`: deployment readiness requires health check and sanitized smoke evidence.
-- `21_execution_plans/EP-TASK-005-goal-6.md`: allowed commands and non-goals.
+- `docs/21_execution_plans/EP-TASK-005-goal-6.md`: allowed commands and non-goals.
 
 ## Implementation Boundary
 

@@ -53,7 +53,7 @@ This report traces to `../11_tasks/TASK-005-goal-6.md` and `../21_execution_plan
 - `python3 scripts/strict_doc_audit.py --format markdown --fail-on-issues`: passed with score 100/100 after Goal 6 graph edges were added.
 - `python3 scripts/deployment_readiness_gate.py --root . --target TASK-005`: passed and wrote `reports/validation/ips-deployment-readiness-gate.json`.
 - DocsRAG ingestion: `POST /ingestion/trigger` for `repoName=suppliers-microservice`, `localPath=true`, `force=true` completed with 118/118 markdown files processed.
-- DocsRAG retrieval: scoped search for Goal 6 returned current Suppliers IPS artifacts including `12_validation/VAL-TASK-005-goal-6.md` and `14_prompts/PROMPT-TASK-005-goal-6.md`.
+- DocsRAG retrieval: scoped search for Goal 6 returned current Suppliers IPS artifacts including `docs/12_validation/VAL-TASK-005-goal-6.md` and `docs/14_prompts/PROMPT-TASK-005-goal-6.md`.
 
 ## Gate evidence
 

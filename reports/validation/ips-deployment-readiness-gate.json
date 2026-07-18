@@ -24,187 +24,187 @@
     {
       "line": 88,
       "marker": "[UNKNOWN: exact supplier-specific validation rules must be defined per supplier integration before implementation]",
-      "path": "04_systems/SYS-001-supplier-import-service.md"
+      "path": "docs/04_systems/SYS-001-supplier-import-service.md"
     },
     {
       "line": 89,
       "marker": "[UNKNOWN: complete production auth and role matrix must be confirmed by the service owner]",
-      "path": "04_systems/SYS-001-supplier-import-service.md"
+      "path": "docs/04_systems/SYS-001-supplier-import-service.md"
     },
     {
       "line": 49,
       "marker": "[MISSING: real supplier identity and stable supplier code]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 50,
       "marker": "[MISSING: private endpoint or file-source descriptor stored outside committed docs]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 51,
       "marker": "[MISSING: authentication shape]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 52,
       "marker": "[MISSING: runtime credential reference plan]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 53,
       "marker": "[MISSING: payload schema]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 54,
       "marker": "[MISSING: pagination behavior]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 55,
       "marker": "[MISSING: rate limits and retry policy]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 56,
       "marker": "[MISSING: supplier error model]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 57,
       "marker": "[MISSING: deterministic idempotency/source-record rules]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 58,
       "marker": "[MISSING: category mapping requirements]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 59,
       "marker": "[MISSING: Catalog and Warehouse boundary expectations]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 60,
       "marker": "[MISSING: sanitized sample request, response, empty-page, malformed-payload, and error examples]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 61,
       "marker": "[MISSING: owner approval to convert this package into a coding prompt]",
-      "path": "13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 24,
       "marker": "[MISSING: ...]",
-      "path": "17_governance/AI_AGENT_RULES.md"
+      "path": "docs/17_governance/AI_AGENT_RULES.md"
     },
     {
       "line": 24,
       "marker": "[UNKNOWN: ...]",
-      "path": "17_governance/AI_AGENT_RULES.md"
+      "path": "docs/17_governance/AI_AGENT_RULES.md"
     },
     {
       "line": 53,
       "marker": "[MISSING: real supplier identity and stable supplier code]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 54,
       "marker": "[MISSING: private endpoint or file-source location stored outside committed docs]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 55,
       "marker": "[MISSING: authentication shape]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 56,
       "marker": "[MISSING: runtime credential reference plan]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 57,
       "marker": "[MISSING: payload schema]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 58,
       "marker": "[MISSING: rate limits]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 59,
       "marker": "[MISSING: pagination or incremental-fetch behavior]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 60,
       "marker": "[MISSING: sanitized sample response]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 61,
       "marker": "[MISSING: owner approval to convert this plan into a coding prompt]",
-      "path": "21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 16,
       "marker": "[MISSING: ...]",
-      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+      "path": "docs/23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
     },
     {
       "line": 17,
       "marker": "[UNKNOWN: ...]",
-      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+      "path": "docs/23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
     },
     {
       "line": 41,
       "marker": "[MISSING: ...]",
-      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+      "path": "docs/23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
     },
     {
       "line": 71,
       "marker": "[MISSING: define what this feature explicitly does not include]",
-      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+      "path": "docs/23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
     },
     {
       "line": 74,
       "marker": "[MISSING: define measurable acceptance criteria]",
-      "path": "23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
+      "path": "docs/23_documentation_contracts/AGENT_GAP_FILLING_RULES.md"
     },
     {
       "line": 47,
       "marker": "[MISSING: describe what is missing and who should provide it]",
-      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+      "path": "docs/23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
     },
     {
       "line": 53,
       "marker": "[MISSING: define measurable acceptance criteria for this feature]",
-      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+      "path": "docs/23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
     },
     {
       "line": 54,
       "marker": "[MISSING: identify upstream business goal]",
-      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+      "path": "docs/23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
     },
     {
       "line": 55,
       "marker": "[MISSING: list files that must not be modified]",
-      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+      "path": "docs/23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
     },
     {
       "line": 63,
       "marker": "[UNKNOWN: describe what is unknown and how to discover it]",
-      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+      "path": "docs/23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
     },
     {
       "line": 75,
       "marker": "[MISSING: ...]",
-      "path": "23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
+      "path": "docs/23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
     },
     {
       "line": 60,
@@ -344,13 +344,13 @@
   ],
   "validation_reports": {
     "reports": [
-      "12_validation/VAL-SUP-FRONTEND-ADMIN.md",
-      "12_validation/VAL-TASK-001-ips-documentation-bootstrap.md",
-      "12_validation/VAL-TASK-002-add-new-supplier-api-integration.md",
-      "12_validation/VAL-TASK-003-review-category-mapping-completeness.md",
-      "12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md",
-      "12_validation/VAL-TASK-005-goal-6.md",
-      "12_validation/VAL-TASK-006-adapter-foundation.md"
+      "docs/12_validation/VAL-SUP-FRONTEND-ADMIN.md",
+      "docs/12_validation/VAL-TASK-001-ips-documentation-bootstrap.md",
+      "docs/12_validation/VAL-TASK-002-add-new-supplier-api-integration.md",
+      "docs/12_validation/VAL-TASK-003-review-category-mapping-completeness.md",
+      "docs/12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md",
+      "docs/12_validation/VAL-TASK-005-goal-6.md",
+      "docs/12_validation/VAL-TASK-006-adapter-foundation.md"
     ],
     "status": "pass",
     "target": null

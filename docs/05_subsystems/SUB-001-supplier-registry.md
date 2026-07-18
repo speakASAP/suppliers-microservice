@@ -46,7 +46,7 @@ Manage supplier configuration records used by import workflows.
 
 ## Data ownership
 
-Owns supplier configuration metadata. Supplier credential values are sensitive and must be handled according to `23_documentation_contracts/SENSITIVE_DATA_POLICY.md` and `17_governance/PROJECT_INVARIANTS.md`.
+Owns supplier configuration metadata. Supplier credential values are sensitive and must be handled according to `docs/23_documentation_contracts/SENSITIVE_DATA_POLICY.md` and `docs/17_governance/PROJECT_INVARIANTS.md`.
 
 ## Failure modes
 

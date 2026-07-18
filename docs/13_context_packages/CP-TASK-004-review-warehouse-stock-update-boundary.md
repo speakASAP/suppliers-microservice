@@ -67,7 +67,7 @@ Make stock-boundary failure behavior explicit before any future Warehouse update
 
 - `BUSINESS.md`: supplier imports include stock, but validation is required before downstream effects.
 - `docs/orchestrator/PROJECT_INVARIANTS.md`: Warehouse owns stock truth; production stock mutation requires owner approval.
-- `21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md`: allowed files, non-goals, and validation commands.
+- `docs/21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md`: allowed files, non-goals, and validation commands.
 
 ## Implementation Boundary
 

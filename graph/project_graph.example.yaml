@@ -2,117 +2,117 @@ project: suppliers-microservice
 created: 2026-06-12
 nodes:
   - id: GOAL-AUTOMATED-SUPPLIER-IMPORTS
-    path: 02_business_case/BUSINESS_CASE.md
+    path: docs/02_business_case/BUSINESS_CASE.md
     type: Goal
   - id: VISION
-    path: 01_vision/VISION.md
+    path: docs/01_vision/VISION.md
     type: Vision
   - id: BUSINESS-CASE
-    path: 02_business_case/BUSINESS_CASE.md
+    path: docs/02_business_case/BUSINESS_CASE.md
     type: BusinessCase
   - id: SYS-001
-    path: 04_systems/SYS-001-supplier-import-service.md
+    path: docs/04_systems/SYS-001-supplier-import-service.md
     type: System
   - id: ADR-001
-    path: 07_decisions/ADR-001-adopt-intent-preservation-system.md
+    path: docs/07_decisions/ADR-001-adopt-intent-preservation-system.md
     type: ADR
   - id: MS-001
-    path: 09_milestones/MS-001-ips-foundation.md
+    path: docs/09_milestones/MS-001-ips-foundation.md
     type: Milestone
   - id: FEAT-001
-    path: 10_features/FEAT-001-supplier-api-integration.md
+    path: docs/10_features/FEAT-001-supplier-api-integration.md
     type: Feature
   - id: FEAT-002
-    path: 10_features/FEAT-002-category-mapping.md
+    path: docs/10_features/FEAT-002-category-mapping.md
     type: Feature
   - id: FEAT-003
-    path: 10_features/FEAT-003-import-job-tracking.md
+    path: docs/10_features/FEAT-003-import-job-tracking.md
     type: Feature
   - id: TASK-001
-    path: 11_tasks/TASK-001-ips-documentation-bootstrap.md
+    path: docs/11_tasks/TASK-001-ips-documentation-bootstrap.md
     type: Task
   - id: TASK-002
-    path: 11_tasks/TASK-002-add-new-supplier-api-integration.md
+    path: docs/11_tasks/TASK-002-add-new-supplier-api-integration.md
     type: Task
   - id: TASK-003
-    path: 11_tasks/TASK-003-review-category-mapping-completeness.md
+    path: docs/11_tasks/TASK-003-review-category-mapping-completeness.md
     type: Task
   - id: TASK-004
-    path: 11_tasks/TASK-004-review-warehouse-stock-update-boundary.md
+    path: docs/11_tasks/TASK-004-review-warehouse-stock-update-boundary.md
     type: Task
   - id: EP-TASK-001
-    path: 21_execution_plans/EP-TASK-001-ips-documentation-bootstrap.md
+    path: docs/21_execution_plans/EP-TASK-001-ips-documentation-bootstrap.md
     type: ExecutionPlan
   - id: EP-TASK-002
-    path: 21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md
+    path: docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md
     type: ExecutionPlan
   - id: EP-TASK-003
-    path: 21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md
+    path: docs/21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md
     type: ExecutionPlan
   - id: EP-TASK-004
-    path: 21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md
+    path: docs/21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md
     type: ExecutionPlan
   - id: PROMPT-TASK-001-ips-documentation-bootstrap
-    path: 14_prompts/PROMPT-TASK-001-ips-documentation-bootstrap.md
+    path: docs/14_prompts/PROMPT-TASK-001-ips-documentation-bootstrap.md
     type: CodingPrompt
   - id: PROMPT-TASK-003-review-category-mapping-completeness
-    path: 14_prompts/PROMPT-TASK-003-review-category-mapping-completeness.md
+    path: docs/14_prompts/PROMPT-TASK-003-review-category-mapping-completeness.md
     type: CodingPrompt
   - id: PROMPT-TASK-004-review-warehouse-stock-update-boundary
-    path: 14_prompts/PROMPT-TASK-004-review-warehouse-stock-update-boundary.md
+    path: docs/14_prompts/PROMPT-TASK-004-review-warehouse-stock-update-boundary.md
     type: CodingPrompt
   - id: CP-TASK-002
-    path: 13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md
+    path: docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md
     type: ContextPackage
   - id: CP-TASK-003-review-category-mapping-completeness
-    path: 13_context_packages/CP-TASK-003-review-category-mapping-completeness.md
+    path: docs/13_context_packages/CP-TASK-003-review-category-mapping-completeness.md
     type: ContextPackage
   - id: CP-TASK-004-review-warehouse-stock-update-boundary
-    path: 13_context_packages/CP-TASK-004-review-warehouse-stock-update-boundary.md
+    path: docs/13_context_packages/CP-TASK-004-review-warehouse-stock-update-boundary.md
     type: ContextPackage
   - id: VAL-TASK-001-ips-documentation-bootstrap
-    path: 12_validation/VAL-TASK-001-ips-documentation-bootstrap.md
+    path: docs/12_validation/VAL-TASK-001-ips-documentation-bootstrap.md
     type: ValidationReport
   - id: VAL-TASK-002-add-new-supplier-api-integration
-    path: 12_validation/VAL-TASK-002-add-new-supplier-api-integration.md
+    path: docs/12_validation/VAL-TASK-002-add-new-supplier-api-integration.md
     type: ValidationReport
   - id: VAL-TASK-003-review-category-mapping-completeness
-    path: 12_validation/VAL-TASK-003-review-category-mapping-completeness.md
+    path: docs/12_validation/VAL-TASK-003-review-category-mapping-completeness.md
     type: ValidationReport
   - id: VAL-TASK-004-review-warehouse-stock-update-boundary
-    path: 12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md
+    path: docs/12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md
     type: ValidationReport
 
   - id: TASK-005
-    path: 11_tasks/TASK-005-goal-6.md
+    path: docs/11_tasks/TASK-005-goal-6.md
     type: Task
   - id: EP-TASK-005
-    path: 21_execution_plans/EP-TASK-005-goal-6.md
+    path: docs/21_execution_plans/EP-TASK-005-goal-6.md
     type: ExecutionPlan
   - id: PROMPT-TASK-005-goal-6
-    path: 14_prompts/PROMPT-TASK-005-goal-6.md
+    path: docs/14_prompts/PROMPT-TASK-005-goal-6.md
     type: CodingPrompt
   - id: CP-TASK-005-goal-6
-    path: 13_context_packages/CP-TASK-005-goal-6.md
+    path: docs/13_context_packages/CP-TASK-005-goal-6.md
     type: ContextPackage
   - id: VAL-TASK-005-goal-6
-    path: 12_validation/VAL-TASK-005-goal-6.md
+    path: docs/12_validation/VAL-TASK-005-goal-6.md
     type: ValidationReport
 
   - id: TASK-006
-    path: 11_tasks/TASK-006-adapter-foundation.md
+    path: docs/11_tasks/TASK-006-adapter-foundation.md
     type: Task
   - id: EP-TASK-006
-    path: 21_execution_plans/EP-TASK-006-adapter-foundation.md
+    path: docs/21_execution_plans/EP-TASK-006-adapter-foundation.md
     type: ExecutionPlan
   - id: CP-TASK-006
-    path: 13_context_packages/CP-TASK-006-adapter-foundation.md
+    path: docs/13_context_packages/CP-TASK-006-adapter-foundation.md
     type: ContextPackage
   - id: VAL-TASK-006-adapter-foundation
-    path: 12_validation/VAL-TASK-006-adapter-foundation.md
+    path: docs/12_validation/VAL-TASK-006-adapter-foundation.md
     type: ValidationReport
   - id: VAL-SUP-FRONTEND-ADMIN
-    path: 12_validation/VAL-SUP-FRONTEND-ADMIN.md
+    path: docs/12_validation/VAL-SUP-FRONTEND-ADMIN.md
     type: ValidationReport
 edges:
   - from: BUSINESS-CASE

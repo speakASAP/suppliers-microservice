@@ -129,8 +129,8 @@ Import service/module files and configuration files explicitly approved during o
 
 - `.env`
 - `.env.backup*`
-- `00_constitution/`
-- `01_vision/`
+- `docs/00_constitution/`
+- `docs/01_vision/`
 - Kubernetes secret manifests containing real values
 
 ## Implementation Steps

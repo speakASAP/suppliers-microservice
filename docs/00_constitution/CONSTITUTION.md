@@ -33,7 +33,7 @@ The upstream authority for these rules is `BUSINESS.md`. AI agents may draft dow
 
 ## Amendment Process
 
-Changes to this document require human review by the service owner and must be recorded in `01_vision/VISION_EVOLUTION.md` and an ADR when the change affects architecture, contracts, data handling, or operational gates.
+Changes to this document require human review by the service owner and must be recorded in `docs/01_vision/VISION_EVOLUTION.md` and an ADR when the change affects architecture, contracts, data handling, or operational gates.
 
 ## Change Note
 

@@ -25,7 +25,7 @@ Prepare the Goal 3 import-job migration artifact before deployment, then impleme
 
 ## Context
 
-Use `BUSINESS.md`, `SYSTEM.md`, `README.md`, `docs/orchestrator/*`, `10_features/FEAT-002-category-mapping.md`, `11_tasks/TASK-003-review-category-mapping-completeness.md`, and `21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md`.
+Use `BUSINESS.md`, `SYSTEM.md`, `README.md`, `docs/orchestrator/*`, `docs/10_features/FEAT-002-category-mapping.md`, `docs/11_tasks/TASK-003-review-category-mapping-completeness.md`, and `docs/21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md`.
 
 ## Constraints
 

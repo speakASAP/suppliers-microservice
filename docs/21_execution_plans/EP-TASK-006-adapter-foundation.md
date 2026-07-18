@@ -67,7 +67,7 @@ Real supplier API calls, production supplier payload queries, decoded secret ins
 
 - `docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md`
 - Suppliers-owned TypeScript files for adapter contract and registry, with exact paths chosen during implementation
-- `12_validation/VAL-TASK-006-adapter-foundation.md`
+- `docs/12_validation/VAL-TASK-006-adapter-foundation.md`
 
 ## Files to Modify
 
@@ -82,8 +82,8 @@ Real supplier API calls, production supplier payload queries, decoded secret ins
 
 - `.env`
 - `.env.backup*`
-- `00_constitution/`
-- `01_vision/`
+- `docs/00_constitution/`
+- `docs/01_vision/`
 - Kubernetes secret manifests containing real values
 - Catalog, Warehouse, Auth, or Logging repositories
 

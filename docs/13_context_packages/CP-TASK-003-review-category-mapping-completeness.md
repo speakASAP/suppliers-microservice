@@ -67,8 +67,8 @@ Implement the Goal 4 service-local category mapping completeness slice while pre
 
 - `BUSINESS.md`: supplier imports use category mapping and must validate before Catalog writes.
 - `docs/orchestrator/PROJECT_INVARIANTS.md`: Suppliers owns mappings; Catalog owns category truth; production mutation and deployment require owner approval.
-- `10_features/FEAT-002-category-mapping.md`: mapping upsert, completeness review, and missing mapping behavior.
-- `21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md`: allowed files, non-goals, and validation commands.
+- `docs/10_features/FEAT-002-category-mapping.md`: mapping upsert, completeness review, and missing mapping behavior.
+- `docs/21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md`: allowed files, non-goals, and validation commands.
 
 ## Implementation Boundary
 
