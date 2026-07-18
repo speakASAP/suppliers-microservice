@@ -24,7 +24,7 @@ Runtime source edits, database migrations, deployment, production imports, suppl
 
 ## File Scope
 
-docs/11_tasks/TASK-005-goal-6.md, docs/12_validation/VAL-TASK-005-goal-6.md, docs/13_context_packages/CP-TASK-005-goal-6.md, docs/14_prompts/PROMPT-TASK-005-goal-6.md, docs/21_execution_plans/EP-TASK-005-goal-6.md, docs/22_goal_impact/GOAL-IMPACT-TASK-005.md, docs/orchestrator/GOALS.md, docs/orchestrator/STATUS.md, docs/IMPLEMENTATION_STATE.md, docs/intent-preservation/TRACEABILITY_MATRIX.md, implementation-goals/README.md, TASKS.md, STATE.json.
+docs/11_tasks/TASK-005-goal-6.md, docs/12_validation/VAL-TASK-005-goal-6.md, docs/13_context_packages/CP-TASK-005-goal-6.md, docs/14_prompts/PROMPT-TASK-005-goal-6.md, docs/21_execution_plans/EP-TASK-005-goal-6.md, docs/22_goal_impact/GOAL-IMPACT-TASK-005.md, docs/orchestrator/GOALS.md, docs/orchestrator/STATUS.md, docs/IMPLEMENTATION_STATE.md, docs/12_validation/TRACEABILITY_MATRIX.md, implementation-goals/README.md, TASKS.md, STATE.json.
 
 ## Invariant Review
 

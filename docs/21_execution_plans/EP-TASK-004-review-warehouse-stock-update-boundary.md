@@ -75,7 +75,7 @@ Warehouse client calls, production stock mutation, production stock verification
 - `docs/orchestrator/GOALS.md`
 - `docs/orchestrator/STATUS.md`
 - `docs/IMPLEMENTATION_STATE.md`
-- `docs/intent-preservation/TRACEABILITY_MATRIX.md`
+- `docs/12_validation/TRACEABILITY_MATRIX.md`
 - `implementation-goals/README.md`
 - `implementation-goals/GOAL-05-warehouse-stock-update-boundary.md`
 - `docs/16_operations/INTEGRATIONS.md`

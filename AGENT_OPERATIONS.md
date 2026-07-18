@@ -48,7 +48,7 @@ Every parallel workstream must declare:
 
 ## Validation Debt
 
-Use `docs/orchestrator/VALIDATION_DEBT.md`, `docs/intent-preservation/VALIDATION_DEBT.md`, or the nearest repo-standard ledger to record known out-of-scope validation failures.
+Use `docs/orchestrator/VALIDATION_DEBT.md`, `docs/12_validation/VALIDATION_DEBT.md`, or the nearest repo-standard ledger to record known out-of-scope validation failures.
 
 Validation debt does not excuse current-task failures. If a failure touches current-task files or acceptance criteria, treat it as blocking.
 

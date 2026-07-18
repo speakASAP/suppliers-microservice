@@ -7,7 +7,7 @@ Metadata:
 - created: 2026-06-13
 - last_updated: 2026-06-13
 - completeness_level: complete
-- upstream: docs/cross-service/stock-traceability-flow.md, docs/intent-preservation/validation-reports/VAL-SUP-G7.md, warehouse WH-G15 validation, catalog CAT-G11 validation, catalog CAT-G12 validation
+- upstream: docs/cross-service/stock-traceability-flow.md, docs/12_validation/VAL-SUP-G7.md, warehouse WH-G15 validation, catalog CAT-G11 validation, catalog CAT-G12 validation
 
 ## Artifact Validated
 

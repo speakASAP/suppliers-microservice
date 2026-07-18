@@ -17,7 +17,7 @@ Use this template after an owner-approved live run to create the final runtime e
 Create the final report as:
 
 ```text
-docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md
+docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md
 ```
 
 The report can be generated from saved smoke output with `reports/validation/generate-runtime-evidence-report.js`. After generation, validate it with `reports/validation/verify-runtime-evidence-report.js`.

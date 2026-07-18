@@ -46,4 +46,4 @@ Define owner-approved synthetic supplier metadata for generic REST onboarding va
 
 ## Runtime Result
 
-The synthetic onboarding run passed on 2026-06-21. Test supplier rows were created for `codex-rest-test-a` and `codex-rest-test-b`; validate-only imports completed with payload validation and Warehouse boundary validation passed, and no Warehouse mutation attempted or approved. Detailed evidence is recorded in `docs/intent-preservation/validation-reports/VAL-TASK-002-GENERIC-REST-TEST-ONBOARDING.md`.
+The synthetic onboarding run passed on 2026-06-21. Test supplier rows were created for `codex-rest-test-a` and `codex-rest-test-b`; validate-only imports completed with payload validation and Warehouse boundary validation passed, and no Warehouse mutation attempted or approved. Detailed evidence is recorded in `docs/12_validation/VAL-TASK-002-GENERIC-REST-TEST-ONBOARDING.md`.

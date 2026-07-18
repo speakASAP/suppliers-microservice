@@ -246,7 +246,7 @@ The completed guarded run must preserve these artifacts:
 
 - `/tmp/stock-traceability-runtime/stock-traceability-fixture-check-result.json`
 - `/tmp/stock-traceability-runtime/stock-traceability-smoke-result.json`
-- `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md`
+- `docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md`
 - `/tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json`
 
 Then verify the generated report and bundle before treating the goal as complete:
@@ -256,8 +256,8 @@ ssh alfares '
 cd /home/ssf/Documents/Github/suppliers-microservice &&
 node reports/validation/verify-runtime-evidence-report.js &&
 node reports/validation/verify-runtime-evidence-manifest.js /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json &&
-node reports/validation/verify-runtime-evidence-bundle.js /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md &&
-node reports/validation/verify-stock-traceability-completion.js docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json
+node reports/validation/verify-runtime-evidence-bundle.js /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md &&
+node reports/validation/verify-stock-traceability-completion.js docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md /tmp/stock-traceability-runtime/stock-traceability-runtime-evidence-manifest.json
 '
 ```
 

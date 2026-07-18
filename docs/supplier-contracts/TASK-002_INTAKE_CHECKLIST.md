@@ -20,7 +20,7 @@ upstream:
   - docs/supplier-contracts/PRODUCTION_REST_JSON_V1.md
   - docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md
   - docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md
-  - docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md
+  - docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md
 ```
 
 ## Purpose

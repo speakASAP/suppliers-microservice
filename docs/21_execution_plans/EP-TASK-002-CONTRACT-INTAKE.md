@@ -78,7 +78,7 @@ Allowed files for the intake slice:
 - docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md
 - docs/supplier-contracts/SUPPLIER_CONTRACT_TEMPLATE.md
 - docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md
-- docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md
+- docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md
 - docs/orchestrator/GOALS.md
 - docs/orchestrator/PLAN.md
 - docs/orchestrator/STATUS.md

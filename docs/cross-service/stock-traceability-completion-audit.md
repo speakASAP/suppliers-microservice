@@ -31,7 +31,7 @@ This audit maps the original business objective to current evidence so completio
 
 ## Completion Decision
 
-Current status is **not complete**. Source and plan evidence are strong enough to proceed to owner-approved deployment, but the full objective requires a passing read-only fixture check plus runtime evidence from the deployed Warehouse, Catalog, and Suppliers services. The final runtime evidence must be recorded in `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md` using `docs/cross-service/stock-traceability-runtime-evidence-template.md`, with deployment evidence generated from clean current service heads. The read-only fixture command and approved smoke command must use the same trace product, SKU prefix, own warehouse, supplier replenishment warehouse, and dropship warehouse IDs.
+Current status is **not complete**. Source and plan evidence are strong enough to proceed to owner-approved deployment, but the full objective requires a passing read-only fixture check plus runtime evidence from the deployed Warehouse, Catalog, and Suppliers services. The final runtime evidence must be recorded in `docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md` using `docs/cross-service/stock-traceability-runtime-evidence-template.md`, with deployment evidence generated from clean current service heads. The read-only fixture command and approved smoke command must use the same trace product, SKU prefix, own warehouse, supplier replenishment warehouse, and dropship warehouse IDs.
 
 ## Evidence That Would Complete The Goal
 

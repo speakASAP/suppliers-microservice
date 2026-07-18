@@ -79,7 +79,7 @@ Runtime source edits, database migrations, deployment, production imports, suppl
 - `docs/orchestrator/GOALS.md`
 - `docs/orchestrator/STATUS.md`
 - `docs/IMPLEMENTATION_STATE.md`
-- `docs/intent-preservation/TRACEABILITY_MATRIX.md`
+- `docs/12_validation/TRACEABILITY_MATRIX.md`
 - `implementation-goals/README.md`
 - `TASKS.md`
 - `STATE.json`

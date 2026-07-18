@@ -73,7 +73,7 @@ Blockers:
 - Production database currently has no supplier rows or credential references to infer a real contract.
 
 Agent-ready chunks:
-- [x] Contract intake checklist: prepared exact owner questions and execution-plan gate in `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`. Evidence: documentation validation and no invented supplier details.
+- [x] Contract intake checklist: prepared exact owner questions and execution-plan gate in `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md`. Evidence: documentation validation and no invented supplier details.
 - [x] Derived REST/JSON contract boundary: documented the generic `rest` adapter details that can be safely derived from repo source in `docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md`. Evidence: docs validation, source contract checks, and no real supplier facts fabricated.
 - [x] Owner adapter-path decision: generic `rest` onboarding approved on 2026-06-21 and recorded in `docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md`. Evidence: decision captured without source edits, secrets, private endpoints, or runtime mutation.
 - [ ] Generic REST runtime onboarding: blocked until contract facts, supplier row metadata, credential reference names, sanitized payload examples, mapping facts, and explicit runtime/import approvals are supplied. Evidence when unblocked: supplier-row plan, synthetic contract checks, credential-safety review, idempotency evidence, Catalog/Warehouse boundary evidence, and approved runtime smoke/import report.

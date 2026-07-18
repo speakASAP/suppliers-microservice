@@ -13,8 +13,8 @@ created: 2026-06-13
 last_updated: 2026-06-13
 completeness_level: complete
 upstream:
-  - docs/intent-preservation/execution-plans/EP-SUP-FRONTEND-ADMIN.md
-  - docs/intent-preservation/context-packages/CP-SUP-FRONTEND-ADMIN.md
+  - docs/21_execution_plans/EP-SUP-FRONTEND-ADMIN.md
+  - docs/13_context_packages/CP-SUP-FRONTEND-ADMIN.md
 downstream: []
 related_adrs:
   - docs/07_decisions/ADR-001-adopt-intent-preservation-system.md

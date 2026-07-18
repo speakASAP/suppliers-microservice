@@ -13,12 +13,12 @@ Metadata:
   - TASKS.md
   - STATE.json
   - docs/IMPLEMENTATION_STATE.md
-  - docs/intent-preservation/TRACEABILITY_MATRIX.md
+  - docs/12_validation/TRACEABILITY_MATRIX.md
   - docs/cross-service/stock-traceability-flow.md
   - docs/cross-service/stock-traceability-completion-audit.md
   - docs/cross-service/stock-traceability-runtime-rollout.md
   - docs/cross-service/stock-traceability-runtime-evidence-template.md
-  - docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md
+  - docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md
   - reports/validation/synthetic-stock-traceability-check.js
   - reports/validation/runtime-stock-traceability-smoke.js
   - reports/validation/verify-stock-traceability-completion.js
@@ -86,7 +86,7 @@ Synthetic source and runtime evidence already prove the technical traceability p
 - `docs/cross-service/stock-traceability-flow.md` defines the ownership path: Catalog product identity, Suppliers validation/orchestration, Warehouse stock/logistics authority, Catalog projection, and FlipFlop channel consumption.
 - `docs/cross-service/stock-traceability-runtime-rollout.md` and `reports/validation/runtime-stock-traceability-smoke.js` define the guarded runtime flow for synthetic records only.
 - `docs/IMPLEMENTATION_STATE.md` records current-head runtime completion on 2026-06-24 for clean Warehouse `246c0174eaee39ebb970a202cd8a1b0ac914c4f8`, Catalog `a8e056c131e1c23481f5db3e2f89b831e1e397be`, and Suppliers `848cc9211ca761ace70fccfecfeb12a832ff2edc`, with runtime-complete artifacts under `/tmp/stock-traceability-runtime-20260624-003`.
-- `docs/IMPLEMENTATION_STATE.md` also records approved synthetic import idempotency key `manual:traceability-20260624-003`, refreshed downstream auth wiring, and verified runtime bundle completion. The checked-in `docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-RUNTIME-LIVE.md` is historical evidence for the earlier 2026-06-13 run, not the current 2026-06-24 completion artifact.
+- `docs/IMPLEMENTATION_STATE.md` also records approved synthetic import idempotency key `manual:traceability-20260624-003`, refreshed downstream auth wiring, and verified runtime bundle completion. The checked-in `docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md` is historical evidence for the earlier 2026-06-13 run, not the current 2026-06-24 completion artifact.
 
 Synthetic proof means the cross-service plumbing and evidence gates work. It does not prove that a real supplier can be procured, imported, mapped, or scheduled.
 

@@ -29,7 +29,7 @@ Record the TASK-002 supplier contract details that can be safely derived from th
 - System: Supplier metadata, import jobs, category mappings, payload validation, Catalog ownership boundaries, Warehouse stock authority, and idempotency remain separated.
 - Feature: Generic production REST/JSON supplier onboarding using adapter key `rest`. Supplier-code-specific adapter work is out of scope unless later facts prove the supplier does not match this contract.
 - Task: Separate repo-derived contract details from missing external supplier facts before any coding or runtime onboarding.
-- Execution Plan: Use this document with `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/intent-preservation/execution-plans/EP-TASK-002-CONTRACT-INTAKE.md`.
+- Execution Plan: Use this document with `docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md` and `docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md`.
 - Coding Prompt: Still blocked until owner-supplied facts complete the contract and the pre-coding gate passes.
 - Code: No source change is authorized by this document.
 - Validation: Documentation audit, whitespace check, source contract checks, and secret-pattern review.

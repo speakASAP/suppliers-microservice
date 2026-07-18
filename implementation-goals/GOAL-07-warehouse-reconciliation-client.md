@@ -8,7 +8,7 @@ Metadata:
 - last_updated: 2026-06-13
 - completeness_level: complete
 - upstream: BUSINESS.md, SYSTEM.md, docs/IMPLEMENTATION_STATE.md, docs/orchestrator/GOALS.md, /home/ssf/Documents/Github/warehouse-microservice/docs/contracts/availability-contracts.md
-- downstream: docs/intent-preservation/execution-plans/EP-SUP-G7.md, docs/intent-preservation/context-packages/CP-SUP-G7.md, docs/intent-preservation/coding-prompts/PROMPT-SUP-G7.md, docs/intent-preservation/validation-reports/VAL-SUP-G7.md
+- downstream: docs/21_execution_plans/EP-SUP-G7.md, docs/13_context_packages/CP-SUP-G7.md, docs/14_prompts/PROMPT-SUP-G7.md, docs/12_validation/VAL-SUP-G7.md
 
 ## Intent
 

@@ -66,10 +66,10 @@ No production mutation, no deployment, no supplier API adapter, no Catalog write
 ## Files To Create
 
 - implementation-goals/GOAL-07-warehouse-reconciliation-client.md
-- docs/intent-preservation/execution-plans/EP-SUP-G7.md
-- docs/intent-preservation/context-packages/CP-SUP-G7.md
-- docs/intent-preservation/coding-prompts/PROMPT-SUP-G7.md
-- docs/intent-preservation/validation-reports/VAL-SUP-G7.md
+- docs/21_execution_plans/EP-SUP-G7.md
+- docs/13_context_packages/CP-SUP-G7.md
+- docs/14_prompts/PROMPT-SUP-G7.md
+- docs/12_validation/VAL-SUP-G7.md
 
 ## Files To Modify
 

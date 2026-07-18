@@ -7,7 +7,7 @@ Metadata:
 - created: 2026-06-13
 - last_updated: 2026-06-13
 - completeness_level: executable-plan
-- upstream: docs/cross-service/stock-traceability-flow.md, docs/cross-service/stock-traceability-live-runbook.md, docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md
+- upstream: docs/cross-service/stock-traceability-flow.md, docs/cross-service/stock-traceability-live-runbook.md, docs/12_validation/VAL-CROSS-STOCK-TRACEABILITY.md
 
 ## Purpose
 

@@ -34,7 +34,7 @@
       "warehouse_reconciliation_client": "source_validated_no_deploy",
       "warehouse_reconciliation_validation": "build_synthetic_checks_doc_gates_passed",
       "cross_service_stock_traceability": "source_synthetic_passed_no_deploy",
-      "cross_service_traceability_artifacts": "docs/cross-service/stock-traceability-flow.md,reports/validation/synthetic-stock-traceability-check.js,docs/intent-preservation/validation-reports/VAL-CROSS-STOCK-TRACEABILITY.md",
+      "cross_service_traceability_artifacts": "docs/cross-service/stock-traceability-flow.md,reports/validation/synthetic-stock-traceability-check.js,docs/12_validation/VAL-CROSS-STOCK-TRACEABILITY.md",
       "task_006_adapter_foundation": "complete_with_production_rest_json_adapter",
       "production_rest_json_supplier_contract": "done_PRODUCTION_REST_JSON_V1",
       "production_rest_json_supplier_adapter": "source_validated_no_real_supplier_onboarded",
