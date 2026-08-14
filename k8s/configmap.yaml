@@ -21,7 +21,7 @@ data:
   LOGGING_SERVICE_URL: "http://logging-microservice.statex-apps.svc.cluster.local:3367"
   DB_HOST: "db-server-postgres"
   DB_PORT: "5432"
-  DB_USER: "dbadmin"
+  DB_USER: "suppliers"
   DB_NAME: "suppliers"
   DB_SYNC: "false"
   DB_AUTO_CREATE: "true"

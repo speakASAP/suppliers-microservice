@@ -34,11 +34,6 @@ spec:
                 secretKeyRef:
                   name: logging-ingest-credentials
                   key: LOGGING_SERVICE_TOKEN
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: database-credentials
-                  key: DB_PASSWORD
             - name: CATALOG_SERVICE_TOKEN
               valueFrom:
                 secretKeyRef:
