@@ -13,6 +13,7 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ROLES_KEY, PUBLIC_KEY } from './roles.decorator';
+import { verifyAuthToken } from './jwt-verifier';
 
 export type AuthenticatedSupplierUser = {
   sub: string;
@@ -51,9 +52,9 @@ export class JwtRolesGuard implements CanActivate {
 
     const token = authHeader.slice(7);
     try {
-      const payload = this.jwtService.verify<{ sub: string; email?: string; roles?: string[] }>(token, {
-        secret: process.env.JWT_SECRET,
-      });
+      // TASK-KEY-F3: accepts RS256 (auth's published key) and HS256 (the shared secret)
+      // while the migration runs. See jwt-verifier.ts for the sequencing.
+      const payload = await verifyAuthToken(token);
       const userRoles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
 
       const hasRole = requiredRoles.includes('authenticated') || requiredRoles.some((r) => userRoles.includes(r));
