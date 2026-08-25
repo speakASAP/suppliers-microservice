@@ -7,8 +7,7 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
-  ForbiddenException,
-} from '@nestjs/common';
+  ForbiddenException, Logger } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
@@ -25,6 +24,8 @@ export type AuthenticatedSupplierRequest = Request & { user?: AuthenticatedSuppl
 
 @Injectable()
 export class JwtRolesGuard implements CanActivate {
+  private readonly logger = new Logger(JwtRolesGuard.name);
+
   constructor(
     private reflector: Reflector,
     private jwtService: JwtService,
@@ -41,7 +42,19 @@ export class JwtRolesGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
-    const requiredRoles = rolesMetadata?.roles?.length ? rolesMetadata.roles : this.getDefaultRoles();
+    // Deny by default. The previous fallback was
+    // ['authenticated', 'global:superadmin', 'internal:suppliers-microservice:admin'],
+    // and 'authenticated' matches any valid token in the ecosystem — so every
+    // undecorated route here, supplier creation and import runs included, was
+    // reachable by any caller holding any credential. An omission is now a 403.
+    const requiredRoles = rolesMetadata?.roles?.length ? rolesMetadata.roles : null;
+    if (!requiredRoles) {
+      const handler = `${context.getClass().name}.${context.getHandler().name}`;
+      this.logger.error(
+        `Route ${handler} has neither @Roles nor @Public; denying. Add an explicit policy.`,
+      );
+      throw new ForbiddenException('Route is missing an authorization policy');
+    }
 
     const request = context.switchToHttp().getRequest<Request>();
     const authHeader = request.headers.authorization;
@@ -74,8 +87,4 @@ export class JwtRolesGuard implements CanActivate {
     }
   }
 
-  private getDefaultRoles(): string[] {
-    const name = process.env.SERVICE_NAME || 'suppliers-microservice';
-    return ['authenticated', `global:superadmin`, `internal:${name}:admin`];
-  }
 }

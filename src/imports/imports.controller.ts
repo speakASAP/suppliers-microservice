@@ -1,9 +1,11 @@
+import { Roles } from '../auth/roles.decorator';
 import { Body, Controller, Get, Post, Param, Query, ParseUUIDPipe, Req } from '@nestjs/common';
 import type { AuthenticatedSupplierRequest } from '../auth/jwt-roles.guard';
 import { SuppliersService } from '../suppliers/suppliers.service';
 import type { SupplierActor } from '../suppliers/suppliers.service';
 import { ImportsService } from './imports.service';
 import { RunImportDto } from './dto/import-run.dto';
+import { SUPPLIERS_READ_ROLES, SUPPLIERS_WRITE_ROLES } from '../auth/roles.constants';
 
 @Controller('imports')
 export class ImportsController {
@@ -12,6 +14,7 @@ export class ImportsController {
     private readonly suppliersService: SuppliersService,
   ) {}
 
+  @Roles(...SUPPLIERS_READ_ROLES)
   @Get()
   async findJobs(@Query('supplierId') supplierId?: string, @Req() request?: AuthenticatedSupplierRequest) {
     const actor = this.actorFromRequest(request);
@@ -26,6 +29,7 @@ export class ImportsController {
     return { success: true, data: jobs };
   }
 
+  @Roles(...SUPPLIERS_WRITE_ROLES)
   @Post('run/:supplierId')
   async runImport(
     @Param('supplierId', ParseUUIDPipe) supplierId: string,
