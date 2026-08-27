@@ -34,16 +34,6 @@ spec:
                 secretKeyRef:
                   name: logging-ingest-credentials
                   key: LOGGING_SERVICE_TOKEN
-            - name: CATALOG_SERVICE_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: stock-traceability-runtime-token
-                  key: JWT_TOKEN
-            - name: WAREHOUSE_SERVICE_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: stock-traceability-runtime-token
-                  key: JWT_TOKEN
           envFrom:
             - configMapRef:
                 name: suppliers-microservice-config
