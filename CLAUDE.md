@@ -15,18 +15,17 @@ Read those first, then follow the repository-specific notes below and the curren
 
 # CLAUDE.md (suppliers-microservice)
 
-## Knowledge Retrieval — docs-rag-microservice (MANDATORY, query before reading files)
+## Knowledge Retrieval
 
-**Query the RAG before reading source files**
+Use `docs-rag-microservice` for bounded discovery when it is healthy, then
+verify deployment, security, database, integration and public-contract facts
+against the cited Git source. Git remains authoritative.
 
-```bash
-kubectl -n statex-apps exec deployment/suppliers-microservice -- curl -s -X POST http://docs-rag-microservice:3397/retrieval/agent-context \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $(cat ~/.claude/rag-token)" \
-  -d '{"query": "YOUR QUESTION HERE", "maxTokens": 3000}'
-```
+Authority and fallback rules:
+`/home/ssf/Documents/Github/shared/docs/DOCUMENTATION_AUTHORITY.md`.
 
----
+Do not generate tokens in documentation or assume an unconfident/failed RAG
+response means that source documentation does not exist.
 
 ## suppliers-microservice
 
