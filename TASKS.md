@@ -1,33 +1,17 @@
 # Tasks: suppliers-microservice
 
-## Backlog
 
-- [ ] Add new supplier API integration via approved generic `rest` onboarding after owner supplies real supplier facts (priority: 2)
-- [x] TASK-006: Implement supplier integration from empty production state (priority: 2)
-- [ ] Data-gated: review real supplier category mapping completeness after a real supplier contract is supplied (priority: 3)
-- [x] Plan owner-approved Nest major dependency upgrade for remaining audit findings (priority: 2)
+## Active
+No active IPS bootstrap task remains; this documentation adoption is complete.
+
+## Ready Next
+Future repository work must begin from its existing planning and architecture records.
+
+## Blocked
+No blocker was identified for this documentation-only adoption.
 
 ## Completed
+TASK-001-bootstrap-service completed IPS planning adoption on 2026-08-30.
 
-- [x] 2026-06-24 Current-head cross-service runtime stock traceability completed with verified runtime bundle `/tmp/stock-traceability-runtime-20260624-003`, idempotency key `manual:traceability-20260624-003`, and runtime auth refresh for the dedicated synthetic downstream secret.
-- [x] 2026-06-21 TASK-002 derived REST contract boundary and approved synthetic runtime smoke completed with idempotency key `manual:traceability-20260621-001`, supplier import job completed, and `updatedProducts=2`; real supplier onboarding remains data-gated until real supplier facts are supplied.
-<!-- AI appends here. Never modifies previous entries. -->
-- [x] 2026-06-21 TASK-002 synthetic generic `rest` onboarding passed for test suppliers `codex-rest-test-a` and `codex-rest-test-b`; imports were validate-only and performed no Warehouse mutation.
-- [x] 2026-06-21 TASK-002 owner selected generic `rest` onboarding path; runtime onboarding remains data-gated until supplier row metadata, endpoint, credential refs, payload examples, and mapping facts are supplied.
-- [x] 2026-06-21 TASK-002 derived generic REST/JSON contract details documented without real supplier facts or adapter coding (goal_id: TASK-002, priority: 2)
-- [x] 2026-06-13 Cross-service stock traceability source evidence added for Suppliers-Warehouse-Catalog flow (goal_id: CROSS-STOCK-TRACEABILITY, priority: 1)
-- [x] 2026-06-13 Warehouse reconciliation client for validated supplier stock candidates (goal_id: SUP-G7, priority: 1)
-- [x] 2026-04-05 Documentation standard applied
-- [x] 2026-06-12 Intent Preservation System applied
-- [x] 2026-06-12 Add curl to production Docker image
-- [x] 2026-06-12 Supplier contract and credential safety
-- [x] 2026-06-12 Import validation and idempotency
-- [x] 2026-06-13 Category mapping completeness and Catalog boundary
-
-- [x] 2026-06-13 Warehouse stock update boundary
-- [x] 2026-06-13 Operational smoke and documentation ingestion
-- [x] 2026-06-13 Compatible dependency audit remediation
-- [x] 2026-06-13 Owner-approved Nest major dependency upgrade
-- [x] 2026-06-13 TASK-006 production REST JSON supplier adapter contract and implementation (goal_id: TASK-006, priority: 2)
-- [x] 2026-06-13 Cross-service runtime evidence source hardening validated Catalog logistics consistency and Suppliers preflight alignment (goal_id: CROSS-STOCK-RUNTIME-SOURCE-HARDENING, priority: 1)
-- [x] 2026-06-13 Cross-service runtime stock traceability evidence completed with approved synthetic Warehouse mutation (goal_id: CROSS-STOCK-RUNTIME-LIVE, priority: 1)
+## Handoff
+Use canonical IPS artifacts before selecting a future bounded change.

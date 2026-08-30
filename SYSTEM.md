@@ -1,24 +1,34 @@
 # System: suppliers-microservice
 
-## Architecture
+status: reviewed
+completeness_level: complete
 
-NestJS + PostgreSQL. Scheduled imports from supplier APIs (REST/XML/CSV).
+## Purpose
+Supplier API imports and supplier data integration for the e-commerce ecosystem.
 
-- Category mapping: supplier categories → catalog categories
-- Import jobs: trackable with status (pending/running/done/failed)
+## Responsibilities
+Integrate supplier imports while preserving supplier data and commerce boundaries.
 
-## Integrations
+## Non-Responsibilities
+Unrelated business domains and consumer-owned data remain outside this repository boundary.
 
-| Dependency | URL |
-|-----------|-----|
-| database-server | db-server-postgres:5432 |
-| logging-microservice | logging-microservice:3367 |
-| catalog-microservice | catalog-microservice:3200 |
+## Inputs
+Documented service requests, repository configuration, and approved operational inputs.
 
-## Current State
-<!-- AI-maintained -->
-Stage: production
+## Outputs
+Documented service, infrastructure, or governance outcomes for ecosystem consumers.
 
-## Known Issues
-<!-- AI-maintained -->
-- None
+## Dependencies
+Reviewed capability decisions are recorded in docs/06_architecture/INTEGRATION_CONTRACT.md.
+
+## Upstream Traceability
+BUSINESS.md and existing repository architecture documentation define the current intent.
+
+## Downstream Artifacts
+The integration contract, invariants, and bootstrap planning chain are the canonical IPS outputs.
+
+## Validation Criteria
+Run the IPS planning validator and use existing repository-specific checks when changing runtime behavior.
+
+## Open Questions
+No new runtime or ownership decision is made by this documentation-only adoption.

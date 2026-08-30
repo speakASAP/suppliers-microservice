@@ -1,54 +1,29 @@
 # Vision: suppliers-microservice
 
-```yaml
-id: VISION
-status: draft
-owner: supplier-service-owner
-created: 2026-06-12
-last_updated: 2026-06-12
+status: approved
 completeness_level: complete
-upstream:
-  - ../BUSINESS.md
-  - ../00_constitution/CONSTITUTION.md
-downstream:
-  - ../02_business_case/BUSINESS_CASE.md
-  - ../04_systems/SYS-001-supplier-import-service.md
-related_adrs: []
-```
 
-## Original Intent
+## One-Sentence Vision
+Integrate supplier imports while preserving supplier data and commerce boundaries.
 
-The suppliers microservice automates product imports from supplier REST, XML, CSV, and compatible APIs into the Alfares catalog and stock ecosystem.
+## Problem Statement
+The ecosystem needs this responsibility to have a clear, durable, and safe ownership boundary.
 
-## Product Vision
+## Target Users
+Catalog, warehouse, commerce administrators, and supplier integration operators.
 
-The service provides a controlled supplier ingestion boundary that can connect to external suppliers, map supplier categories to catalog categories, run scheduled or manual imports, track import jobs, and pass validated product and stock updates to downstream services.
+## Core User Need
+Consumers need the documented capability without ambiguity about ownership or operational safety.
 
-## Protected Goals
+## Key Outcomes
+Supplier API imports and supplier data integration for the e-commerce ecosystem.
 
-- Automate supplier product and stock import workflows.
-- Support supplier API variability through REST, XML, CSV, and compatible source adapters.
-- Maintain explicit category mappings from supplier categories to catalog categories.
-- Track every import job with status and error evidence.
-- Preserve idempotency so import jobs are safe to re-run.
-- Keep supplier credentials out of committed source, docs, examples, and prompts.
-- Prevent unvalidated supplier data from being pushed into the catalog.
+## Non-Goals
+The vision does not expand this repository into unrelated ecosystem domains.
 
-## Consumers
+## Success Criteria
+The documented boundary remains usable and future work preserves its approved constraints.
 
-The documented consumers are `flipflop-service` and `allegro-service`.
-
-## Operational Boundary
-
-The service runs on port `3202` and production is `https://supplier.alfares.cz`.
-
-## Source References
-
-- `BUSINESS.md`
-- `README.md`
-- `SYSTEM.md`
-- `STATE.json`
-
-## Change Note
-
-- 2026-06-12: Initial IPS vision drafted from existing root documentation.
+## Approval
+Approved by: project owner
+Approval evidence: owner-confirmation: suppliers-microservice-onboarding-approved

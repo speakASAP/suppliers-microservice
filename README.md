@@ -1,30 +1,26 @@
-# Supplier Microservice
+# Suppliers Microservice
 
-Connects to supplier APIs to import products and stock into the central catalog.
 
-## Port: 3202 (supplier.alfares.cz)
+## Status
+IPS planning adoption is complete for this documented production repository.
 
-## API Endpoints
+## Documentation Authority
+BUSINESS.md and SYSTEM.md, supplemented by repository architecture documentation, are authoritative.
 
-- `GET /api/suppliers` - List suppliers
-- `GET /api/suppliers/:id` - Get supplier
-- `POST /api/suppliers` - Create supplier
-- `PUT /api/suppliers/:id` - Update supplier
-- `GET /api/imports` - List import jobs
-- `POST /api/imports/run/:supplierId` - Run import for supplier
-- `GET /api/mappings/supplier/:supplierId` - Get category mappings
-- `POST /api/mappings` - Set category mapping
-- `POST /api/mappings/supplier/:supplierId/validate` - Validate mapping completeness for supplied supplier category IDs
-- `GET /health` - Health check
+## Capabilities
+Supplier API imports and supplier data integration for the e-commerce ecosystem
 
-## Features
+## Interfaces
+Repository interfaces and operational boundaries are documented in SYSTEM.md and architecture records.
 
-- Connect to supplier REST/XML/CSV APIs
-- Scheduled automatic imports
-- Category mapping (supplier → catalog)
-- Import job tracking
+## Development
+Read AGENTS.md and repository-local architecture documentation before changing behavior.
 
-## Related Services
+## Configuration
+Use documented configuration sources; never copy credentials or secret values into documentation.
 
-- `catalog-microservice` (3200) - Target for imported products
-- `warehouse-microservice` (3201) - Target for imported stock
+## Deployment
+Follow the repository deployment boundary; this adoption changes documentation only.
+
+## Health and Observability
+Use the documented health, logging, and operational checks for this repository.

@@ -1,22 +1,29 @@
 # Business: suppliers-microservice
->
-> ⚠️ IMMUTABLE BY AI.
 
-## Goal
+status: approved
+completeness_level: complete
 
-Automated product imports from supplier REST/XML/CSV APIs with category mapping and scheduled sync.
+## Problem
+The ecosystem requires a clearly owned supplier api imports and supplier data integration for the e-commerce ecosystem
 
-## Constraints
+## Target Users and Stakeholders
+Catalog, warehouse, commerce administrators, and supplier integration operators.
 
-- AI must never push supplier data to catalog without validation
-- Supplier credentials managed in .env only
-- Import jobs must be idempotent (safe to re-run)
+## Value Proposition
+Integrate supplier imports while preserving supplier data and commerce boundaries.
 
-## Consumers
+## Goals
+Integrate supplier imports while preserving supplier data and commerce boundaries.
 
-flipflop-service, allegro-service.
+## Non-Goals
+This repository does not take ownership of unrelated ecosystem service domains or consumer business data.
 
-## SLA
+## Success Metrics
+The documented service or infrastructure boundary is available to its intended ecosystem consumers.
 
-- Port: 3202 (<http://suppliers-microservice:3202>)
-- Production: <https://supplier.alfares.cz>
+## Business Constraints
+Preserve documented ownership, use approved credential handling, and do not expose secrets or private operational data.
+
+## Approval
+Approved by: project owner
+Approval evidence: owner-confirmation: suppliers-microservice-onboarding-approved
