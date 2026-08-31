@@ -1,0 +1,84 @@
+{
+  "schema_version": "1.0",
+  "report_id": "VAL-WAVE0-SUPPLIERS-MICROSERVICE-2026-08-31",
+  "repository": "suppliers-microservice",
+  "generated_at": "2026-08-31T07:53:05Z",
+  "status": "validated",
+  "checks": {
+    "validate_repository_profile_ok": true,
+    "artifact_index_check_ok": true,
+    "json_parse_ok": true,
+    "diff_scope_ok": true,
+    "placeholder_scan_ok": true,
+    "diff_check_ok": true
+  },
+  "changed_paths": [
+    "STATE.json",
+    "docs/registry/ARTIFACT_INDEX.json",
+    "docs/registry/REPOSITORY_PROFILE.json",
+    "docs/standardization/wave-0/reports/2026-08-31-suppliers-wave0-v1-validation.json"
+  ],
+  "disallowed_changes": [],
+  "commands": [
+    {
+      "command": "python3 /home/ssf/Documents/Github/shared/scripts/validate-repository-profile.py --root . --json",
+      "exit_code": 0,
+      "output": "{\n  \"errors\": [],\n  \"ok\": true,\n  \"root\": \"/home/ssf/Documents/Github/suppliers-microservice\",\n  \"stats\": {\n    \"artifact_count\": 1,\n    \"collectable_path_count\": 17,\n    \"error_count\": 0,\n    \"warning_count\": 0\n  },\n  \"warnings\": []\n}"
+    },
+    {
+      "command": "python3 /home/ssf/Documents/Github/shared/scripts/build-artifact-index.py --root . --check --json",
+      "exit_code": 0,
+      "output": "{\n  \"artifact_count\": 1,\n  \"errors\": [],\n  \"ok\": true,\n  \"root\": \"/home/ssf/Documents/Github/suppliers-microservice\",\n  \"warnings\": []\n}"
+    },
+    {
+      "command": "python3 -m json.tool STATE.json > /dev/null",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "python3 -m json.tool docs/registry/REPOSITORY_PROFILE.json > /dev/null",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "python3 -m json.tool docs/registry/ARTIFACT_INDEX.json > /dev/null",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "python3 -m json.tool docs/standardization/wave-0/reports/2026-08-31-suppliers-wave0-v1-validation.json > /dev/null",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "rtk rg -n \"TODO|TBD|\\\\[MISSING:|\\\\[UNKNOWN:|<INSERT|<TODO\" STATE.json docs/registry/REPOSITORY_PROFILE.json docs/registry/ARTIFACT_INDEX.json",
+      "exit_code": 0,
+      "output": "ok"
+    },
+    {
+      "command": "git --no-pager diff --check",
+      "exit_code": 0,
+      "output": ""
+    },
+    {
+      "command": "git --no-pager diff --name-only",
+      "exit_code": 0,
+      "output": "STATE.json"
+    },
+    {
+      "command": "git --no-pager ls-files --others --exclude-standard",
+      "exit_code": 0,
+      "output": "docs/registry/ARTIFACT_INDEX.json\ndocs/registry/REPOSITORY_PROFILE.json\ndocs/standardization/wave-0/reports/2026-08-31-suppliers-wave0-v1-validation.json"
+    },
+    {
+      "command": "git --no-pager status --porcelain=v1 --untracked-files=all",
+      "exit_code": 0,
+      "output": " M STATE.json\n?? docs/registry/ARTIFACT_INDEX.json\n?? docs/registry/REPOSITORY_PROFILE.json\n?? docs/standardization/wave-0/reports/2026-08-31-suppliers-wave0-v1-validation.json"
+    }
+  ],
+  "baseline_untracked_observed": [],
+  "notes": [
+    "RunLayer project mapping remains unverified in repository-local sources.",
+    "Validation scope is docs/meta registry adoption only; source/runtime/deploy/dependency files were excluded by profile guards."
+  ]
+}

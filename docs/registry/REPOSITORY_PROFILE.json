@@ -1,0 +1,61 @@
+{
+  "schema_version": "1.0",
+  "repository": "suppliers-microservice",
+  "profile": "ips-full",
+  "project_registration": {
+    "runlayer_project_slug": null,
+    "runlayer_permalink": null,
+    "status": "unverified",
+    "warning": "Canonical RunLayer project mapping is not verified in repository-local sources."
+  },
+  "collectable_paths": [
+    "AGENTS.md",
+    "AGENT_OPERATIONS.md",
+    "BUSINESS.md",
+    "README.md",
+    "STATE.json",
+    "SYSTEM.md",
+    "TASKS.md",
+    "docs/24_onboarding/ONBOARDING_AGENT.md",
+    "docs/IMPLEMENTATION_ORCHESTRATOR.md",
+    "docs/IMPLEMENTATION_STATE.md",
+    "docs/INTENT_PRESERVATION_README.md",
+    "docs/orchestrator/GOALS.md",
+    "docs/orchestrator/STATUS.md",
+    "docs/orchestrator/VALIDATION_DEBT.md",
+    "docs/registry/ARTIFACT_INDEX.json",
+    "docs/registry/REPOSITORY_PROFILE.json",
+    "docs/standardization/wave-0/reports/2026-08-31-suppliers-wave0-v1-validation.json"
+  ],
+  "excluded_path_patterns": [
+    ".env*",
+    "**/*.dump",
+    "**/*.key",
+    "**/*.p12",
+    "**/*.pem",
+    "**/*.pfx",
+    "**/coverage/**",
+    "**/customer-data/**",
+    "**/dumps/**",
+    "**/keys/**",
+    "**/logs/**",
+    "**/node_modules/**",
+    "**/raw-logs/**",
+    "**/runtime/**",
+    "**/secrets/**",
+    "**/supplier-data/**",
+    "deploy.config.sh",
+    "dist/**",
+    "k8s/**",
+    "public/**",
+    "scripts/deploy*.sh",
+    "src/**"
+  ],
+  "owners": {
+    "business_intent": "project owner",
+    "technical_system": "project owner",
+    "planning_state": "project owner",
+    "integration": "project owner",
+    "registry_contract": "project owner"
+  }
+}

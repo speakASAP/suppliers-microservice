@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "repository": "suppliers-microservice",
+  "generated_at": "2026-08-31T07:53:05Z",
+  "artifacts": [
+    {
+      "id": "VAL-WAVE0-SUPPLIERS-MICROSERVICE-2026-08-31",
+      "type": "validation",
+      "status": "validated",
+      "title": "Wave 0 v1 contract validation for suppliers-microservice",
+      "path": "docs/standardization/wave-0/reports/2026-08-31-suppliers-wave0-v1-validation.json",
+      "parent_ids": [],
+      "updated_at": "2026-08-31T07:53:05Z"
+    }
+  ],
+  "warnings": [
+    "Canonical RunLayer mapping is unverified; runlayer_project_slug and runlayer_permalink remain null by design."
+  ]
+}
