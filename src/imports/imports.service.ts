@@ -356,7 +356,11 @@ export class ImportsService {
       throw new ServiceUnavailableException("Catalog service token is not configured for supplier stock validation");
     }
 
-    const baseUrl = (process.env.CATALOG_SERVICE_URL || process.env.CATALOG_BASE_URL || "http://catalog-microservice:3000").replace(/\/$/, "");
+    // 3200, not 3000: catalog listens on 3200, and neither CATALOG_SERVICE_URL nor
+    // CATALOG_BASE_URL is set in the deployment, so this default is what actually runs.
+    // The old value turned every stock-validation call into a connection timeout, which
+    // reads as a slow supplier import rather than a misconfigured one.
+    const baseUrl = (process.env.CATALOG_SERVICE_URL || process.env.CATALOG_BASE_URL || "http://catalog-microservice:3200").replace(/\/$/, "");
     const missingProductIds: string[] = [];
 
     for (const productId of productIds) {

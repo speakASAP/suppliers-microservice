@@ -34,6 +34,11 @@ spec:
                 secretKeyRef:
                   name: logging-ingest-credentials
                   key: LOGGING_SERVICE_TOKEN
+          # CATALOG_SERVICE_TOKEN and WAREHOUSE_SERVICE_TOKEN are deliberately not
+          # named here. They used to point at the hand-created
+          # `stock-traceability-runtime-token` Secret, which shadowed ESO and so was
+          # missed by every rotation. They now arrive via the secretRef below, which
+          # means a Vault rotation actually reaches this pod.
           envFrom:
             - configMapRef:
                 name: suppliers-microservice-config
