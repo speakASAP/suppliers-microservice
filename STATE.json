@@ -25,18 +25,5 @@
     "profile": "ips-full",
     "artifact_index": "docs/registry/ARTIFACT_INDEX.json",
     "status_source": "repository-maintained planning and validation documentation"
-  },
-  "schemaVersion": 1,
-  "project": "suppliers-microservice",
-  "lifecycle": "planning-adopted",
-  "health": "healthy",
-  "activeTask": "No task is currently active; most recent validated goal was Wave 0 suppliers-microservice validation.",
-  "lastUpdated": "2026-08-31T07:53:05Z",
-  "deployment": {
-    "status": "kubernetes"
-  },
-  "blockers": [],
-  "followUps": [
-    "Continue routine planning-standardization maintenance as new goals are proposed."
-  ]
+  }
 }
