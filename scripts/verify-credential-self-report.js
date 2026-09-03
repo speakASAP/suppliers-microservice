@@ -131,10 +131,29 @@ check('nest-cli registers the vendor asset', () => {
 // --- 4. the built artifact ---------------------------------------------------
 
 check('vendored module reached dist/ (run after build)', () => {
-  const built = path.join(root, 'dist/health/vendor/credential-reporter.js');
+  // Resolve the vendored file the way Node will at runtime: relative to the
+  // COMPILED reporter, wherever that landed.
+  //
+  // Hardcoding a dist path is what let this check pass while the pod
+  // crashlooped on MODULE_NOT_FOUND (2026-09-03). This repo has no `rootDir`,
+  // so tsc infers it from the widest include and emits to dist/src/..., while
+  // nest-cli's asset copier resolves `include` against sourceRoot and dropped
+  // the file at dist/common/vendor — a sibling of where the code looks. Both
+  // paths existed; only one was the one that mattered.
+  const candidates = fs
+    .readdirSync(path.join(root, 'dist'), { withFileTypes: true })
+    .filter((e) => e.isDirectory())
+    .map((e) => path.join(root, 'dist', e.name, 'health/credential-self-reporter.js'))
+    .concat([path.join(root, 'dist/health/credential-self-reporter.js')]);
+
+  const compiled = candidates.find((p) => fs.existsSync(p));
+  assert(compiled, `no compiled credential-self-reporter.js found under dist/`);
+
+  const built = path.join(path.dirname(compiled), 'vendor/credential-reporter.js');
   assert(
     fs.existsSync(built),
-    `missing ${built} — the nest-cli asset did not copy; the pod would throw MODULE_NOT_FOUND at boot`,
+    `missing ${built} — the compiled reporter at ${compiled} requires ./vendor/credential-reporter.js ` +
+      `and it is not there, so the pod throws MODULE_NOT_FOUND at boot`,
   );
   // Require the built file specifically. Requiring the source proves nothing
   // about what ships.
