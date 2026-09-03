@@ -1,20 +1,26 @@
 {
-  "created_at": "2026-06-15T10:27:29Z",
+  "created_at": "2026-09-03T12:41:29Z",
   "execution_plans": {
-    "execution_plan_count": 6,
+    "execution_plan_count": 10,
     "execution_plan_files": [
+      "docs/21_execution_plans/EP-SUP-FRONTEND-ADMIN.md",
+      "docs/21_execution_plans/EP-SUP-G7.md",
+      "docs/21_execution_plans/EP-TASK-001-bootstrap-service.md",
       "docs/21_execution_plans/EP-TASK-001-ips-documentation-bootstrap.md",
+      "docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md",
       "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md",
       "docs/21_execution_plans/EP-TASK-003-review-category-mapping-completeness.md",
       "docs/21_execution_plans/EP-TASK-004-review-warehouse-stock-update-boundary.md",
       "docs/21_execution_plans/EP-TASK-005-goal-6.md",
       "docs/21_execution_plans/EP-TASK-006-adapter-foundation.md"
     ],
-    "missing_validation_plan": []
+    "missing_validation_plan": [
+      "docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md"
+    ]
   },
   "gate": "pre_coding",
   "missing_immutable_files": [],
-  "next_step": "start_controlled_coding",
+  "next_step": "fix_pre_coding_gate_findings",
   "project_invariants": {
     "path": "docs/17_governance/PROJECT_INVARIANTS.md",
     "status": "pass"
@@ -31,11 +37,12 @@
     "reason": "cross_repo_mode_disabled",
     "status": "not_applicable"
   },
-  "status": "pass",
+  "status": "fail",
   "tasks": {
     "missing_upstream_traceability": [],
-    "task_count": 6,
+    "task_count": 7,
     "task_files": [
+      "docs/11_tasks/TASK-001-bootstrap-service.md",
       "docs/11_tasks/TASK-001-ips-documentation-bootstrap.md",
       "docs/11_tasks/TASK-002-add-new-supplier-api-integration.md",
       "docs/11_tasks/TASK-003-review-category-mapping-completeness.md",

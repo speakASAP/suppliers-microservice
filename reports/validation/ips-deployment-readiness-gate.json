@@ -1,10 +1,10 @@
 {
-  "created_at": "2026-06-15T10:27:29Z",
+  "created_at": "2026-09-03T12:41:29Z",
   "gate": "deployment_readiness",
-  "next_step": "ready_for_deployment_review",
+  "next_step": "fix_deployment_readiness_findings",
   "pre_coding_gate": {
     "report_path": "reports/validation/ips-pre-coding-gate.json",
-    "status": "pass"
+    "status": "fail"
   },
   "protected_files": {
     "changed_files": [],
@@ -13,14 +13,29 @@
   },
   "root": "/home/ssf/Documents/Github/suppliers-microservice",
   "schema_version": "1.0.0",
-  "status": "pass",
+  "status": "fail",
   "strict_doc_audit": {
-    "findings_count": 0,
-    "score": 100,
-    "status": "PASS"
+    "findings_count": 154,
+    "score": 0,
+    "status": "FAIL"
   },
   "target": null,
   "unresolved_markers": [
+    {
+      "line": 96,
+      "marker": "[MISSING: ...]",
+      "path": ".github/skills/register-new-app/SKILL.md"
+    },
+    {
+      "line": 127,
+      "marker": "[MISSING: ...]",
+      "path": ".github/skills/register-new-app/SKILL.md"
+    },
+    {
+      "line": 127,
+      "marker": "[UNKNOWN: ...]",
+      "path": ".github/skills/register-new-app/SKILL.md"
+    },
     {
       "line": 88,
       "marker": "[UNKNOWN: exact supplier-specific validation rules must be defined per supplier integration before implementation]",
@@ -34,65 +49,95 @@
     {
       "line": 49,
       "marker": "[MISSING: real supplier identity and stable supplier code]",
-      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "path": "docs/12_validation/VAL-TASK-002-DERIVED-CONTRACT.md"
     },
     {
       "line": 50,
-      "marker": "[MISSING: private endpoint or file-source descriptor stored outside committed docs]",
-      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+      "marker": "[MISSING: private endpoint or runtime endpoint reference plan]",
+      "path": "docs/12_validation/VAL-TASK-002-DERIVED-CONTRACT.md"
     },
     {
       "line": 51,
-      "marker": "[MISSING: authentication shape]",
+      "marker": "[MISSING: authentication shape and runtime credential reference key names]",
+      "path": "docs/12_validation/VAL-TASK-002-DERIVED-CONTRACT.md"
+    },
+    {
+      "line": 52,
+      "marker": "[MISSING: sanitized valid, malformed, paginated, and supplier-error examples]",
+      "path": "docs/12_validation/VAL-TASK-002-DERIVED-CONTRACT.md"
+    },
+    {
+      "line": 53,
+      "marker": "[MISSING: product, category, warehouse, pagination, rate-limit, retry, and idempotency policy]",
+      "path": "docs/12_validation/VAL-TASK-002-DERIVED-CONTRACT.md"
+    },
+    {
+      "line": 54,
+      "marker": "[MISSING: owner validation evidence for a real supplier contract]",
+      "path": "docs/12_validation/VAL-TASK-002-DERIVED-CONTRACT.md"
+    },
+    {
+      "line": 51,
+      "marker": "[MISSING: real supplier identity and stable supplier code]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 52,
-      "marker": "[MISSING: runtime credential reference plan]",
+      "marker": "[MISSING: private endpoint or file-source descriptor stored outside committed docs]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 53,
-      "marker": "[MISSING: payload schema]",
+      "marker": "[MISSING: authentication shape]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 54,
-      "marker": "[MISSING: pagination behavior]",
+      "marker": "[MISSING: runtime credential reference plan]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 55,
-      "marker": "[MISSING: rate limits and retry policy]",
+      "marker": "[MISSING: payload schema]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 56,
-      "marker": "[MISSING: supplier error model]",
+      "marker": "[MISSING: pagination behavior]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 57,
-      "marker": "[MISSING: deterministic idempotency/source-record rules]",
+      "marker": "[MISSING: rate limits and retry policy]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 58,
-      "marker": "[MISSING: category mapping requirements]",
+      "marker": "[MISSING: supplier error model]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 59,
-      "marker": "[MISSING: Catalog and Warehouse boundary expectations]",
+      "marker": "[MISSING: deterministic idempotency/source-record rules]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 60,
-      "marker": "[MISSING: sanitized sample request, response, empty-page, malformed-payload, and error examples]",
+      "marker": "[MISSING: category mapping requirements]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
     {
       "line": 61,
+      "marker": "[MISSING: Catalog and Warehouse boundary expectations]",
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+    },
+    {
+      "line": 62,
+      "marker": "[MISSING: sanitized sample request, response, empty-page, malformed-payload, and error examples]",
+      "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
+    },
+    {
+      "line": 63,
       "marker": "[MISSING: owner approval to convert this package into a coding prompt]",
       "path": "docs/13_context_packages/CP-TASK-002-add-new-supplier-api-integration.md"
     },
@@ -105,6 +150,16 @@
       "line": 24,
       "marker": "[UNKNOWN: ...]",
       "path": "docs/17_governance/AI_AGENT_RULES.md"
+    },
+    {
+      "line": 108,
+      "marker": "[MISSING: ...]",
+      "path": "docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md"
+    },
+    {
+      "line": 108,
+      "marker": "[UNKNOWN: ...]",
+      "path": "docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md"
     },
     {
       "line": 53,
@@ -207,145 +262,392 @@
       "path": "docs/23_documentation_contracts/DOCUMENTATION_COMPLETENESS_STANDARD.md"
     },
     {
-      "line": 60,
-      "marker": "[MISSING: ...]",
-      "path": "AGENT_OPERATIONS.md"
+      "line": 41,
+      "marker": "[MISSING: whether supplier facts are in Holiday Discount MVP]",
+      "path": "docs/business-process-control-plane/HOLIDAY_DISCOUNT_ADOPTION.md"
     },
     {
-      "line": 60,
-      "marker": "[UNKNOWN: ...]",
-      "path": "AGENT_OPERATIONS.md"
+      "line": 67,
+      "marker": "[MISSING: stable real supplier code]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 78,
+      "marker": "[MISSING: ...]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 97,
+      "marker": "[MISSING: real supplier display name, stable supplier code, business owner, technical owner, and escalation path]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 98,
+      "marker": "[MISSING: active supplier row or approved onboarding mutation path with exact non-secret metadata]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 99,
+      "marker": "[MISSING: private endpoint value or approved runtime endpoint reference plan outside committed docs]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 100,
+      "marker": "[MISSING: authentication shape and runtime credential reference key names]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 101,
+      "marker": "[MISSING: secret creation, rotation, storage, and deployment owner]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
     },
     {
       "line": 102,
+      "marker": "[MISSING: confirmation that the real supplier payload matches `PRODUCTION_REST_JSON_V1` or an approved alternate contract]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 103,
+      "marker": "[MISSING: sanitized valid, empty, malformed, paginated, and supplier-error examples]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 104,
+      "marker": "[MISSING: product identity mapping, Catalog category mapping prerequisites, and Catalog write constraints]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 105,
+      "marker": "[MISSING: warehouse/location mapping, dropship versus supplier-managed semantics, and Warehouse mutation approval boundary]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 106,
+      "marker": "[MISSING: pagination, delta-sync, deletion/discontinuation, timeout, retry, backoff, concurrency, and rate-limit policy]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 107,
+      "marker": "[MISSING: source record stability, source fingerprint policy, replay expectations, and idempotency owner]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 108,
+      "marker": "[MISSING: owner validation evidence and explicit approval for any runtime import, deployment, Catalog write, or Warehouse mutation]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 119,
       "marker": "[MISSING: ...]",
-      "path": "docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md"
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
     },
     {
-      "line": 102,
-      "marker": "[UNKNOWN: ...]",
-      "path": "docs/21_execution_plans/EP-TASK-002-CONTRACT-INTAKE.md"
+      "line": 130,
+      "marker": "[MISSING: ...]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
     },
     {
-      "line": 44,
-      "marker": "[MISSING: supplier identity and owner contacts]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
+      "line": 140,
+      "marker": "[MISSING: ...]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
     },
     {
-      "line": 45,
+      "line": 202,
+      "marker": "[MISSING: ...]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 224,
+      "marker": "[MISSING: ...]",
+      "path": "docs/orchestrator/2026-07-06-suppliers-business-health-handoff.md"
+    },
+    {
+      "line": 624,
+      "marker": "[MISSING: real supplier display name and stable supplier code]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 625,
+      "marker": "[MISSING: business owner, technical owner, and escalation contact]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 626,
+      "marker": "[MISSING: supplier row metadata and explicit DB mutation approval]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 627,
+      "marker": "[MISSING: private endpoint or runtime endpoint reference plan]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 628,
+      "marker": "[MISSING: authentication shape and runtime credential reference key names]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 629,
+      "marker": "[MISSING: sanitized valid, malformed, empty, paginated, and supplier-error examples]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 630,
+      "marker": "[MISSING: product, category, warehouse, pagination, retry, rate-limit, idempotency, and deletion/discontinuation facts]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 631,
+      "marker": "[MISSING: explicit approval for any runtime import, deployment, or Warehouse mutation]",
+      "path": "docs/orchestrator/STATUS.md"
+    },
+    {
+      "line": 55,
+      "marker": "[MISSING: ...]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 57,
+      "marker": "[MISSING: real supplier display name, stable supplier code, business owner, technical owner, and escalation path]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 58,
+      "marker": "[MISSING: active supplier row or approved onboarding path for creating one]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 59,
+      "marker": "[MISSING: private endpoint location or runtime endpoint reference plan outside committed docs]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 60,
+      "marker": "[MISSING: authentication shape decision and runtime credential reference key names]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 61,
+      "marker": "[MISSING: secret creation, rotation, and deployment owner]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 62,
+      "marker": "[MISSING: confirmation that the supplier response is a JSON array or `{ \"items\": [...]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 63,
+      "marker": "[MISSING: sanitized valid, empty, malformed, paginated, and supplier-error examples]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 64,
+      "marker": "[MISSING: product identity mapping, Catalog category mapping prerequisites, and Catalog write constraints]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 65,
+      "marker": "[MISSING: warehouse/location mapping, dropship versus supplier-managed semantics, and Warehouse mutation approval boundary]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 66,
+      "marker": "[MISSING: pagination, delta-sync, timeout, retry, backoff, concurrency, and rate-limit policy]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 67,
+      "marker": "[MISSING: source record stability, source fingerprint policy, deletion/discontinuation semantics, and replay expectations]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 69,
+      "marker": "[MISSING: owner validation evidence and approval to execute a runtime onboarding run after all data is supplied]",
+      "path": "docs/supplier-contracts/TASK-002_DERIVED_REST_JSON_DETAILS.md"
+    },
+    {
+      "line": 47,
+      "marker": "[MISSING: real supplier display name]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 48,
+      "marker": "[MISSING: stable supplier code]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 49,
+      "marker": "[MISSING: business owner, technical owner, and escalation contact]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 50,
+      "marker": "[MISSING: active supplier row creation/update approval with exact non-secret metadata]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 51,
+      "marker": "[MISSING: private endpoint value or approved runtime endpoint reference plan]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 52,
+      "marker": "[MISSING: authentication shape and runtime credential reference key names]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 53,
+      "marker": "[MISSING: secret creation, rotation, and deployment owner]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 54,
+      "marker": "[MISSING: confirmation that the real supplier response exactly matches `PRODUCTION_REST_JSON_V1`]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 55,
+      "marker": "[MISSING: sanitized valid, malformed, empty, paginated, and supplier-error examples]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 56,
+      "marker": "[MISSING: product identity mapping and Catalog category mapping prerequisites]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 57,
+      "marker": "[MISSING: warehouse/location mapping and Warehouse mutation boundary]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 58,
+      "marker": "[MISSING: pagination, delta-sync, timeout, retry, backoff, concurrency, and rate-limit policy]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 59,
+      "marker": "[MISSING: source record stability, source fingerprint policy, deletion/discontinuation semantics, and replay expectations]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 60,
+      "marker": "[MISSING: owner approval for any runtime import, deployment, or Warehouse mutation]",
+      "path": "docs/supplier-contracts/TASK-002_GENERIC_REST_ONBOARDING_APPROVAL.md"
+    },
+    {
+      "line": 51,
       "marker": "[MISSING: private endpoint or runtime endpoint reference plan]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 46,
+      "line": 52,
       "marker": "[MISSING: authentication shape and credential reference names]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 47,
-      "marker": "[MISSING: credential reference plan]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
-    },
-    {
-      "line": 48,
-      "marker": "[MISSING: payload schema]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
-    },
-    {
-      "line": 49,
-      "marker": "[MISSING: product mapping assumptions]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
-    },
-    {
-      "line": 50,
-      "marker": "[MISSING: stock and warehouse mapping assumptions]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
-    },
-    {
-      "line": 51,
-      "marker": "[MISSING: category mapping assumptions]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
-    },
-    {
-      "line": 52,
-      "marker": "[MISSING: pagination and filter contract]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
-    },
-    {
       "line": 53,
-      "marker": "[MISSING: rate limits, retries, and timeout policy]",
-      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
-    },
-    {
-      "line": 54,
-      "marker": "[MISSING: sanitized sample payload shape]",
+      "marker": "[MISSING: credential reference plan]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
       "line": 55,
-      "marker": "[MISSING: source record and idempotency key rules]",
+      "marker": "[MISSING: product mapping assumptions]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
       "line": 56,
+      "marker": "[MISSING: stock and warehouse mapping assumptions]",
+      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
+    },
+    {
+      "line": 57,
+      "marker": "[MISSING: category mapping assumptions]",
+      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
+    },
+    {
+      "line": 58,
+      "marker": "[MISSING: pagination and filter contract]",
+      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
+    },
+    {
+      "line": 59,
+      "marker": "[MISSING: rate limits, retries, and timeout policy]",
+      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
+    },
+    {
+      "line": 60,
+      "marker": "[MISSING: sanitized sample payload shape]",
+      "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
+    },
+    {
+      "line": 62,
       "marker": "[MISSING: owner validation evidence and approval boundary]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 75,
+      "line": 83,
       "marker": "[MISSING: supplier identity]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 76,
+      "line": 84,
       "marker": "[MISSING: endpoint/runtime endpoint reference]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 77,
+      "line": 85,
       "marker": "[MISSING: authentication shape]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 78,
+      "line": 86,
       "marker": "[MISSING: credential reference plan]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 79,
+      "line": 87,
       "marker": "[MISSING: payload schema]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 80,
+      "line": 88,
       "marker": "[MISSING: pagination, filters, retry, timeout, and rate-limit rules]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 81,
+      "line": 89,
       "marker": "[MISSING: sanitized synthetic or masked sample]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 82,
+      "line": 90,
       "marker": "[MISSING: product, stock, and category mapping assumptions]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 83,
+      "line": 91,
       "marker": "[MISSING: source record ID and idempotency rules]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     },
     {
-      "line": 84,
+      "line": 92,
       "marker": "[MISSING: owner validation evidence and approval boundary]",
       "path": "docs/supplier-contracts/TASK-002_INTAKE_CHECKLIST.md"
     }
   ],
   "validation_reports": {
     "reports": [
+      "docs/12_validation/VAL-CROSS-STOCK-RUNTIME-LIVE.md",
+      "docs/12_validation/VAL-CROSS-STOCK-RUNTIME-PLAN.md",
+      "docs/12_validation/VAL-CROSS-STOCK-TRACEABILITY.md",
       "docs/12_validation/VAL-SUP-FRONTEND-ADMIN.md",
+      "docs/12_validation/VAL-SUP-G7.md",
+      "docs/12_validation/VAL-TASK-001-bootstrap-service.md",
       "docs/12_validation/VAL-TASK-001-ips-documentation-bootstrap.md",
+      "docs/12_validation/VAL-TASK-002-DERIVED-CONTRACT.md",
+      "docs/12_validation/VAL-TASK-002-GENERIC-REST-TEST-ONBOARDING.md",
       "docs/12_validation/VAL-TASK-002-add-new-supplier-api-integration.md",
       "docs/12_validation/VAL-TASK-003-review-category-mapping-completeness.md",
       "docs/12_validation/VAL-TASK-004-review-warehouse-stock-update-boundary.md",
