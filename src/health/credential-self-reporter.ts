@@ -22,13 +22,22 @@ const MONITORING_URL =
  * is precisely the case worth reporting. Deriving it from the token would make a
  * broken credential report under a broken name, or not at all.
  *
- * Note the domain: `@alfares.cz`, not `@internal.alfares.cz`. This principal
- * misses the address convention by one domain segment and is one of the 18
- * off-convention principals the inventory enumerates by `userType` rather than by
- * address. The string must match auth exactly or the report reconciles against
- * nothing.
+ * **This is the PRE-STANDARD principal, and that is deliberate.** Task B's
+ * evidence (2026-09-03) decoded the `sub` of the token actually mounted in this
+ * pod: it is `suppliers-warehouse-service@alfares.cz`, not
+ * `svc-suppliers-microservice--warehouse-microservice@alfares.cz`, which this
+ * constant originally named. The `svc-` principal exists in auth but no token
+ * was ever issued for it — Vault holds the pre-standard one under the same key.
+ *
+ * Reporting the `svc-` name filed an `accepted` verdict against a credential
+ * that is not the one being probed: the wrong principal looked healthy while
+ * the one actually in use stayed silent. Naming the principal whose token is
+ * presented is the whole point of the field.
+ *
+ * Note the domain is `@alfares.cz`, not `@internal.alfares.cz`. The string must
+ * match auth exactly or the report reconciles against nothing.
  */
-const PRINCIPAL = 'svc-suppliers-microservice--warehouse-microservice@alfares.cz';
+const PRINCIPAL = 'suppliers-warehouse-service@alfares.cz';
 
 const TARGET = 'warehouse-microservice';
 

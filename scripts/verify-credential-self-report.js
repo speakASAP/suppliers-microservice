@@ -114,7 +114,7 @@ check('principal string matches auth exactly', () => {
   // Off-convention domain: @alfares.cz, NOT @internal.alfares.cz. A mismatch
   // here reconciles the report against nothing and the principal stays silent.
   assert(
-    text.includes("'svc-suppliers-microservice--warehouse-microservice@alfares.cz'"),
+    text.includes("'suppliers-warehouse-service@alfares.cz'"),
     'principal does not match the address auth lists',
   );
 });
