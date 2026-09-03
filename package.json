@@ -8,7 +8,8 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
-    "verify:business-health-suppliers-traceability-contract": "node scripts/verify-business-health-suppliers-traceability-contract.js"
+    "verify:business-health-suppliers-traceability-contract": "node scripts/verify-business-health-suppliers-traceability-contract.js",
+    "verify:credential-self-report": "node scripts/verify-credential-self-report.js"
   },
   "dependencies": {
     "@nestjs/axios": "^4.0.1",
