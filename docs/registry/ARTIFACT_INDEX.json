@@ -1,8 +1,28 @@
 {
   "schema_version": "1.0",
   "repository": "suppliers-microservice",
-  "generated_at": "2026-08-31T07:53:05Z",
+  "generated_at": "2026-09-05T00:00:00Z",
   "artifacts": [
+    {
+      "id": "EP-TASK-002",
+      "type": "execution_plan",
+      "status": "blocked",
+      "title": "Add New Supplier API Integration",
+      "path": "docs/21_execution_plans/EP-TASK-002-add-new-supplier-api-integration.md",
+      "parent_ids": [
+        "TASK-002"
+      ],
+      "updated_at": "2026-09-05T00:00:00Z"
+    },
+    {
+      "id": "TASK-002",
+      "type": "task",
+      "status": "draft",
+      "title": "Add New Supplier API Integration",
+      "path": "docs/11_tasks/TASK-002-add-new-supplier-api-integration.md",
+      "parent_ids": [],
+      "updated_at": "2026-09-05T00:00:00Z"
+    },
     {
       "id": "VAL-WAVE0-SUPPLIERS-MICROSERVICE-2026-08-31",
       "type": "validation",

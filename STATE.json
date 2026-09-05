@@ -8,12 +8,14 @@
     "deployment": "kubernetes"
   },
   "planning": {
-    "status": "done",
+    "status": "blocked",
     "active_goal_ids": [],
     "next_ready_goal_ids": [],
-    "blocked_goal_ids": [],
+    "blocked_goal_ids": [
+      "EP-TASK-002"
+    ],
     "active_workstream_ids": [],
-    "last_updated_at": "2026-08-31T07:53:05Z"
+    "last_updated_at": "2026-09-05T00:00:00Z"
   },
   "delivery": {
     "last_validation_id": "VAL-WAVE0-SUPPLIERS-MICROSERVICE-2026-08-31",
