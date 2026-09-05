@@ -42,7 +42,6 @@ Boundary decision: no deployment, runtime token inspection, production supplier 
 
 Next unfinished chunk: resolve or commit the dirty Catalog worktree, then regenerate current-head runtime readiness/handoff/deployment evidence for Warehouse, Catalog, and Suppliers; after that, request owner-approved deployment and guarded runtime evidence. TASK-002 adapter coding remains blocked until owner supplies the required supplier contract.
 
-
 ## 2026-06-13 - Parallel-Agent Planning Refactor
 
 Change: refactored the Suppliers planning workflow so future work is split into agent-ready goals with wave assignment, ownership boundaries, dependencies, blockers, shared-resource conflicts, validation evidence, and handoff paths. Added current parallel task candidates for current-head runtime readiness, source preflight verification, runtime deployment/smoke, supplier-specific adapter discovery, and status consolidation.
@@ -64,8 +63,6 @@ Boundary decision: no token value was checked into source. The previous guarded 
 Next unfinished chunk: create the runtime token secret, redeploy Suppliers at the new head, regenerate approval/deployment evidence, and rerun the guarded runtime smoke.
 
 ## 2026-06-13 - Suppliers Runtime Service Token Wiring
-
-Change: wired Suppliers production Kubernetes runtime to call Catalog and Warehouse during the approved stock traceability import. The ConfigMap now sets in-cluster `CATALOG_SERVICE_URL` and `WAREHOUSE_SERVICE_URL`, and the Deployment injects `CATALOG_SERVICE_TOKEN` from `catalog-microservice-secret` plus `WAREHOUSE_SERVICE_TOKEN` from `warehouse-microservice-secret` without exposing token values. Cross-service preflight now checks these bindings before runtime handoff.
 
 Validation evidence: live Suppliers pod inspection showed Catalog and Warehouse service-token env vars were missing while only `JWT_TOKEN` was present. Live database schema check showed `import_jobs.sourceFingerprint` is already varchar(256), so no sourceFingerprint migration is needed for this approved run. Full build, preflight, readiness, deployment, and guarded runtime validation are rerun after this entry is committed and deployed.
 
@@ -193,7 +190,6 @@ Validation: docker build --target production -t suppliers-microservice:curl-chec
 
 Deployment: not run in this task. The live Kubernetes pod will have curl after the next suppliers-microservice image build and deployment.
 
-
 ## 2026-06-12 - Goal 2 Supplier Contract And Credential Safety
 
 Change: added supplier create/update DTO validation, constrained `apiType` to `rest`, `xml`, `csv`, or `ftp`, validated API URLs and schedule strings, and changed the application contract for `apiCredentials` to runtime secret-reference metadata. Supplier list, read, create, and update responses now redact `apiCredentials` and return only `hasCredentials` while preserving the `{ success, data }` response envelope.
@@ -201,7 +197,6 @@ Change: added supplier create/update DTO validation, constrained `apiType` to `r
 Validation evidence: `python3 scripts/pre_coding_gate.py --root .` passed before source edits. `npm run build` passed after source edits. Sensitive-data review found no real credentials, raw supplier payloads, or production samples added.
 
 Next unfinished chunk: Goal 3 - Import Validation And Idempotency. Operational follow-up remains: deploy the production image so the live pod receives `curl`.
-
 
 ## 2026-06-12 - Goal 3 Import Validation And Idempotency
 
@@ -237,7 +232,6 @@ Verification: new pod `suppliers-microservice-c88759bd5-rv2x8` is ready, in-pod 
 
 Known deviation: npm install during Docker build reported existing npm audit findings. They were not remediated in this goal.
 
-
 ## 2026-06-13 - Goal 5 Warehouse Stock Update Boundary
 
 Change: added service-local Warehouse stock-boundary validation and import-job evidence fields for validation status, sanitized validation errors, actor, reason, idempotency key, approval state, and mutation-attempt marker. Added an unapplied migration artifact for the new import-job evidence columns.
@@ -247,7 +241,6 @@ Boundary decision: current Suppliers import code has no Warehouse mutation clien
 Validation evidence: python3 scripts/pre_coding_gate.py --root . passed before source edits. npm run build passed. Synthetic compiled-validator check passed for malformed stock candidates, unapproved mutation attempts, and a valid synthetic candidate. Strict documentation audit passed. Deployment-readiness gate passed.
 
 Next unfinished chunk: Goal 6 - Operational Smoke And Documentation Ingestion. Operational follow-up remains: apply the Goal 5 migration and deploy only after owner approval.
-
 
 ## 2026-06-13 - Goal 5 Production Migration And Deployment
 
@@ -260,7 +253,6 @@ Deployment: committed source as `5cb40f0` and ran `./scripts/deploy.sh`. The scr
 Verification: new pod `suppliers-microservice-cd77cfc9f-9lzw8` is ready on image digest `sha256:6042364ab7e965adb497add6e2a9eff712d316f90a246721fdc435511c3aa2a2`. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.
 
 Next unfinished chunk: Goal 6 - Operational Smoke And Documentation Ingestion.
-
 
 ## 2026-06-13 - Goal 6 Operational Smoke And Documentation Ingestion
 
@@ -332,7 +324,6 @@ Next unfinished chunk: owner-approved supplier onboarding/runtime smoke using th
 
 Deployment evidence: committed production REST JSON adapter as `1043871`, pushed to `origin/main`, ran `./scripts/deploy.sh`, and explicitly restarted the deployment because the manifest references mutable `latest`. Running pod `suppliers-microservice-6d5fdf4f5-k6lp7` is ready on image digest `sha256:eb9861f525c4072a558f23de6e1557b8eafd03020cc41e82506006d9607d5e34`. In-pod `/api/health` and external `https://suppliers.alfares.cz/api/health` returned healthy.
 
-
 ## 2026-06-13 - Cross-Service Runtime Evidence Source Hardening
 
 Change: validated the current cross-service traceability source slice and aligned Suppliers preflight with Catalog logistics consistency guards. Catalog now ignores stale, duplicate, or unrequested Warehouse logistics plans before joining route evidence to Catalog availability and coverage. Warehouse contract docs record the batch logistics request constraints needed for deterministic Catalog joins. Suppliers preflight now verifies the Catalog guard surfaces before runtime evidence can proceed.
@@ -346,8 +337,6 @@ Next unfinished chunk: owner-approved guarded runtime evidence flow using `RUN_A
 ## 2026-06-13 - Cross-Service Runtime Evidence Flow Complete
 
 Approval: owner approved deploying Warehouse, Catalog, and Suppliers source, creating/reusing synthetic traceability fixtures only, and running one guarded Suppliers synthetic import that mutates Warehouse supplier/dropship stock.
-
-Deployment evidence: Warehouse commit 6992122d86f7cf0926b7702185f000982395aa0b, Catalog commit 890f55a35b107e2e4038281fa5c4de99232d7343, and Suppliers commit a6fc69d220e04aa055345c2ee1606bad21cc5a06 were deployed and health/access checks were recorded in /tmp/stock-traceability-deployment-evidence.json. A temporary Suppliers WAREHOUSE_SERVICE_TOKEN was installed only for the approved smoke and removed after the runtime evidence passed; Suppliers health was verified healthy after cleanup.
 
 Runtime evidence: reports/validation/run-runtime-evidence-flow.js completed with RUN_APPROVED_RUNTIME_SMOKE=true for synthetic product c0de0000-0000-4000-8000-000000000011, supplier c0de0000-0000-4000-8000-000000000012, own warehouse c0de0000-0000-4000-8000-000000000013, supplier warehouse c0de0000-0000-4000-8000-000000000014, and dropship warehouse c0de0000-0000-4000-8000-000000000015. This is historical evidence for those recorded deployed commits only; it predates the current Catalog identity and Warehouse authority evidence requirements.
 

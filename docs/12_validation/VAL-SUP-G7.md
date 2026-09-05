@@ -32,8 +32,6 @@ Suppliers now has a service-local path for validated supplier stock candidates t
 
 ## Contract Evidence
 
-Warehouse call shape is supplierId, warehouseId, productId, quantity, externalReference, actor, and observedAt. The URL defaults to Warehouse service DNS and can be configured by WAREHOUSE_SERVICE_URL or WAREHOUSE_BASE_URL. Authorization uses WAREHOUSE_SERVICE_TOKEN or WAREHOUSE_INTERNAL_SERVICE_TOKEN from runtime environment only.
-
 ## Idempotency Evidence
 
 External references are derived from import job idempotency key plus supplierSku, productId, and warehouseId using a SHA-256 digest. Existing duplicate job behavior remains unchanged, and Warehouse reconciliation has its own unique external-reference boundary.

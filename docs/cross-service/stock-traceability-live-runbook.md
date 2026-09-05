@@ -26,24 +26,6 @@ Do not paste real JWTs, service tokens, supplier credentials, raw supplier paylo
 
 Prepare these values before deploying:
 
-| Variable | Meaning |
-| --- | --- |
-| `TRACE_PRODUCT_ID` | Approved synthetic Catalog product ID with a `CODEX-STOCK-TRACE-` SKU prefix. |
-| `TRACE_PRODUCT_SKU_PREFIX` | Required synthetic SKU prefix. Use `CODEX-STOCK-TRACE-` unless the owner approves another isolated prefix. |
-| `TRACE_SUPPLIER_ID` | Active Suppliers supplier ID whose code is `synthetic-trace`. |
-| `TRACE_OWN_WAREHOUSE_ID` | Alfares-owned Warehouse location used for local physical stock and local fulfillment route evidence. |
-| `TRACE_SUPPLIER_WAREHOUSE_ID` | Warehouse supplier replenishment location linked to `TRACE_SUPPLIER_ID`. |
-| `TRACE_DROPSHIP_WAREHOUSE_ID` | Warehouse dropship location linked to `TRACE_SUPPLIER_ID`. |
-| `TRACE_IMPORT_IDEMPOTENCY_KEY` | Stable replay key for this approved smoke, for example `manual:traceability-20260613-001`. |
-| `TRACE_SUPPLIER_STOCK_QTY` | Approved synthetic supplier quantity used in the Suppliers source fingerprint, for example `7`. |
-| `TRACE_SUPPLIER_SKU` | Approved synthetic supplier SKU used in the Suppliers source fingerprint, for example `SUP-SKU-TRACE`. |
-| `TRACE_CLEANUP_EVIDENCE` | Completed cleanup evidence or explicit deferral reference, for example `deferred:stock-traceability-runbook-20260613`. |
-| `RUNTIME_APPROVAL_ARTIFACT_FILE` | JSON owner approval artifact whose service heads match the current clean Warehouse, Catalog, and Suppliers repositories, whose `approvedTraceInputs` match the approved synthetic product, supplier, warehouse, idempotency, quantity, supplier SKU, and cleanup evidence values, and whose scope allows only synthetic traceability records and one guarded synthetic import. |
-| `CATALOG_TOKEN` | Approved Catalog bearer token with read access to protected Catalog endpoints. |
-| `WAREHOUSE_TOKEN` | Approved Warehouse bearer token with read access and supplier reconciliation permission. |
-| `SUPPLIERS_TOKEN` | Approved Suppliers bearer token with import-job access. |
-| `CATALOG_SERVICE_URL` / `CATALOG_SERVICE_TOKEN` | Suppliers runtime configuration used to verify Catalog product identity before approved Warehouse stock mutation. Keep token value in the runtime environment only. |
-
 ## Pre-Deploy Snapshot
 
 Run the cross-service preflight from the operator workstation:
@@ -135,8 +117,6 @@ ssh alfares 'cd /home/ssf/Documents/Github/catalog-microservice && ./scripts/dep
 curl -sk https://catalog.alfares.cz/health
 curl -sk -o /dev/null -w "%{http_code}\n" -X POST -H "Content-Type: application/json" --data '{"productIds":["anonymous-protection-check"]}' https://catalog.alfares.cz/api/products/availability/coverage
 ```
-
-Deploy Suppliers last. Before approved supplier stock mutation, Suppliers runtime must have `CATALOG_SERVICE_URL` and `CATALOG_SERVICE_TOKEN` or `CATALOG_INTERNAL_SERVICE_TOKEN` configured so it can verify Catalog product identity before calling Warehouse reconciliation:
 
 ```bash
 ssh alfares 'cd /home/ssf/Documents/Github/suppliers-microservice && ./scripts/deploy.sh'
@@ -263,9 +243,7 @@ node reports/validation/verify-stock-traceability-completion.js docs/12_validati
 
 The guarded runner also writes `stock-traceability-runtime-evidence-manifest.json` in `RUNTIME_EVIDENCE_DIR` unless `RUNTIME_EVIDENCE_MANIFEST` overrides the path. Preserve it with the fixture JSON, smoke JSON, deployment evidence JSON, runtime approval artifact JSON, and final report; it records byte counts and SHA-256 hashes for the complete runtime evidence bundle. The runner verifies the manifest, verifies the bundle, and then executes `verify-stock-traceability-completion.js <report-file> <manifest-file>` before it can print `runtime-complete`. Operators can rerun `node reports/validation/verify-runtime-evidence-manifest.js <manifest-file>`, `node reports/validation/verify-runtime-evidence-bundle.js <manifest-file> <report-file>`, and the completion verifier to recheck immutable evidence. The bundle verifier also proves the fixture and smoke artifacts use the same trace product, supplier/dropship warehouse IDs, `TRACE_SUPPLIER_ID` ownership for supplier-managed origins and routes, and a Suppliers job `sourceFingerprint` that matches the approved import request plus the redacted command's product, supplier warehouse IDs, supplier stock quantity, and supplier SKU, so operators cannot accidentally combine evidence from different runs or suppliers.
 
-
 Completion gate: run `node reports/validation/verify-stock-traceability-completion.js <report-file> <manifest-file>` before claiming the stock traceability goal is complete. It returns incomplete for failed or partial runtime reports and rejects passed-runtime reports that do not have a verified evidence bundle.
-
 
 Runtime approval request: use `/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-approval-request.md`, generated and hashed by `create-runtime-readiness-bundle.js`, as the owner approval prompt. The request records clean current service HEADs, the incomplete completion gate, the three actions requiring explicit approval, and the non-completion reminder. After approval, generate the matching approval artifact with `OWNER_APPROVAL=explicit RUNTIME_APPROVED_BY=<owner-id> TRACE_PRODUCT_ID=<approved-synthetic-product-id> TRACE_PRODUCT_SKU_PREFIX=CODEX-STOCK-TRACE- TRACE_SUPPLIER_ID=<active-synthetic-trace-supplier-id> TRACE_OWN_WAREHOUSE_ID=<own-warehouse-id> TRACE_SUPPLIER_WAREHOUSE_ID=<supplier-replenishment-warehouse-id> TRACE_DROPSHIP_WAREHOUSE_ID=<supplier-dropship-warehouse-id> TRACE_IMPORT_IDEMPOTENCY_KEY=manual:traceability-20260613-001 TRACE_SUPPLIER_STOCK_QTY=7 TRACE_SUPPLIER_SKU=SUP-SKU-TRACE TRACE_CLEANUP_EVIDENCE=deferred:stock-traceability-runbook-20260613 RUNTIME_READINESS_MANIFEST_FILE=/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-readiness-manifest.json RUNTIME_APPROVAL_REQUEST_FILE=/tmp/stock-traceability-runtime-readiness/stock-traceability-runtime-approval-request.md RUNTIME_APPROVAL_ARTIFACT_OUTPUT=/tmp/stock-traceability-runtime-approval.json node reports/validation/create-runtime-approval-artifact.js`. The generator stamps exact current `serviceHeads`, `approvedTraceInputs`, the verified readiness manifest file and SHA-256, the readiness-bundle approval request file and SHA-256, synthetic-only scope, one guarded synthetic import, and forbidden-action acknowledgement, then validates the JSON with `verify-runtime-approval-artifact.js`. Operators can revalidate it with `node reports/validation/verify-runtime-approval-artifact.js /tmp/stock-traceability-runtime-approval.json` before running approved smoke.
 
