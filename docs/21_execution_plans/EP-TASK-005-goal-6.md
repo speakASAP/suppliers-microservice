@@ -2,7 +2,7 @@
 
 ```yaml
 id: EP-TASK-005
-status: implemented
+status: done
 source_task: ../11_tasks/TASK-005-goal-6.md
 owner: supplier-service-owner
 created: 2026-06-13

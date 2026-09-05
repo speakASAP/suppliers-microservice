@@ -2,7 +2,7 @@
 
 ```yaml
 id: EP-TASK-006
-status: pending
+status: done
 source_task: ../11_tasks/TASK-006-adapter-foundation.md
 owner: supplier-service-owner
 created: 2026-06-13
