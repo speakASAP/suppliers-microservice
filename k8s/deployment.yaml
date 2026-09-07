@@ -28,12 +28,9 @@ spec:
           ports:
             - containerPort: 3202
               name: http
-          env:
-            - name: LOGGING_SERVICE_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: logging-ingest-credentials
-                  key: LOGGING_SERVICE_TOKEN
+          # LOGGING_SERVICE_TOKEN comes from suppliers-microservice-secret
+          # (per-pair RS256 via ExternalSecret). Do not reintroduce
+          # logging-ingest-credentials — it shadows envFrom with a static non-JWT.
           # CATALOG_SERVICE_TOKEN and WAREHOUSE_SERVICE_TOKEN are deliberately not
           # named here. They used to point at the hand-created
           # `stock-traceability-runtime-token` Secret, which shadowed ESO and so was
