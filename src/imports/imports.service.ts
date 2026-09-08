@@ -294,7 +294,7 @@ export class ImportsService {
       };
     }
 
-    const token = process.env.WAREHOUSE_SERVICE_TOKEN || process.env.WAREHOUSE_INTERNAL_SERVICE_TOKEN;
+    const token = process.env.WAREHOUSE_SERVICE_TOKEN;
     if (!token) {
       throw new ServiceUnavailableException("Warehouse service token is not configured");
     }
@@ -351,7 +351,7 @@ export class ImportsService {
       return { status: "skipped", productIds: [], errors: [] };
     }
 
-    const token = process.env.CATALOG_SERVICE_TOKEN || process.env.CATALOG_INTERNAL_SERVICE_TOKEN || process.env.CATALOG_TOKEN;
+    const token = process.env.CATALOG_SERVICE_TOKEN;
     if (!token) {
       throw new ServiceUnavailableException("Catalog service token is not configured for supplier stock validation");
     }

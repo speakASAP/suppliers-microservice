@@ -94,7 +94,6 @@ function readTokenExpiry(token) {
  * @param {string} opts.url            Absolute URL of a read-only endpoint on the receiver.
  * @param {string} opts.token          This service's deployed credential.
  * @param {number} [opts.timeoutMs]    Default 10000.
- * @param {string} [opts.serviceName]  Sent as x-service-name, for receiver-side attribution.
  * @param {typeof fetch} [opts.fetchImpl] Injectable for tests.
  * @returns {Promise<ProbeResult>}
  */
@@ -102,7 +101,6 @@ async function probeCredential({
   url,
   token,
   timeoutMs = 10000,
-  serviceName,
   fetchImpl = globalThis.fetch,
 }) {
   // An empty token is the catalog-contract-monitor failure exactly: it ran for
@@ -121,7 +119,6 @@ async function probeCredential({
       method: 'GET',
       headers: {
         Authorization: `Bearer ${token}`,
-        ...(serviceName ? { 'x-service-name': serviceName } : {}),
       },
       signal: controller.signal,
     });

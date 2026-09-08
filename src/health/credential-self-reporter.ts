@@ -21,23 +21,9 @@ const MONITORING_URL =
  * the principal the inventory knows even if the deployed token is wrong — which
  * is precisely the case worth reporting. Deriving it from the token would make a
  * broken credential report under a broken name, or not at all.
- *
- * **This is the PRE-STANDARD principal, and that is deliberate.** Task B's
- * evidence (2026-09-03) decoded the `sub` of the token actually mounted in this
- * pod: it is `suppliers-warehouse-service@alfares.cz`, not
- * `svc-suppliers-microservice--warehouse-microservice@alfares.cz`, which this
- * constant originally named. The `svc-` principal exists in auth but no token
- * was ever issued for it — Vault holds the pre-standard one under the same key.
- *
- * Reporting the `svc-` name filed an `accepted` verdict against a credential
- * that is not the one being probed: the wrong principal looked healthy while
- * the one actually in use stayed silent. Naming the principal whose token is
- * presented is the whole point of the field.
- *
- * Note the domain is `@alfares.cz`, not `@internal.alfares.cz`. The string must
- * match auth exactly or the report reconciles against nothing.
  */
-const PRINCIPAL = 'suppliers-warehouse-service@alfares.cz';
+const PRINCIPAL =
+  'svc-suppliers-microservice--warehouse-microservice@internal.alfares.cz';
 
 const TARGET = 'warehouse-microservice';
 
@@ -55,26 +41,11 @@ const PROBE_PRODUCT_ID = 'credential-probe';
  * Reports on this service's warehouse credential, per
  * `monitoring-microservice/docs/CREDENTIAL_SELF_REPORT_CONTRACT.md`.
  *
- * Wave 1 of the prober plan's Task A, and the first adoption outside the
- * monitoring pilot.
- *
- * **Why warehouse and not catalog.** Suppliers holds two per-pair principals and
- * only this one is probeable. Catalog's `CatalogAuthGuard` derives a caller's
- * grants from the `SERVICE_NAME` header rather than from the JWT's role, and
- * falls back to read access for any unlisted name
- * (`catalog-auth.guard.ts`, `grants[source] ?? READ`). A GET against catalog
- * would therefore return 200 even for a revoked or expired credential, so the
- * probe would report `accepted` for a credential that is not being enforced —
- * the catalog-contract-monitor failure reproduced by the tool built to catch it.
- * `svc-suppliers-microservice--catalog-microservice` is recorded unprobeable and
- * stays `silent` until catalog grows a route that enforces the token's own role.
- *
- * **Why this route.** `GET /api/stock/:productId` is decorated
- * `@Roles(...WAREHOUSE_READ_ROLES)`, which includes
- * `internal:warehouse-microservice:admin` — the role this credential actually
- * holds. So a 200 proves the credential and a 401/403 disproves it. `/api/health`
- * would have been wrong for the opposite reason to catalog's: it answers 200 with
- * no credential at all, so it cannot fail.
+ * **Why warehouse and not catalog.** Catalog probe routes historically did not
+ * enforce the JWT role for unlisted SERVICE_NAME values; warehouse
+ * `GET /api/stock/:productId` is decorated `@Roles(...WAREHOUSE_READ_ROLES)`
+ * including `internal:warehouse-microservice:admin` — the role this credential
+ * holds. A 200 proves the credential and a 401/403 disproves it.
  */
 @Injectable()
 export class CredentialSelfReporter {
@@ -88,7 +59,7 @@ export class CredentialSelfReporter {
 
   async runReport(): Promise<{ verdict: string; posted: boolean } | null> {
     const token = (process.env.WAREHOUSE_SERVICE_TOKEN || '').trim();
-    const ingestToken = (process.env.NOTIFICATION_SERVICE_TOKEN || '').trim();
+    const ingestToken = (process.env.MONITORING_INGEST_SERVICE_TOKEN || '').trim();
 
     if (!ingestToken) {
       // Without the ingest credential the verdict cannot be delivered. Log it
@@ -98,7 +69,7 @@ export class CredentialSelfReporter {
       this.logger.error(
         'credential_self_report_undeliverable',
         'CredentialSelfReporter',
-        { principal: PRINCIPAL, reason: 'NOTIFICATION_SERVICE_TOKEN is empty' },
+        { principal: PRINCIPAL, reason: 'MONITORING_INGEST_SERVICE_TOKEN is empty' },
       );
       return null;
     }

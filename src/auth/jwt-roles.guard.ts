@@ -65,8 +65,7 @@ export class JwtRolesGuard implements CanActivate {
 
     const token = authHeader.slice(7);
     try {
-      // TASK-KEY-F3: accepts RS256 (auth's published key) and HS256 (the shared secret)
-      // while the migration runs. See jwt-verifier.ts for the sequencing.
+      // Auth-issued RS256 only (JWKS). See jwt-verifier.ts.
       const payload = await verifyAuthToken(token);
       const userRoles: string[] = Array.isArray(payload.roles) ? payload.roles : [];
 
