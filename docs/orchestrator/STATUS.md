@@ -2,7 +2,7 @@
 
 ## 2026-06-24 - Current-Head Runtime Completion
 
-Change: refreshed the dedicated `stock-traceability-runtime-token` Kubernetes secret with a fresh short-lived synthetic downstream JWT, restarted `suppliers-microservice`, regenerated current-head runtime approval and deployment evidence against clean detached Warehouse/Catalog/Suppliers worktrees, and completed the guarded runtime flow for idempotency key `manual:traceability-20260624-003`. The verified runtime-complete artifacts are `/tmp/stock-traceability-runtime-20260624-003/VAL-CROSS-STOCK-RUNTIME-LIVE.md` and `/tmp/stock-traceability-runtime-20260624-003/stock-traceability-runtime-evidence-manifest.json`.
+Change: refreshed the dedicated `stock-traceability-runtime-token` Kubernetes secret (historical synthetic JWT probe — **prohibited as live protocol**; machine credentials must be Auth-issued pair RS256 Bearers per `SERVICE_IDENTITY_CONSUMER_STANDARD.md`), restarted `suppliers-microservice`, regenerated current-head runtime approval and deployment evidence against clean detached Warehouse/Catalog/Suppliers worktrees, and completed the guarded runtime flow for idempotency key `manual:traceability-20260624-003`. The verified runtime-complete artifacts are `/tmp/stock-traceability-runtime-20260624-003/VAL-CROSS-STOCK-RUNTIME-LIVE.md` and `/tmp/stock-traceability-runtime-20260624-003/stock-traceability-runtime-evidence-manifest.json`. Do not treat this entry as a mint how-to.
 
 Boundary decision: no source adapter logic, schema, or real-supplier onboarding contract changed. Runtime mutation stayed within the approved synthetic traceability scope and used the dedicated downstream secret without exposing credential values.
 
@@ -54,9 +54,9 @@ Next unfinished chunk: assign Agent A to current-head runtime readiness regenera
 
 ## 2026-06-13 - Runtime Trace Role Token Secret
 
-Change: switched Suppliers approved runtime downstream token bindings to the dedicated `stock-traceability-runtime-token` Kubernetes secret. The secret is created during the owner-approved runtime evidence flow with a short-lived role-bearing JWT and is referenced by source manifests without committing token values. Cross-service preflight now checks the runtime-token secret reference.
+Change: switched Suppliers approved runtime downstream token bindings to the dedicated `stock-traceability-runtime-token` Kubernetes secret. Historical note: that secret was filled with a short-lived role-bearing JWT during an owner-approved evidence flow — **local/cluster JWT_SECRET mint is prohibited**; live machine auth is Auth-issued pair RS256 only (`SERVICE_IDENTITY_CONSUMER_STANDARD.md`). Cross-service preflight checks the runtime-token secret reference.
 
-Validation evidence: a generated role-bearing JWT signed with the cluster JWT secret returned HTTP 200 for Warehouse topology, Catalog product identity, and Suppliers imports without printing token values. Full build, preflight, readiness, deployment, and guarded runtime validation are rerun after this entry is committed and Suppliers is redeployed.
+Validation evidence: a historical probe JWT signed with the cluster JWT secret returned HTTP 200 for Warehouse topology, Catalog product identity, and Suppliers imports without printing token values — that mint path is not allowed for new work. Full build, preflight, readiness, deployment, and guarded runtime validation are rerun after this entry is committed and Suppliers is redeployed.
 
 Boundary decision: no token value was checked into source. The previous guarded runtime run stopped before mutation because Warehouse topology returned 401 with the non-role service secret token, so no production supplier import or Warehouse stock mutation happened before this fix.
 
@@ -646,4 +646,4 @@ Evidence:
 
 Boundary decision:
 - No real supplier endpoint, credential, production payload, real SKU, real product ID, real warehouse ID, Catalog write, Warehouse mutation, cleanup mutation, object-storage mutation, or worker start was performed.
-- The JWT used for protected API calls was generated short-lived from runtime `JWT_SECRET` and was not printed or committed.
+- Historical probe minted a short-lived JWT from runtime `JWT_SECRET` for protected API calls; that path is prohibited. Live machine/human auth follows Auth RS256 standards (`SERVICE_IDENTITY_CONSUMER_STANDARD.md` / `CONSUMER_JWT_VALIDATION_STANDARD.md`).

@@ -32,7 +32,7 @@ The owner-approved generic `rest` onboarding lane was executed with synthetic te
 ## Runtime Evidence
 
 - Command: `SUPPLIERS_URL=https://suppliers.alfares.cz node reports/validation/generic-rest-test-onboarding.js`
-- Token handling: a short-lived role-bearing JWT was generated from the runtime `JWT_SECRET` in memory and was not printed or committed.
+- Token handling: historical probe minted a short-lived JWT from runtime `JWT_SECRET`; that path is **prohibited**. Machine and protected API auth must use Auth-issued RS256 credentials per [`SERVICE_IDENTITY_CONSUMER_STANDARD.md`](../../../auth-microservice/docs/SERVICE_IDENTITY_CONSUMER_STANDARD.md) / [`CONSUMER_JWT_VALIDATION_STANDARD.md`](../../../auth-microservice/docs/CONSUMER_JWT_VALIDATION_STANDARD.md). Do not treat this VAL as a live mint how-to.
 - Base URL: `https://suppliers.alfares.cz`
 - Supplier count: `2`
 - Mutation mode: `validate_only`
